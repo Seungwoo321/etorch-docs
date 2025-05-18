@@ -1,10 +1,8 @@
-# E-Torch 상태 관리 아키텍처
+# E-Torch 상태 관리 접근법
 
-## 1. 개요
+## 1. 상태 관리 설계 원칙
 
-E-Torch 프로젝트의 상태 관리 아키텍처는 복잡한 경제지표 데이터와 사용자 인터페이스를 효율적으로 관리하기 위해 설계되었습니다. 이 문서는 프론트엔드 상태 관리 전략과 주요 개념을 설명합니다.
-
-## 2. 상태 관리 설계 원칙
+E-Torch 프로젝트의 상태 관리는 다음 원칙을 기반으로 설계되었습니다:
 
 ```mermaid
 graph TD
@@ -32,9 +30,11 @@ graph TD
     F --> F3[테스트 용이성]
 ```
 
-## 3. 상태 유형 분류
+## 2. 상태 유형 분류
 
-### 3.1 서버 상태 vs 클라이언트 상태
+E-Torch에서는 상태를 다음과 같이 분류하여 관리합니다:
+
+### 2.1 서버 상태 vs 클라이언트 상태
 
 | 서버 상태 | 클라이언트 상태 |
 |----------|----------------|
@@ -44,73 +44,41 @@ graph TD
 | 비동기 로직과 연관 | 동기적 작업 |
 | 서버 상태 캐싱/동기화 필요 | 즉시 변경 반영 |
 
-### 3.2 상태 지속성 및 범위
+### 2.2 상태 지속성 및 범위
 
-```mermaid
-graph TD
-    A[상태 지속성 및 범위] --> B[영구 상태]
-    A --> C[애플리케이션 상태]
-    A --> D[도메인 상태]
-    A --> E[UI 상태]
-    A --> F[서버 상태]
-    
-    B --> B1[앱 재시작 후에도 유지]
-    B --> B2[사용자 설정, 테마, 최근 작업]
-    B --> B3[Supabase + Zustand]
-    
-    C --> C1[세션 동안 유지]
-    C --> C2[인증, 전역 알림, 에러]
-    C --> C3[Zustand + Supabase Auth]
-    
-    D --> D1[기능별 컨텍스트 동안 유지]
-    D --> D2[차트 에디터, 대시보드 에디터 상태]
-    D --> D3[Zustand, Context API]
-    
-    E --> E1[컴포넌트 라이프사이클]
-    E --> E2[모달, 드롭다운, 펼침 상태]
-    E --> E3[useState, useReducer]
-    
-    F --> F1[캐시 정책에 따라 유지]
-    F --> F2[원격 데이터, API 응답]
-    F --> F3[Tanstack Query + Supabase]
-```
+| 상태 유형 | 지속성 | 범위 | 관리 도구 |
+|----------|--------|------|----------|
+| **영구 상태** | 앱 재시작 후에도 유지 | 사용자 설정, 테마, 최근 작업 | Zustand + persist |
+| **애플리케이션 상태** | 세션 동안 유지 | 인증, 전역 알림, 에러 | Zustand |
+| **도메인 상태** | 기능별 컨텍스트 동안 유지 | 차트 에디터, 대시보드 에디터 상태 | Zustand, Context API |
+| **UI 상태** | 컴포넌트 라이프사이클 | 모달, 드롭다운, 펼침 상태 | useState, useReducer |
+| **서버 상태** | 캐시 정책에 따라 유지 | 원격 데이터, API 응답 | Tanstack Query |
 
-## 4. 기술 스택 및 도구
+## 3. 기술 스택 및 도구
 
-### 4.1 상태 관리 도구 선정 및 이유
+### 3.1 상태 관리 도구 선정 및 이유
 
 | 도구 | 사용 영역 | 선정 이유 |
 |------|-----------|----------|
-| **Zustand** | 클라이언트 상태 | 간결한 API, 유연한 미들웨어, 낮은 보일러플레이트, React와 통합 우수 |
+| **Zustand** | 클라이언트 상태 | 간결한 API, 유연한 미들웨어, Redux보다 낮은 보일러플레이트, React와 통합 우수 |
 | **Tanstack Query** | 서버 상태 | 캐싱, 재시도, 낙관적 업데이트, 자동 리페칭, devtools 지원 |
 | **React Context** | 테마, 인증 등 | 깊은 컴포넌트 트리에서의 상태 공유, 간단한 전역 상태 |
 | **React Hook Form** | 폼 상태 | 비제어 컴포넌트 최적화, 유효성 검사, 성능 우수 |
-| **Supabase Auth** | 인증 상태 | SNS 로그인 통합, 세션 관리, 보안 강화 |
-| **Supabase Database** | 영구 데이터 | 사용자 데이터, 대시보드 정보, 설정 저장 |
+| **localStorage/sessionStorage** | 영구/세션 저장소 | 브라우저 기본 제공 API |
 
-### 4.2 Zustand와 Supabase 통합 전략
+### 3.2 Zustand 미들웨어 활용
 
-E-Torch는 다음과 같이 Zustand와 Supabase를 통합하여 상태 관리를 강화합니다:
+E-Torch는 다음 Zustand 미들웨어를 활용하여 상태 관리를 강화합니다:
 
-1. **Supabase Auth와 인증 상태 동기화**
-   - 로그인/로그아웃 시 즉시 상태 업데이트
-   - 세션 만료 처리 및 자동 갱신
+1. **immer**: 불변성 관리 간소화
+2. **persist**: 상태 영속성 (localStorage, sessionStorage)
+3. **devtools**: 개발 도구 연동
+4. **subscribeWithSelector**: 선택적 구독 최적화
+5. **custom middleware**: 로깅, 디버깅, 분석용 커스텀 미들웨어
 
-2. **사용자 데이터 관리**
-   - 프로필 정보 및 개인화 설정 저장
-   - 구독 상태 및 결제 정보 관리
+## 4. 다중 계층 상태 아키텍처
 
-3. **대시보드 및 차트 영구 저장**
-   - 사용자별 대시보드 데이터 저장 및 검색
-   - 차트 설정 및 시각화 옵션 보존
-
-4. **실시간 데이터 구독**
-   - Supabase의 실시간 구독 기능을 활용한 데이터 업데이트
-   - 공유 대시보드 변경사항 실시간 동기화
-
-## 5. 다중 계층 상태 아키텍처
-
-### 5.1 계층 구조
+### 4.1 계층 구조
 
 ```mermaid
 graph TD
@@ -141,214 +109,308 @@ graph TD
     F --> F3[필터 선택]
 ```
 
-### 5.2 주요 스토어 설계
+### 4.2 주요 스토어 설계
 
-```mermaid
-classDiagram
-    class AuthState {
-        +User user
-        +boolean isLoading
-        +string error
-        +initialize()
-        +loginWithSocial(provider)
-        +logout()
-        +refreshSession()
+#### 4.2.1 애플리케이션 상태 스토어
+
+```typescript
+// 추상적인 예시
+interface AppState {
+  theme: 'light' | 'dark' | 'system';
+  notifications: Notification[];
+  globalErrors: ErrorRecord[];
+  isLoading: boolean;
+  
+  // 액션
+  setTheme: (theme: ThemeType) => void;
+  addNotification: (notification: Notification) => void;
+  clearNotification: (id: string) => void;
+  setError: (error: ErrorRecord) => void;
+  clearError: (id: string) => void;
+  setLoading: (isLoading: boolean) => void;
+}
+```
+
+#### 4.2.2 차트 에디터 스토어
+
+```typescript
+// 추상적인 예시
+interface ChartEditorState {
+  charts: NormalizedState<ChartConfig>;
+  activeChartId: string | null;
+  undoStack: Command[];
+  redoStack: Command[];
+  viewMode: 'edit' | 'preview';
+  
+  // 액션
+  selectChart: (chartId: string | null) => void;
+  updateChartProperty: (chartId: string, path: string, value: any) => void;
+  createChart: (type: ChartType) => string;
+  deleteChart: (id: string) => void;
+  undo: () => void;
+  redo: () => void;
+}
+```
+
+#### 4.2.3 대시보드 스토어
+
+```typescript
+// 추상적인 예시
+interface DashboardState {
+  dashboards: NormalizedState<Dashboard>;
+  dashboardItems: NormalizedState<DashboardItem>;
+  activeDashboardId: string | null;
+  layouts: Record<string, Layout[]>;
+  
+  // 액션
+  selectDashboard: (id: string | null) => void;
+  addWidget: (dashboardId: string, widget: DashboardItem) => void;
+  removeWidget: (dashboardId: string, widgetId: string) => void;
+  updateLayout: (dashboardId: string, layout: Layout[]) => void;
+  saveDashboard: (dashboard: Dashboard) => Promise<void>;
+}
+```
+
+## 5. 정규화된 상태 구조
+
+### 5.1 엔티티 정규화 패턴
+
+복잡한 중첩 객체 대신 정규화된 데이터 구조를 사용합니다:
+
+```typescript
+// 정규화 전 (중첩 구조)
+interface DashboardState {
+  dashboards: Dashboard[];
+}
+
+interface Dashboard {
+  id: string;
+  title: string;
+  items: DashboardItem[];
+}
+
+// 정규화 후 (플랫 구조)
+interface NormalizedDashboardState {
+  dashboards: {
+    byId: Record<string, DashboardInfo>;
+    allIds: string[];
+  };
+  items: {
+    byId: Record<string, DashboardItem>;
+    allIds: string[];
+  };
+  itemsByDashboard: Record<string, string[]>;
+}
+
+interface DashboardInfo {
+  id: string;
+  title: string;
+  // items 참조 없음
+}
+```
+
+### 5.2 관계 관리 패턴
+
+엔티티 간 관계는 ID 참조를 사용하여 관리합니다:
+
+```typescript
+// 추상적인 예시
+{
+  dashboards: {
+    byId: {
+      'dash1': { id: 'dash1', title: 'Economic Trends' },
+      'dash2': { id: 'dash2', title: 'Market Analysis' }
+    },
+    allIds: ['dash1', 'dash2']
+  },
+  
+  items: {
+    byId: {
+      'chart1': { id: 'chart1', type: 'timeSeries', config: {...} },
+      'chart2': { id: 'chart2', type: 'bar', config: {...} },
+      'text1': { id: 'text1', type: 'text', content: '...' }
+    },
+    allIds: ['chart1', 'chart2', 'text1']
+  },
+  
+  itemsByDashboard: {
+    'dash1': ['chart1', 'text1'],
+    'dash2': ['chart2']
+  }
+}
+```
+
+## 6. 성능 최적화 전략
+
+### 6.1 선택적 구독 패턴
+
+Zustand의 selectors를 활용하여 필요한 상태만 구독합니다:
+
+```jsx
+// 비효율적인 방식
+const dashboard = useDashboardStore();
+// dashboard 전체가 변경될 때마다 리렌더링
+
+// 최적화된 방식
+const dashboardTitle = useDashboardStore(state => state.dashboards.byId[activeDashboardId]?.title);
+const chartCount = useDashboardStore(state => 
+  state.itemsByDashboard[activeDashboardId]?.filter(
+    id => state.items.byId[id].type === 'chart'
+  ).length
+);
+// 특정 값이 변경될 때만 리렌더링
+```
+
+### 6.2 메모이제이션 활용
+
+계산 비용이 큰 상태 파생 데이터는 메모이제이션을 통해 최적화합니다:
+
+```jsx
+// 추상적인 예시
+const useChartStatistics = () => {
+  const charts = useChartsStore(state => state.charts.allIds.map(id => state.charts.byId[id]));
+  
+  // 고비용 계산을 메모이제이션
+  const statistics = useMemo(() => {
+    return {
+      byType: charts.reduce((acc, chart) => {
+        acc[chart.type] = (acc[chart.type] || 0) + 1;
+        return acc;
+      }, {}),
+      totalDataPoints: charts.reduce((acc, chart) => {
+        return acc + (chart.data?.length || 0);
+      }, 0)
+    };
+  }, [charts]); // charts 변경 시에만 재계산
+  
+  return statistics;
+};
+```
+
+### 6.3 상태 업데이트 일괄 처리
+
+여러 상태 업데이트를 일괄 처리하여 불필요한 리렌더링을 방지합니다:
+
+```jsx
+// 개별 업데이트 (비효율적)
+const updateDashboard = () => {
+  setTitle('New Title'); // 리렌더링 발생
+  setDescription('New Description'); // 리렌더링 발생
+  setTimeRange({ from: '2023-01-01', to: '2023-12-31' }); // 리렌더링 발생
+};
+
+// 일괄 업데이트 (최적화)
+const updateDashboard = () => {
+  batchUpdates(() => {
+    setTitle('New Title');
+    setDescription('New Description');
+    setTimeRange({ from: '2023-01-01', to: '2023-12-31' });
+  }); // 한 번만 리렌더링 발생
+};
+```
+
+## 7. 서버 상태 관리
+
+### 7.1 Tanstack Query 활용 전략
+
+```typescript
+// 추상적인 예시
+const useDashboard = (dashboardId: string) => {
+  return useQuery({
+    queryKey: ['dashboards', dashboardId],
+    queryFn: () => api.getDashboard(dashboardId),
+    staleTime: 5 * 60 * 1000, // 5분
+    refetchOnWindowFocus: true,
+    select: (data) => normalizeData(data) // 응답 데이터 변환
+  });
+};
+
+const useChartData = (chartId: string, timeRange, period) => {
+  return useQuery({
+    queryKey: ['chart-data', chartId, timeRange, period],
+    queryFn: () => api.getChartData(chartId, timeRange, period),
+    staleTime: 2 * 60 * 1000, // 2분
+    refetchInterval: 5 * 60 * 1000, // 5분마다 자동 리페치
+    select: (data) => processChartData(data)
+  });
+};
+```
+
+### 7.2 낙관적 업데이트 패턴
+
+```typescript
+// 추상적인 예시
+const useSaveDashboard = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (dashboard: Dashboard) => api.saveDashboard(dashboard),
+    onMutate: async (newDashboard) => {
+      // 기존 쿼리 취소
+      await queryClient.cancelQueries({ queryKey: ['dashboards', newDashboard.id] });
+      
+      // 이전 상태 저장
+      const previousDashboard = queryClient.getQueryData(['dashboards', newDashboard.id]);
+      
+      // 낙관적 업데이트
+      queryClient.setQueryData(['dashboards', newDashboard.id], newDashboard);
+      
+      // onError, onSettled에서 사용할 컨텍스트 반환
+      return { previousDashboard };
+    },
+    onError: (err, newDashboard, context) => {
+      // 에러 발생 시 이전 상태로 롤백
+      queryClient.setQueryData(
+        ['dashboards', newDashboard.id], 
+        context.previousDashboard
+      );
+    },
+    onSettled: (data, error, variables) => {
+      // 무조건 서버에서 리페치
+      queryClient.invalidateQueries({ queryKey: ['dashboards', variables.id] });
     }
-    
-    class DashboardState {
-        +Record~string, Dashboard~ dashboards
-        +string[] allDashboardIds
-        +Record~string, DashboardItem~ items
-        +string[] allItemIds
-        +Record~string, string[]~ itemsByDashboard
-        +string|null activeDashboardId
-        +selectDashboard(id)
-        +addWidget(dashboardId, widget)
-        +removeWidget(dashboardId, widgetId)
-        +updateLayout(dashboardId, layout)
-        +saveDashboard(dashboard)
-    }
-    
-    class ChartEditorState {
-        +Record~string, ChartConfig~ charts
-        +string[] allChartIds
-        +string|null activeChartId
-        +Command[] undoStack
-        +Command[] redoStack
-        +string viewMode
-        +selectChart(id)
-        +updateChartProperty(chartId, path, value)
-        +createChart(type)
-        +deleteChart(id)
-        +undo()
-        +redo()
-    }
+  });
+};
 ```
 
-## 6. 정규화된 상태 구조
+### 7.3 쿼리 키 설계 전략
 
-### 6.1 엔티티 정규화 패턴
+계층적 쿼리 키를 사용하여 관련 쿼리를 효율적으로 관리합니다:
 
-```mermaid
-graph TD
-    subgraph "정규화 전 (중첩 구조)"
-        A1[Dashboard] --> A2[items 배열]
-    end
-    
-    subgraph "정규화 후 (플랫 구조)"
-        B1[dashboards.byId] --> B1a["Dashboard1"]
-        B1[dashboards.byId] --> B1b["Dashboard2"]
-        B2[dashboards.allIds] --> B2a["id1, id2, ..."]
-        B3[items.byId] --> B3a["Item1"]
-        B3[items.byId] --> B3b["Item2"]
-        B4[items.allIds] --> B4a["id1, id2, ..."]
-        B5[itemsByDashboard] --> B5a["Dashboard1: [item1, item2]"]
-        B5[itemsByDashboard] --> B5b["Dashboard2: [item3, item4]"]
-    end
+```typescript
+// 추상적인 예시
+const queryKeys = {
+  dashboards: {
+    all: ['dashboards'] as const,
+    lists: () => [...queryKeys.dashboards.all, 'list'] as const,
+    list: (filters: string) => [...queryKeys.dashboards.lists(), { filters }] as const,
+    details: () => [...queryKeys.dashboards.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.dashboards.details(), id] as const,
+  },
+  charts: {
+    all: ['charts'] as const,
+    details: () => [...queryKeys.charts.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.charts.details(), id] as const,
+    data: (id: string, params: ChartDataParams) => 
+      [...queryKeys.charts.detail(id), 'data', params] as const,
+  }
+};
+
+// 사용 예시
+useQuery({
+  queryKey: queryKeys.dashboards.detail('dash1'),
+  queryFn: () => api.getDashboard('dash1')
+});
+
+// 관련 쿼리 무효화
+queryClient.invalidateQueries({
+  queryKey: queryKeys.dashboards.details(),
+});
 ```
 
-이 패턴은 다음과 같은 장점을 제공합니다:
-- 데이터 중복 방지
-- 특정 항목 업데이트 용이성
-- 관계 관리 명확화
-- 성능 최적화 용이성
+### 7.4 데이터 유형별 캐싱 전략
 
-## 7. Supabase 통합 상태 관리
-
-### 7.1 인증 상태 관리
-
-```mermaid
-graph TD
-    A[Supabase 인증 통합] --> B[인증 초기화]
-    A --> C[소셜 로그인 처리]
-    A --> D[세션 관리]
-    A --> E[권한 관리]
-    
-    B --> B1["앱 실행 시 세션 확인
-    자동 로그인 및 상태 복원"]
-    
-    C --> C1["Google/Naver/Kakao 
-    OAuth 통합"]
-    
-    D --> D1["세션 유효성 검사
-    토큰 갱신 및 만료 처리"]
-    
-    E --> E1["사용자 역할 기반 
-    기능 접근 제어"]
-```
-
-### 7.2 대시보드 및 차트 데이터 관리
-
-```mermaid
-graph TD
-    A[Supabase 데이터 관리] --> B[데이터 구조]
-    A --> C[CRUD 작업]
-    A --> D[데이터 동기화]
-    A --> E[권한 관리]
-    
-    B --> B1["표 설계:
-    - dashboards
-    - dashboard_items
-    - charts
-    - user_settings"]
-    
-    C --> C1["CRUD 함수:
-    - createDashboard
-    - fetchDashboards
-    - updateDashboard
-    - deleteDashboard"]
-    
-    D --> D1["상태 동기화:
-    - RLS 적용
-    - 실시간 구독
-    - 낙관적 업데이트"]
-    
-    E --> E1["Row Level Security:
-    - 사용자별 접근 제어
-    - 공유 설정"]
-```
-
-## 8. 성능 최적화 전략
-
-### 8.1 선택적 구독 패턴
-
-```mermaid
-graph LR
-    A[상태 구독 최적화] --> B[전체 상태 구독]
-    A --> C[선택적 구독]
-    
-    B --> B1["dashboard 전체 구독:
-    모든 상태 변경 시 리렌더링"]
-    
-    C --> C1["대시보드 제목만 구독:
-    제목 변경 시에만 리렌더링"]
-    
-    C --> C2["차트 수만 구독:
-    차트 추가/제거 시에만 리렌더링"]
-```
-
-### 8.2 메모이제이션 전략
-
-```mermaid
-graph TD
-    A[메모이제이션 전략] --> B[컴포넌트 메모이제이션]
-    A --> C[계산 결과 메모이제이션] 
-    A --> D[콜백 메모이제이션]
-    
-    B --> B1["React.memo()
-    리렌더링 조건 제어"]
-    
-    C --> C1["useMemo()
-    고비용 계산 결과 캐싱"]
-    
-    D --> D1["useCallback()
-    함수 참조 안정성 확보"]
-```
-
-### 8.3 상태 업데이트 일괄 처리
-
-```mermaid
-graph TD
-    A[상태 업데이트 최적화] --> B[개별 업데이트]
-    A --> C[일괄 업데이트]
-    
-    B --> B1["여러 상태 개별 변경
-    → 여러 번 리렌더링 발생"]
-    
-    C --> C1["batch 함수로 여러 상태 일괄 변경
-    → 한 번만 리렌더링 발생"]
-```
-
-## 9. 서버 상태 관리
-
-### 9.1 Tanstack Query와 Supabase 통합
-
-```mermaid
-graph TD
-    A[Tanstack Query + Supabase] --> B[쿼리 키 설계]
-    A --> C[Supabase 쿼리 통합]
-    A --> D[실시간 구독 연동]
-    A --> E[캐싱 전략]
-    
-    B --> B1["계층적 쿼리 키:
-    ['dashboard', userId, id]
-    ['chart', chartId, timeRange]"]
-    
-    C --> C1["Supabase 쿼리 래핑:
-    useSupabaseQuery()
-    useDashboardQuery()"]
-    
-    D --> D1["실시간 업데이트:
-    - 쿼리 자동 무효화
-    - 캐시 업데이트"]
-    
-    E --> E1["데이터 유형별 캐싱:
-    - 사용자 데이터: 긴 캐시
-    - 경제 지표: 중간 캐시
-    - 실시간 데이터: 짧은 캐시"]
-```
-
-### 9.2 데이터 유형별 캐싱 전략
+E-Torch는 데이터 유형 및 갱신 빈도에 따른 맞춤형 캐싱 전략을 구현합니다:
 
 | 데이터 유형 | staleTime | gcTime | 리페치 전략 | 무효화 조건 |
 |------------|-----------|--------|------------|------------|
@@ -356,132 +418,527 @@ graph TD
 | 공유 대시보드 | 10분 | 3시간 | 수동 또는 주기적 | 댓글 작성, 별점 변경 |
 | 경제지표 데이터 | 1시간 | 12시간 | 수동 또는 주기적 | 시간 범위 변경 |
 | 실시간 지표 | 1분 | 10분 | 주기적 (1분) | 자동 만료 |
-| 사용자 설정 | 1일 | 7일 | 앱 시작 시 | 설정 변경 시 |
+| 시스템 메타데이터 | 1일 | 1주일 | 앱 시작 시 | 버전 업데이트 |
 
-## 10. Undo/Redo 기능 구현
+### 7.5 서버 컴포넌트와 상태 관리 통합
 
-### 10.1 커맨드 패턴 기반 히스토리 관리
+Next.js의 서버 컴포넌트와 클라이언트 상태 관리를 효과적으로 통합하기 위한 패턴:
 
-```mermaid
-classDiagram
-    class Command {
-        +execute()
-        +undo()
-        +redo()
-        +merge?(command) boolean
+```jsx
+// 서버 컴포넌트에서 데이터 페칭 후 클라이언트 컴포넌트에 전달
+// app/dashboard/[id]/page.tsx
+export default async function DashboardPage({ params }) {
+  // 서버에서 데이터 페칭
+  const initialData = await fetchDashboardById(params.id);
+  
+  // 클라이언트 컴포넌트에 초기 데이터 전달
+  return <DashboardClient initialData={initialData} dashboardId={params.id} />;
+}
+
+// 클라이언트 컴포넌트에서 데이터 활용 및 상태 관리
+// app/dashboard/[id]/DashboardClient.tsx
+'use client';
+
+import { useDashboardStore } from '@/packages/state';
+import { useEffect } from 'react';
+
+export function DashboardClient({ initialData, dashboardId }) {
+  const { setDashboard, updateDashboard } = useDashboardStore();
+  
+  // 서버에서 전달받은 초기 데이터로 스토어 초기화
+  useEffect(() => {
+    if (initialData) {
+      setDashboard(dashboardId, initialData);
     }
+  }, [dashboardId, initialData, setDashboard]);
+  
+  // 이후 필요 시 상태 업데이트 및 서버와 동기화
+  const handleUpdate = async (changes) => {
+    // 낙관적 UI 업데이트
+    updateDashboard(dashboardId, changes);
     
-    class HistoryManager {
-        +Command[] past
-        +Command[] future
-        +execute(command)
-        +undo()
-        +redo()
-        +canUndo() boolean
-        +canRedo() boolean
-        +clear()
-    }
-    
-    class UpdateChartPropertyCommand {
-        +string chartId
-        +string propertyPath
-        +any oldValue
-        +any newValue
-        +ChartEditorStore store
-        +execute()
-        +undo()
-        +redo()
-        +merge(command) boolean
-    }
-    
-    class TransactionCommand {
-        +Command[] commands
-        +string name
-        +execute()
-        +undo()
-        +redo()
-    }
-    
-    Command <|-- UpdateChartPropertyCommand
-    Command <|-- TransactionCommand
-    HistoryManager o-- Command
+    // 서버 연동
+    await saveDashboardChanges(dashboardId, changes);
+  };
+  
+  return (/* ... */);
+}
 ```
 
-## 11. 이벤트 버스 패턴
+## 8. Undo/Redo 기능 구현
 
-```mermaid
-graph TD
-    A[이벤트 버스] --> B[이벤트 정의]
-    A --> C[이벤트 발행]
-    A --> D[이벤트 구독]
-    
-    B --> B1["EventType 정의
-    'dashboard:timeRangeChanged'
-    'chart:dataUpdated'"]
-    
-    C --> C1["publish 메서드
-    type과 payload 전달"]
-    
-    D --> D1["subscribe 메서드
-    특정 이벤트와 콜백 등록"]
-    
-    C1 --> E[이벤트 처리 흐름]
-    D1 --> E
-    
-    E --> E1[컴포넌트 간 느슨한 결합]
-    E --> E2[크로스커팅 관심사 해결]
+### 8.1 커맨드 패턴 기반 히스토리 관리
+
+상태 변경을 명령 객체로 캡슐화하여 Undo/Redo 기능을 구현합니다:
+
+```typescript
+// 추상적인 예시
+interface Command {
+  execute: () => void;
+  undo: () => void;
+  redo: () => void;
+  merge?: (command: Command) => boolean; // 유사 커맨드 병합
+}
+
+interface HistoryManager {
+  past: Command[];
+  future: Command[];
+  
+  execute: (command: Command) => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
+  clear: () => void;
+}
 ```
 
-## 12. Supabase 인증 및 권한 관리
+### 8.2 차트 에디터 Undo/Redo 구현
 
-### 12.1 SNS 로그인 흐름
-
-```mermaid
-sequenceDiagram
-    participant U as 사용자
-    participant C as 클라이언트
-    participant A as Supabase Auth
-    participant S as SNS 제공자
-    participant DB as Supabase DB
-    
-    U->>C: 로그인 버튼 클릭
-    C->>A: 소셜 로그인 요청
-    A->>S: 리디렉션
-    S->>U: 인증 요청
-    U->>S: 인증 승인
-    S->>A: 인증 코드 반환
-    A->>A: 토큰 생성
-    A->>C: 세션 정보 반환
-    C->>C: 인증 상태 업데이트
-    C->>DB: 사용자 정보 요청
-    DB->>C: 사용자 프로필 및 설정
-    C->>U: 로그인 완료 및 리디렉션
+```typescript
+// 추상적인 예시
+class UpdateChartPropertyCommand implements Command {
+  constructor(
+    private chartId: string,
+    private propertyPath: string,
+    private oldValue: any,
+    private newValue: any,
+    private store: ChartEditorStore
+  ) {}
+  
+  execute() {
+    this.store.updateChartProperty(this.chartId, this.propertyPath, this.newValue);
+  }
+  
+  undo() {
+    this.store.updateChartProperty(this.chartId, this.propertyPath, this.oldValue);
+  }
+  
+  redo() {
+    this.execute();
+  }
+  
+  // 연속된 동일 속성 변경은 병합 (드래그 중 연속 업데이트 등)
+  merge(command: Command): boolean {
+    if (command instanceof UpdateChartPropertyCommand) {
+      if (this.chartId === command.chartId && 
+          this.propertyPath === command.propertyPath) {
+        this.newValue = command.newValue;
+        return true;
+      }
+    }
+    return false;
+  }
+}
 ```
 
-### 12.2 RLS(Row Level Security) 정책
+### 8.3 트랜잭션 지원
 
-```mermaid
-graph TD
-    A[RLS 정책] --> B[소유자 정책]
-    A --> C[공유 정책]
-    A --> D[구독 정책]
-    
-    B --> B1["dashboards:
-    사용자 ID = auth.uid()"]
-    
-    C --> C1["shared_dashboards:
-    is_public = true OR 
-    auth.uid() IN shared_users"]
-    
-    D --> D1["subscription_check:
-    subscription_active = true AND
-    feature_access = 'premium'"]
+복합 작업을 단일 Undo/Redo 단위로 처리하는 트랜잭션 지원:
+
+```typescript
+// 추상적인 예시
+class TransactionCommand implements Command {
+  constructor(
+    private commands: Command[],
+    private name: string = "Transaction"
+  ) {}
+  
+  execute() {
+    this.commands.forEach(cmd => cmd.execute());
+  }
+  
+  undo() {
+    // 역순으로 실행
+    [...this.commands].reverse().forEach(cmd => cmd.undo());
+  }
+  
+  redo() {
+    this.commands.forEach(cmd => cmd.redo());
+  }
+}
+
+// 사용 예시
+historyManager.execute(
+  new TransactionCommand([
+    new AddChartCommand(chartId, store),
+    new PositionChartCommand(chartId, position, store),
+    new StyleChartCommand(chartId, style, store)
+  ], "차트 추가 및 구성")
+);
 ```
 
-## 13. 결론
+### 8.4 API 통합 및 영구 저장
 
-E-Torch의 상태 관리 아키텍처는 Zustand와 Tanstack Query를 중심으로 효율적인 클라이언트 및 서버 상태 관리 전략을 구현하며, Supabase를 통해 SNS 로그인 인증 및 사용자 데이터 관리를 통합적으로 처리합니다.
+Undo/Redo 시스템과 API 저장을 통합하는 패턴:
 
-정규화된 상태 구조, 선택적 구독 패턴, 메모이제이션 등의 최적화 기법을 통해 대량의 경제 데이터를 처리하면서도 우수한 성능을 제공합니다. Supabase의 실시간 구독 기능과 RLS 정책을 활용하여 데이터 동기화 및 보안을 강화하였습니다.
+```typescript
+// 차트 속성 변경 커맨드에 저장 준비 기능 추가
+class UpdateChartPropertyCommand implements Command {
+  private initialState: ChartState;
+  private finalState: ChartState | null = null;
+  
+  // ... 기존 메서드 ...
+  
+  // 저장 준비 메서드
+  prepareForSave() {
+    return {
+      chartId: this.chartId,
+      changes: {
+        [this.propertyPath]: this.newValue
+      }
+    };
+  }
+}
 
-이벤트 버스 패턴과 커맨드 패턴을 통해 컴포넌트 간 느슨한 결합을 유지하면서도 Undo/Redo와 같은 고급 기능을 구현할 수 있습니다. 이러한 아키텍처는 E-Torch가 복잡한 경제지표 대시보드 서비스로서 확장성과 유지보수성을 갖추도록 설계되었습니다.
+// 세션 종료 또는 저장 버튼 클릭 시 사용
+function saveAllChanges() {
+  const { past, current } = historyManager.getState();
+  
+  // 모든 변경사항 병합
+  const changes = past.reduce((acc, command) => {
+    if (command.prepareForSave) {
+      const saveData = command.prepareForSave();
+      // 병합 로직...
+      return { ...acc, ...saveData };
+    }
+    return acc;
+  }, {});
+  
+  // API 저장 호출
+  return apiClient.saveChanges(changes);
+}
+```
+
+## 9. 이벤트 버스 패턴
+
+컴포넌트 간 느슨한 결합을 위한 이벤트 버스 패턴:
+
+```typescript
+// 추상적인 예시
+export type EventType = 
+  | 'dashboard:timeRangeChanged'
+  | 'dashboard:widgetAdded'
+  | 'dashboard:widgetRemoved'
+  | 'chart:dataUpdated'
+  | 'chart:optionsChanged';
+
+interface EventPayload<T = any> {
+  type: EventType;
+  payload: T;
+}
+
+type EventCallback<T = any> = (payload: T) => void;
+
+interface EventBusState {
+  listeners: Map<EventType, Set<EventCallback>>;
+  
+  subscribe: <T>(type: EventType, callback: EventCallback<T>) => () => void;
+  publish: <T>(type: EventType, payload: T) => void;
+}
+
+// 사용 예시
+const unsubscribe = useEventBus.getState().subscribe(
+  'dashboard:timeRangeChanged', 
+  (newTimeRange) => {
+    // 시간 범위 변경에 대응하는 로직
+  }
+);
+
+// 이벤트 발행
+useEventBus.getState().publish(
+  'dashboard:timeRangeChanged',
+  { from: '2023-01-01', to: '2023-12-31' }
+);
+```
+
+### 9.1 이벤트 버스와 데이터 흐름 통합
+
+이벤트 버스 패턴을 활용한 컴포넌트 간 데이터 흐름 관리:
+
+```mermaid
+flowchart TD
+    A[UI 컴포넌트 A] -->|이벤트 발행| B[이벤트 버스]
+    B -->|이벤트 구독| C[UI 컴포넌트 B]
+    D[Data Service] -->|데이터 변경 감지| B
+    B -->|상태 업데이트 트리거| E[Zustand 스토어]
+    E -->|상태 업데이트| A
+    E -->|상태 업데이트| C
+```
+
+```typescript
+// 이벤트 구독자 예시
+function ChartContainer({ chartId }) {
+  const eventBus = useEventBus();
+  const { updateChartData } = useChartStore();
+  
+  useEffect(() => {
+    // 시간 범위 변경 이벤트 구독
+    const unsubscribe = eventBus.subscribe(
+      'dashboard:timeRangeChanged', 
+      async (newRange: TimeRange) => {
+        // 새 데이터 페칭
+        const newData = await fetchChartData(chartId, newRange);
+        // 상태 업데이트
+        updateChartData(chartId, newData);
+        // 다른 컴포넌트에 알림
+        eventBus.publish('chart:dataUpdated', { chartId, data: newData });
+      }
+    );
+    
+    return unsubscribe;
+  }, [chartId, eventBus, updateChartData]);
+  
+  // ... 렌더링 로직
+}
+```
+
+## 10. 상태 디버깅 시스템
+
+### 10.1 Zustand 디버깅 도구
+
+```typescript
+// 추상적인 예시
+const useDebugStore = create<DebugState>()(
+  persist(
+    (set, get) => ({
+      // 디버깅 활성화 상태
+      enabled: process.env.NODE_ENV === 'development',
+      
+      // 액션 히스토리
+      actionHistory: [],
+      
+      // 상태 스냅샷
+      stateSnapshots: {},
+      
+      // 필터 옵션
+      filters: {
+        storeNames: [],
+        actionTypes: []
+      },
+      
+      // 액션 기록
+      recordAction: (action) => {
+        if (!get().enabled) return;
+        
+        set(state => ({
+          actionHistory: [...state.actionHistory, {
+            ...action,
+            timestamp: Date.now()
+          }]
+        }));
+      },
+      
+      // 상태 스냅샷 저장
+      saveSnapshot: (storeName, state) => {
+        if (!get().enabled) return;
+        
+        set(prev => ({
+          stateSnapshots: {
+            ...prev.stateSnapshots,
+            [storeName]: {
+              state,
+              timestamp: Date.now()
+            }
+          }
+        }));
+      },
+      
+      // 디버깅 제어 기능들...
+    }),
+    {
+      name: 'e-torch-debug-storage'
+    }
+  )
+);
+```
+
+### 10.2 시간 여행 디버깅
+
+과거 상태로 돌아가서 디버깅할 수 있는 기능:
+
+```typescript
+// 추상적인 예시
+interface TimeTravelDebugger {
+  snapshots: Array<{
+    timestamp: number;
+    state: Record<string, any>; // 모든 스토어 상태 통합
+    actionName: string;
+  }>;
+  
+  travelTo: (snapshotIndex: number) => void;
+  getCurrentIndex: () => number;
+  getSnapshots: () => Array<{timestamp: number, actionName: string}>;
+  
+  startRecording: () => void;
+  stopRecording: () => void;
+  clearHistory: () => void;
+}
+```
+
+## 11. 모범 사례 및 패턴
+
+### 11.1 상태 초기화 및 리셋 패턴
+
+컴포넌트 마운트/언마운트와 관련된 상태 관리:
+
+```jsx
+// 추상적인 예시
+const ChartEditor = ({ chartId }) => {
+  const { initializeEditor, resetEditor } = useChartEditorStore();
+  
+  useEffect(() => {
+    // 컴포넌트 마운트 시 에디터 초기화
+    initializeEditor(chartId);
+    
+    // 컴포넌트 언마운트 시 에디터 상태 리셋
+    return () => resetEditor();
+  }, [chartId, initializeEditor, resetEditor]);
+  
+  // 나머지 컴포넌트 로직...
+};
+```
+
+### 11.2 동적 상태 생성 패턴
+
+필요에 따라 동적으로 상태를 생성하는 패턴:
+
+```typescript
+// 추상적인 예시
+// 상태 팩토리 함수
+const createChartStore = (chartId: string) => {
+  return create<ChartState>()((set, get) => ({
+    // 차트별 상태...
+  }));
+};
+
+// 상태 레지스트리
+let chartStores: Record<string, StoreApi<ChartState>> = {};
+
+// 동적 상태 훅
+const useChartStore = (chartId: string) => {
+  // 첫 호출 시 스토어 생성
+  if (!chartStores[chartId]) {
+    chartStores[chartId] = createChartStore(chartId);
+  }
+  
+  // 해당 차트 ID의 스토어 반환
+  return chartStores[chartId](selector);
+};
+```
+
+### 11.3 비동기 작업 상태 관리 패턴
+
+Zustand에서 비동기 작업 상태 관리:
+
+```typescript
+// 추상적인 예시
+type AsyncState<T> = {
+  data: T | null;
+  loading: boolean;
+  error: Error | null;
+};
+
+const createAsyncSlice = <T, P = void>(
+  asyncFn: (params: P) => Promise<T>
+) => {
+  return {
+    state: {
+      data: null,
+      loading: false,
+      error: null
+    } as AsyncState<T>,
+    
+    actions: {
+      start: (params: P) => (state: AsyncState<T>) => {
+        state.loading = true;
+        state.error = null;
+      },
+      
+      success: (data: T) => (state: AsyncState<T>) => {
+        state.data = data;
+        state.loading = false;
+        state.error = null;
+      },
+      
+      failure: (error: Error) => (state: AsyncState<T>) => {
+        state.loading = false;
+        state.error = error;
+      },
+      
+      execute: async (params: P, set: any) => {
+        set(slice.actions.start(params));
+        try {
+          const data = await asyncFn(params);
+          set(slice.actions.success(data));
+          return data;
+        } catch (error) {
+          set(slice.actions.failure(error as Error));
+          throw error;
+        }
+      }
+    }
+  };
+};
+```
+
+### 11.4 상태 관리와 API 클라이언트 통합
+
+상태 관리 시스템과 API 클라이언트를 효과적으로 통합하는 패턴:
+
+```typescript
+// Zustand 스토어에 API 클라이언트 통합
+export const useDashboardStore = create<DashboardState>()((set, get) => {
+  // API 클라이언트 인스턴스 생성
+  const apiClient = new DashboardApiClient(API_BASE_URL);
+  
+  return {
+    dashboards: { byId: {}, allIds: [] },
+    isLoading: false,
+    error: null,
+    
+    fetchDashboards: async () => {
+      set({ isLoading: true, error: null });
+      try {
+        const dashboards = await apiClient.getDashboards();
+        set({ 
+          dashboards: normalizeData(dashboards),
+          isLoading: false 
+        });
+      } catch (error) {
+        set({ error: error as Error, isLoading: false });
+      }
+    },
+    
+    createDashboard: async (data) => {
+      set({ isLoading: true, error: null });
+      try {
+        const newDashboard = await apiClient.createDashboard(data);
+        set(state => ({
+          dashboards: {
+            byId: { ...state.dashboards.byId, [newDashboard.id]: newDashboard },
+            allIds: [...state.dashboards.allIds, newDashboard.id]
+          },
+          isLoading: false
+        }));
+        return newDashboard;
+      } catch (error) {
+        set({ error: error as Error, isLoading: false });
+        throw error;
+      }
+    },
+    
+    // 기타 액션...
+  };
+});
+```
+
+## 12. 결론
+
+E-Torch의 상태 관리 아키텍처는 서버/클라이언트 상태 분리, 계층적 상태 구조, 정규화된 상태 모델을 통해 복잡한 경제지표 대시보드 서비스의 상태를 효율적으로 관리합니다.
+
+Zustand와 Tanstack Query를 중심으로 한 도구 선택은 개발 생산성과 런타임 성능 모두를 고려한 것으로, 선택적 구독, 메모이제이션, 정규화 등의 최적화 기법을 통해 대량 데이터 처리와 복잡한 UI 상호작용에서도 우수한 성능을 보장합니다.
+
+이벤트 버스, 커맨드 패턴, 시간 여행 디버깅 등의 고급 패턴은 컴포넌트 간 느슨한 결합과 강력한 기능 구현을 가능하게 합니다.
+
+Next.js의 서버 컴포넌트 아키텍처와 통합을 통해, 서버에서 페칭한 데이터를 클라이언트 상태로 효율적으로 변환하고 관리함으로써 최적의 사용자 경험을 제공합니다.
