@@ -14,9 +14,7 @@ flowchart TD
     A --> C[라우트 그룹]
     A --> D[중첩 레이아웃]
     A --> E[동적 라우트]
-    A --> F[파라렐 라우트]
-    A --> G[인터셉트 라우트]
-    A --> H[라우트 핸들러]
+    A --> F[인터셉트 라우트]
     
     B --> B1[SEO 최적화]
     B --> B2[초기 로딩 성능 향상]
@@ -30,14 +28,8 @@ flowchart TD
     E --> E1[대시보드/차트 동적 ID]
     E --> E2[URL 파라미터 활용]
     
-    F --> F1[동시 여러 컨텐츠 표시]
-    F --> F2[독립적 상태 관리]
-    
-    G --> G1[모달/팝업 구현]
-    G --> G2[전환 없는 데이터 로드]
-    
-    H --> H1[API 엔드포인트]
-    H --> H2[백엔드 통신]
+    F --> F1[모달/팝업 구현]
+    F --> F2[전환 없는 데이터 로드]
 ```
 
 ## 3. 라우팅 구조 설계
@@ -88,64 +80,57 @@ E-Torch의 라우팅 구조는 **기본 라우팅**과 **확장 라우팅**으�
 
 기본 라우팅 구조는 제품의 핵심 기능을 제공하는 필수 경로로 구성됩니다. 이는 MVP(Minimum Viable Product) 단계에서 우선적으로 구현됩니다.
 
-```mermaid
-graph TD
-    Root[app/] --> Auth["(auth)/"]
-    Root --> Dashboard["(dashboard)/"]
-    Root --> Chart["(chart)/"]
-    Root --> Profile["(profile)/"]
-    
-    Auth --> Auth1["login/"]
-    Auth --> Auth2["callback/"]
-    
-    Dashboard --> Dash1["dashboard/"]
-    Dashboard --> Dash2["dashboard/[id]/"]
-    Dashboard --> Dash3["dashboard/new/"]
-    Dashboard --> Dash4["dashboard/[id]/edit/"]
-    Dashboard --> Dash5["explore/"]
-    
-    Chart --> Chart1["chart-editor/[id]/"]
-    Chart --> Chart2["chart/[id]/"]
-    
-    Profile --> Prof1["profile/settings/"]
-    Profile --> Prof2["profile/subscription/"]
+```
+app/
+├── (auth)/               # 인증 관련 라우트 그룹
+│   ├── login/            # 로그인 페이지
+│   ├── callback/         # 소셜 로그인 콜백 처리
+│   └── layout.tsx        # 인증 레이아웃
+│
+├── (dashboard)/          # 대시보드 관련 라우트 그룹
+│   ├── dashboard/        # 대시보드 목록 페이지
+│   ├── dashboard/[id]/   # 개별 대시보드 상세 페이지
+│   ├── dashboard/new/    # 새 대시보드 생성 페이지
+│   ├── dashboard/[id]/edit/ # 대시보드 편집 페이지
+│   ├── explore/          # 대시보드 탐색/발견 페이지
+│   └── layout.tsx        # 대시보드 레이아웃
+│
+├── (chart)/              # 차트 관련 라우트 그룹
+│   ├── chart-editor/[id]/ # 차트 에디터 페이지
+│   ├── chart/[id]/       # 개별 차트 상세 페이지
+│   └── layout.tsx        # 차트 레이아웃
+│
+├── (profile)/            # 사용자 프로필 관련 라우트 그룹
+│   ├── profile/settings/ # 프로필 설정 페이지
+│   ├── profile/subscription/ # 구독 관리 페이지
+│   └── layout.tsx        # 프로필 레이아웃
+│
+├── layout.tsx            # 루트 레이아웃
+└── page.tsx              # 홈페이지
 ```
 
 ### 4.2 확장 라우팅 구조
 
 확장 라우팅 구조는 향상된 사용자 경험을 위한 고급 라우팅 패턴을 포함합니다. 이는 기본 기능 구현 후 점진적으로 추가됩니다.
 
-```mermaid
-graph TD
-    Root[app/] --> Auth["(auth)/"]
-    Root --> Dashboard["(dashboard)/"]
-    Root --> Chart["(chart)/"]
-    Root --> Profile["(profile)/"]
-    Root --> Modal["@modal/"]
-    
-    Auth --> Auth1["login/"]
-    Auth --> Auth2["callback/"]
-    
-    Dashboard --> Dash1["dashboard/"]
-    Dashboard --> Dash2["dashboard/[id]/"]
-    Dashboard --> Dash3["new/"]
-    Dashboard --> Dash4["dashboard/[id]/edit/"]
-    Dashboard --> Dash5["explore/"]
-    Dashboard --> Para["@dashboard/"]
-    
-    Modal --> Modal1["dashboard/[id]/"]
-    Modal --> Modal2["chart/[id]/"]
-    
-    Para --> Para1["info/"]
-    Para --> Para2["share/"]
-    
-    Chart --> Chart1["chart-editor/[id]/"]
-    Chart --> Chart2["chart/[id]/"]
-    Chart --> Chart3["preview/"]
-    
-    Profile --> Prof1["profile/settings/"]
-    Profile --> Prof2["profile/subscription/"]
-    Profile --> Prof3["notifications/"]
+```
+# 기본 라우팅 구조에 다음과 같은 확장 패턴 추가
+
+app/
+├── @modal/               # 인터셉트 라우트 (모달용)
+│   ├── dashboard/[id]/   # 대시보드 모달 표시
+│   └── chart/[id]/       # 차트 모달 표시
+│
+├── (dashboard)/          
+│   └── @dashboard/       # 병렬 라우트 (대시보드 부가 정보용)
+│       ├── info/         # 대시보드 정보 탭
+│       └── share/        # 대시보드 공유 탭
+│
+├── (chart)/              
+│   └── preview/          # 차트 미리보기 페이지
+│
+└── (profile)/             
+    └── notifications/    # 알림 설정 페이지
 ```
 
 ### 4.3 라우팅 유형 매핑 테이블
@@ -163,8 +148,6 @@ graph TD
 | `@dashboard/info`, `@dashboard/share` | 확장 | 병렬 라우트 | 하 |
 | `/chart/preview` | 확장 | 일반 라우트 | 하 |
 | `/profile/notifications` | 확장 | 일반 라우트 | 하 |
-
-이 구조를 통해 E-Torch는 핵심 기능을 우선적으로 구현하면서도, 향후 사용자 경험을 향상시키기 위한 고급 라우팅 기능을 점진적으로 도입할 수 있습니다.
 
 ## 5. 페이지별 라우트 설계
 
@@ -225,72 +208,46 @@ flowchart TD
     Profile --> Settings[설정 페이지]
     Profile --> Subscription[구독 페이지]
     Profile --> Notifications[알림 페이지]
-    
-    classDef layout fill:#ccffcc,stroke:#333,stroke-width:1px
-    classDef page fill:#ffcccb,stroke:#333,stroke-width:1px
-    
-    class Root,Auth,Dashboard,Chart,Profile layout
-    class Login,Callback,DashboardList,DashboardDetail,DashboardEdit,Explore,ChartEditor,ChartDetail,Settings,Subscription,Notifications page
 ```
 
 ### 6.1 레이아웃 책임 분리
 
 각 레이아웃은 명확한 책임을 갖는 구조로 설계되어 있습니다:
 
-```mermaid
-flowchart TD
-    subgraph "RootLayout"
-        R1[전역 CSS/폰트]
-        R2[서비스 프로바이더]
-        R3[테마 설정]
-        R4[기본 메타데이터]
-    end
-    
-    subgraph "AuthLayout"
-        A1[최소 디자인]
-        A2[로고 및 설명]
-        A3[중앙 정렬 컨테이너]
-    end
-    
-    subgraph "DashboardLayout"
-        D1[사이드 내비게이션]
-        D2[상단 헤더]
-        D3[메인 콘텐츠 영역]
-    end
-    
-    subgraph "ChartLayout"
-        C1[상단 헤더]
-        C2[전체 화면 콘텐츠]
-        C3[백 버튼]
-    end
-    
-    subgraph "ProfileLayout"
-        P1[사이드 내비게이션]
-        P2[상단 헤더]
-        P3[메인 콘텐츠 영역]
-    end
-```
+| 레이아웃 | 책임 |
+|---------|-----|
+| **RootLayout** | 전역 CSS/폰트, 서비스 프로바이더, 테마 설정, 기본 메타데이터 |
+| **AuthLayout** | 최소 디자인, 로고 및 설명, 중앙 정렬 컨테이너 |
+| **DashboardLayout** | 사이드 내비게이션, 상단 헤더, 메인 콘텐츠 영역 |
+| **ChartLayout** | 상단 헤더, 전체 화면 콘텐츠, 백 버튼 |
+| **ProfileLayout** | 사이드 내비게이션, 상단 헤더, 메인 콘텐츠 영역 |
 
 ## 7. 동적 라우팅 전략
 
 ### 7.1 대시보드 및 차트 ID 라우팅 패턴
 
-```mermaid
-flowchart LR
-    subgraph "동적 라우트 처리"
-        direction TB
-        A["/dashboard/[id]"] --> B["params.id 추출"]
-        B --> C["서버에서 데이터 페칭"]
-        C --> D["메타데이터 생성"]
-        C --> E["클라이언트 컴포넌트로 데이터 전달"]
-    end
-    
-    subgraph "정적 생성 최적화"
-        direction TB
-        F["generateStaticParams"] --> G["빌드 시 유효한 ID 생성"]
-        G --> H["데이터베이스 조회"]
-        H --> I["정적 경로 생성"]
-    end
+동적 ID 기반 라우팅은 다음과 같은 패턴으로 구현됩니다:
+
+```tsx
+// app/(dashboard)/dashboard/[id]/page.tsx (서버 컴포넌트)
+import { fetchDashboardById } from '@/packages/server-api/dashboard';
+import { notFound } from 'next/navigation';
+
+interface DashboardPageProps {
+  params: { id: string };
+}
+
+export default async function DashboardPage({ params }: DashboardPageProps) {
+  // 서버에서 대시보드 데이터 페칭
+  const dashboard = await fetchDashboardById(params.id);
+  
+  if (!dashboard) {
+    return notFound();
+  }
+  
+  // 데이터가 있으면 대시보드 렌더링
+  return <DashboardContent dashboard={dashboard} />;
+}
 ```
 
 ### 7.2 동적 라우트 접근 제어 패턴
@@ -308,172 +265,176 @@ flowchart TD
 
 ### 8.1 네비게이션 컴포넌트 구조
 
-```mermaid
-flowchart TD
-    subgraph "네비게이션 시스템"
-        A[MainSidebar] --> A1[대시보드 섹션]
-        A --> A2[탐색 섹션]
-        A --> A3[설정 섹션]
-        
-        B[HeaderNav] --> B1[서비스 로고]
-        B --> B2[현재 페이지 제목]
-        B --> B3[사용자 메뉴]
-        B --> B4[검색 바]
-        
-        C[Breadcrumbs] --> C1[현재 경로]
-        C --> C2[상위 카테고리 링크]
-    end
-```
+E-Torch의 네비게이션 시스템은 다음과 같은 주요 컴포넌트로 구성됩니다:
+
+- **MainSidebar**: 주요 메뉴 항목 및 네비게이션 링크 제공
+- **HeaderNav**: 현재 페이지 제목, 사용자 메뉴, 검색 바 등
+- **Breadcrumbs**: 현재 위치 및 상위 카테고리 표시
 
 ### 8.2 라우트 보호 아키텍처
 
-```mermaid
-flowchart TD
-    subgraph "라우트 보호 계층"
-        A[미들웨어 보호] --> A1[요청 경로 검사]
-        A --> A2[토큰 유효성 검증]
-        A --> A3[인증 필요 시 리디렉션]
-        
-        B[서버 컴포넌트 보호] --> B1[세션 검증]
-        B --> B2[권한 검증]
-        B --> B3[리디렉션/404 처리]
-        
-        C[클라이언트 래퍼 보호] --> C1[AuthGuard 컴포넌트]
-        C --> C2[세션 상태 검사]
-        C --> C3[로딩 상태 처리]
-    end
-    
-    A -->|인증 확인| B
-    B -->|렌더링| C
+라우트 보호는 다층적 접근으로 구현됩니다:
+
+1. **미들웨어 보호**:
+   - 요청 경로 검사
+   - 토큰 유효성 검증
+   - 인증 필요 시 리디렉션
+
+2. **서버 컴포넌트 보호**:
+   - 세션 검증
+   - 권한 검증
+   - 리디렉션/404 처리
+
+3. **클라이언트 래퍼 보호**:
+   - AuthGuard 컴포넌트
+   - 세션 상태 검사
+   - 로딩 상태 처리
+
+```tsx
+// middleware.ts
+export function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  
+  // 공개 라우트는 통과
+  if (publicRoutes.some(route => pathname.startsWith(route))) {
+    return NextResponse.next();
+  }
+  
+  // 토큰 검증
+  const token = request.cookies.get('authToken')?.value;
+  
+  if (!token) {
+    const url = new URL('/login', request.url);
+    url.searchParams.set('redirectTo', pathname);
+    return NextResponse.redirect(url);
+  }
+  
+  // 토큰 유효성 검사
+  try {
+    const decoded = validateToken(token);
+    // 유효하면 통과
+    return NextResponse.next();
+  } catch (error) {
+    // 유효하지 않으면 로그인으로 리디렉션
+    const url = new URL('/login', request.url);
+    return NextResponse.redirect(url);
+  }
+}
 ```
 
 ## 9. 클라이언트 측 네비게이션 최적화
 
 ### 9.1 효율적인 네비게이션 패턴
 
-```mermaid
-flowchart LR
-    subgraph "Link 컴포넌트 전략"
-        A[Link prefetch] --> A1[자동 프리페칭]
-        A --> A2[데이터 미리 로딩]
-    end
-    
-    subgraph "프로그래매틱 네비게이션"
-        B[useRouter 활용] --> B1[폼 제출 후 라우팅]
-        B --> B2[조건부 리디렉션]
-        B --> B3[히스토리 관리]
-    end
-    
-    subgraph "인터셉트 라우트"
-        C[모달 구현] --> C1["@modal 디렉토리"]
-        C --> C2[페이지 전환 없는 오버레이]
-        C --> C3[URL 공유 가능성 유지]
-    end
+```tsx
+// 링크 컴포넌트 사용 예시
+import Link from 'next/link';
+
+export function DashboardCard({ dashboard }) {
+  return (
+    <Link 
+      href={`/dashboard/${dashboard.id}`}
+      prefetch={true} // 자동 prefetch
+    >
+      <div className="card">
+        <h3>{dashboard.title}</h3>
+        <p>{dashboard.description}</p>
+      </div>
+    </Link>
+  );
+}
+
+// 프로그래매틱 네비게이션
+import { useRouter } from 'next/navigation';
+
+export function SaveButton({ dashboardId, onSave }) {
+  const router = useRouter();
+  
+  const handleSave = async () => {
+    const result = await onSave();
+    if (result.success) {
+      router.push(`/dashboard/${dashboardId}`);
+    }
+  };
+  
+  return <button onClick={handleSave}>저장</button>;
+}
 ```
 
 ### 9.2 모달 라우팅 구조
 
-```mermaid
-flowchart TD
-    A["/dashboard"] --> A1["page.tsx: 대시보드 목록"]
-    A --> B["[id]/"]
-    A --> C["@modal/"]
-    
-    B --> B1["page.tsx: 대시보드 상세"]
-    C --> C1["[id]/"]
-    C1 --> C2["page.tsx: 모달 형태의 대시보드 상세"]
-    
-    A1 -.-> |"인터셉트"| C2
-    B1 -.-> |"대체"| C2
+모달 라우팅은 인터셉트 라우트를 사용하여 구현합니다:
+
+```
+app/
+├── dashboard/[id]/
+│   └── page.tsx         # 일반 대시보드 페이지
+│
+└── @modal/
+    └── dashboard/[id]/
+        └── page.tsx     # 모달로 표시되는 대시보드 페이지
+```
+
+```tsx
+// app/@modal/dashboard/[id]/page.tsx
+import { fetchDashboardById } from '@/packages/server-api/dashboard';
+
+export default async function DashboardModal({ params }) {
+  const dashboard = await fetchDashboardById(params.id);
+  
+  return (
+    <div className="modal">
+      <h2>{dashboard.title}</h2>
+      <DashboardModalContent dashboard={dashboard} />
+    </div>
+  );
+}
 ```
 
 ## 10. 메타데이터 전략
 
 ### 10.1 메타데이터 계층 구조
 
-```mermaid
-flowchart TD
-    subgraph "메타데이터 계층"
-        A[기본 메타데이터] --> A1[사이트명 및 설명]
-        A --> A2[기본 OG 이미지]
-        A --> A3[파비콘 설정]
-        
-        B[레이아웃 메타데이터] --> B1[섹션별 제목]
-        B --> B2[섹션 설명]
-        
-        C[페이지 메타데이터] --> C1[동적 생성 제목]
-        C --> C2[페이지별 설명]
-        C --> C3[OG 이미지 커스터마이징]
-    end
-    
-    A -->|"상속"| B -->|"상속"| C
+```tsx
+// app/layout.tsx (기본 메타데이터)
+export const metadata: Metadata = {
+  title: {
+    template: '%s | E-Torch',
+    default: 'E-Torch - 경제지표 대시보드 서비스',
+  },
+  description: '다양한 출처의 경제지표 데이터를 시각화하는 대시보드 서비스',
+  // ... 기타 메타데이터
+};
+
+// app/(dashboard)/layout.tsx (섹션 메타데이터)
+export const metadata: Metadata = {
+  title: 'Dashboard',
+  description: '대시보드를 관리하고 시각화하세요',
+};
+
+// app/(dashboard)/dashboard/[id]/page.tsx (동적 메타데이터)
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const dashboard = await fetchDashboardById(params.id);
+  
+  if (!dashboard) {
+    return {
+      title: 'Dashboard Not Found',
+    };
+  }
+  
+  return {
+    title: dashboard.title,
+    description: dashboard.description || '대시보드 상세 정보',
+    openGraph: {
+      images: [dashboard.thumbnail || '/images/default-dashboard.png'],
+    },
+  };
+}
 ```
 
-### 10.2 동적 메타데이터 생성 전략
+## 11. 서버 액션 활용 전략
 
-```mermaid
-flowchart LR
-    subgraph "정적 메타데이터"
-        A[export const metadata]
-    end
-    
-    subgraph "동적 메타데이터"
-        B[generateMetadata] --> B1[params 활용]
-        B1 --> B2[데이터 페칭]
-        B2 --> B3[동적 메타 생성]
-    end
-    
-    subgraph "파일 기반 메타데이터"
-        C[metadata 파일] --> C1[opengraph-image.tsx]
-        C --> C2[icon.tsx]
-        C --> C3[robots.txt]
-    end
-```
-
-## 11. 라우트 핸들러 (API 라우트)
-
-### 11.1 API 라우트 구조
-
-```mermaid
-flowchart TD
-    subgraph "API 라우트 구성"
-        A["/api"] --> A1["/auth"]
-        A --> A2["/charts"]
-        A --> A3["/dashboards"]
-        A --> A4["/data-sources"]
-        
-        A1 --> A11["/login"]
-        A1 --> A12["/callback"]
-        A1 --> A13["/logout"]
-        
-        A2 --> A21["/[id]"]
-        A2 --> A22["/data"]
-        
-        A3 --> A31["/[id]"]
-        A3 --> A32["/share"]
-        
-        A4 --> A41["/kosis"]
-        A4 --> A42["/ecos"]
-        A4 --> A43["/oecd"]
-    end
-```
-
-### 11.2 라우트 핸들러 응답 패턴
-
-```mermaid
-flowchart TD
-    subgraph "HTTP 메서드 핸들러"
-        A[GET/POST/PUT/DELETE] --> B{요청 검증}
-        B -->|유효함| C[데이터 처리]
-        B -->|유효하지 않음| D[에러 응답]
-        C --> E[성공 응답]
-        C -->|에러 발생| D
-    end
-```
-
-## 12. 서버 액션 활용 전략
-
-### 12.1 서버 액션 워크플로우
+### 11.1 서버 액션 워크플로우
 
 ```mermaid
 flowchart LR
@@ -491,24 +452,88 @@ flowchart LR
     E --> F
 ```
 
-### 12.2 주요 서버 액션 분류
+### 11.2 주요 서버 액션 구현
 
-```mermaid
-flowchart TD
-    subgraph "서버 액션 유형"
-        A[데이터 변경 액션] --> A1[생성 액션]
-        A --> A2[수정 액션]
-        A --> A3[삭제 액션]
-        
-        B[인증 관련 액션] --> B1[로그인/로그아웃]
-        B --> B2[프로필 업데이트]
-        
-        C[파일 처리 액션] --> C1[업로드 액션]
-        C --> C2[내보내기 액션]
-    end
+```tsx
+// app/actions/dashboard.ts
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { saveDashboard } from '@/packages/server-api/dashboard';
+import { getCurrentUser } from '@/packages/server-api/auth';
+import { redirect } from 'next/navigation';
+
+export async function saveDashboardAction(
+  formData: FormData | Record<string, any>
+) {
+  // 현재 사용자 가져오기
+  const user = await getCurrentUser();
+  if (!user) {
+    return { success: false, error: '인증되지 않은 사용자' };
+  }
+  
+  try {
+    // FormData를 객체로 변환 (필요시)
+    const dashboardData = formData instanceof FormData 
+      ? Object.fromEntries(formData.entries())
+      : formData;
+    
+    // 소유자 정보 추가
+    dashboardData.userId = user.id;
+    dashboardData.updatedAt = new Date().toISOString();
+    
+    // 저장 처리
+    const result = await saveDashboard(dashboardData);
+    
+    // 캐시 무효화
+    revalidatePath(`/dashboard/${result.id}`);
+    revalidatePath('/dashboard');
+    
+    return { success: true, data: result };
+  } catch (error) {
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : '저장 실패'
+    };
+  }
+}
 ```
 
-## 13. 결론
+```tsx
+// 클라이언트 컴포넌트에서 사용 예시
+'use client';
+
+import { saveDashboardAction } from '@/app/actions/dashboard';
+import { useTransition } from 'react';
+
+export function DashboardForm({ initialData }) {
+  const [isPending, startTransition] = useTransition();
+  const [formData, setFormData] = useState(initialData || {});
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    startTransition(async () => {
+      const result = await saveDashboardAction(formData);
+      if (result.success) {
+        // 성공 처리
+      } else {
+        // 에러 처리
+      }
+    });
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* 폼 필드들 */}
+      <button type="submit" disabled={isPending}>
+        {isPending ? '저장 중...' : '저장'}
+      </button>
+    </form>
+  );
+}
+```
+
+## 12. 결론
 
 E-Torch의 라우팅 구조는 Next.js App Router의 최신 기능을 활용하여 사용자 중심의 직관적인 인터페이스를 제공합니다. 주요 특징은 다음과 같습니다:
 
