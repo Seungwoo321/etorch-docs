@@ -30,35 +30,9 @@ flowchart TD
 6. **UI 컴포넌트**: 데이터 표시 및 사용자 상호작용
 7. **사용자 상호작용**: 필터링, 정렬, 데이터 조작
 
-## 2.2 아키텍처 계층과 데이터 흐름 통합
+### 2.2 아키텍처 계층과 데이터 흐름 통합
 
-E-Torch의 데이터 흐름과 아키텍처 계층을 통합하면 다음과 같이 매핑됩니다:
-
-```mermaid
-flowchart TD
-    subgraph "데이터 흐름 모델"
-        DS[데이터 소스] --> FL[데이터 페칭 레이어]
-        FL --> TL[데이터 변환 레이어]
-        TL --> CL[데이터 캐싱 레이어]
-        CL --> SL[상태 관리 레이어]
-        SL --> UI[UI 컴포넌트]
-    end
-    
-    subgraph "아키텍처 계층 구조"
-        DC[데이터 계층<br>API, Cache, Storage] --> DMC[도메인 계층<br>State, Service]
-        DMC --> AC[애플리케이션 계층<br>Hooks, Context]
-        AC --> PC[프레젠테이션 계층<br>UI, Pages, Layout]
-    end
-    
-    DS -.-> DC
-    FL -.-> DC
-    TL -.-> DC
-    CL -.-> DC
-    SL -.-> DMC
-    UI -.-> PC
-```
-
-### 계층 간 매핑 테이블
+E-Torch의 데이터 흐름은 `architecture.md`에 정의된 아키텍처 계층과 통합되어 동작합니다:
 
 | 데이터 흐름 레이어 | 아키텍처 계층 | 주요 책임 | 구현 기술 |
 |------------------|--------------|---------|----------|
@@ -68,8 +42,6 @@ flowchart TD
 | **데이터 캐싱 레이어** | 데이터 계층 | 데이터 임시 저장, 재사용 | Tanstack Query, Next.js 캐시 |
 | **상태 관리 레이어** | 도메인 계층 | 클라이언트 상태 관리 | Zustand 스토어 |
 | **UI 컴포넌트** | 프레젠테이션 계층 | 데이터 시각화, 사용자 인터랙션 | React 컴포넌트, Recharts |
-
-이 통합 모델은 데이터가 소스에서 UI까지 흐르는 프로세스와 아키텍처 내 각 계층의 책임을 명확히 보여줍니다.
 
 ## 3. 데이터 소스 구성
 
@@ -193,9 +165,7 @@ E-Torch는 다양한 데이터 페칭 전략을 사용하여 성능과 사용자
 
 ### 5.1 서버 컴포넌트에서의 데이터 페칭
 
-Next.js 서버 컴포넌트는 E-Torch의 데이터 페칭 전략에서 핵심적인 역할을 합니다. 서버 컴포넌트에서의 데이터 페칭은 다양한 접근 방식을 포함하며, 사용 사례에 따라 적절한 전략을 선택합니다:
-
-#### 5.1.1 통합 데이터 페칭 패턴
+Next.js 서버 컴포넌트를 사용한 데이터 페칭은 다음과 같은 패턴으로 구현됩니다:
 
 ```mermaid
 flowchart TD
@@ -213,7 +183,7 @@ flowchart TD
     D --> D2[데이터 변경 작업]
 ```
 
-#### 5.1.2 데이터 페칭 전략 매핑
+#### 데이터 페칭 전략 매핑
 
 | 사용 사례 | 권장 접근법 | 이유 |
 |----------|------------|------|
@@ -222,77 +192,7 @@ flowchart TD
 | **대량의 대시보드 데이터** | 최적화된 직접 쿼리 | 데이터 변환 및 필터링을 서버에서 효율적으로 처리 |
 | **사용자 액션 기반 데이터 변경** | 서버 액션 | 폼 제출 및 클라이언트 상호작용과 연계된 데이터 처리 |
 
-#### 5.1.3 서버 컴포넌트 데이터 페칭 예시
-
-```tsx
-// 1. 기본 fetch API를 사용한 공개 데이터 페칭
-// app/(dashboard)/explore/page.tsx
-export default async function ExplorePage() {
-  // 서버 컴포넌트에서 직접 데이터 페칭
-  const publicDashboards = await fetch('https://api.e-torch.com/dashboards/public')
-    .then(res => res.json());
-  
-  return <DashboardExploreGrid dashboards={publicDashboards} />;
-}
-
-// 2. Supabase 서버 SDK를 활용한 인증 처리 및 데이터 페칭
-// app/(dashboard)/dashboard/[id]/page.tsx
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-
-export default async function DashboardPage({ params }: { params: { id: string } }) {
-  // 서버 컴포넌트에서 Supabase 클라이언트 생성
-  const cookieStore = cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: () => cookieStore }
-  );
-  
-  // 인증된 사용자의 대시보드 데이터 로드
-  const { data: dashboard } = await supabase
-    .from('dashboards')
-    .select('*')
-    .eq('id', params.id)
-    .single();
-  
-  // 로드된 데이터를 클라이언트 컴포넌트로 전달
-  return <DashboardComponent initialData={dashboard} />;
-}
-
-// 3. 서버 액션을 활용한 데이터 변경
-// app/actions/dashboard.ts
-'use server';
-
-import { revalidatePath } from 'next/cache';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-
-export async function saveDashboard(dashboardId: string, data: DashboardData) {
-  const cookieStore = cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: () => cookieStore }
-  );
-  
-  // 데이터 저장
-  const { error } = await supabase
-    .from('dashboards')
-    .update(data)
-    .eq('id', dashboardId);
-  
-  // 캐시 무효화
-  if (!error) {
-    revalidatePath(`/dashboard/${dashboardId}`);
-    return { success: true };
-  }
-  
-  return { success: false, error: error.message };
-}
-```
-
-이 통합된 접근 방식은 `frontend/architecture.md`에서 설명하는 "서버에서 대시보드 데이터 페칭"의 일반적인 개념과 `frontend/data-flow.md`에서 언급하는 "Supabase 서버 SDK를 활용한 인증 처리"의 구체적인 기술을 모두 포괄합니다. E-Torch 프로젝트는 데이터 소스와 인증 요구사항에 따라 이러한 다양한 서버 컴포넌트 데이터 페칭 전략을 적절히 조합하여 사용합니다.
+서버 컴포넌트에서의 데이터 페칭 패턴에 대한 상세 구현은 `core-components.md` 문서를 참조하십시오.
 
 ### 5.2 TanStack Query를 활용한 클라이언트 데이터 페칭
 
@@ -303,12 +203,16 @@ export async function saveDashboard(dashboardId: string, data: DashboardData) {
 5. **낙관적 업데이트**: 사용자 경험 향상을 위한 낙관적 업데이트
 6. **인증 통합**: Supabase 클라이언트를 TanStack Query와 통합하여 인증 관리
 
+TanStack Query를 활용한 클라이언트 상태 관리에 대한 상세 구현은 `state-management.md` 문서를 참조하십시오.
+
 ### 5.3 서버 액션을 활용한 데이터 변경
 
 1. **안전한 데이터 변경**: 서버 측에서 데이터 유효성 검증 및 변경
 2. **캐시 무효화**: 관련 페이지의 캐시 자동 무효화
 3. **트랜잭션 보장**: 여러 데이터 변경의 원자성 보장
 4. **인증 컨텍스트**: 서버 액션에서 사용자 인증 상태 유지 및 확인
+
+서버 액션을 활용한 데이터 변경 패턴에 대한 상세 구현은 `core-components.md` 문서를 참조하십시오.
 
 ## 6. 데이터 변환 및 처리 파이프라인
 
@@ -335,34 +239,15 @@ flowchart LR
 3. **전년 동기 대비 변화율**: 전년 동일 기간 대비 변화율 계산
 4. **누적값**: 시간 경과에 따른 누적값 계산
 
-### 6.3 데이터 변환기
+### 6.3 소스별 데이터 통합 로직
 
-### 6.4 소스별 데이터 통합 로직
+E-Torch는 다양한 데이터 소스(KOSIS, ECOS, OECD)의 데이터를 통합하여 일관된 형식으로 처리합니다.
 
-E-Torch는 다양한 데이터 소스(KOSIS, ECOS, OECD)의 데이터를 통합하여 일관된 형식으로 처리합니다. 각 소스별 데이터 구조와 정규화 프로세스는 다음과 같습니다:
+#### 6.3.1 통합 데이터 모델
 
-#### 6.4.1 소스별 데이터 구조 및 정규화
-
-##### KOSIS 데이터 구조
+모든 소스의 데이터를 통합된 표준 형식으로 변환합니다:
 
 ```typescript
-// KOSIS 원본 데이터 구조
-interface KosisRawData {
-  StatisticsName: string;
-  StatCode: string;
-  PeriodsOnHeader: boolean;
-  Period: string; // "M", "Q", "A"
-  Items: Array<{
-    Category: string;
-    Item: string;
-    ItemCode: string;
-    Values: Array<{
-      Period: string; // "2024-01", "2024-Q1", "2024"
-      Value: string;
-    }>;
-  }>;
-}
-
 // 정규화된 데이터 구조
 interface NormalizedTimeSeriesData {
   source: "KOSIS" | "ECOS" | "OECD";
@@ -379,202 +264,9 @@ interface NormalizedTimeSeriesData {
 }
 ```
 
-**KOSIS 정규화 로직**:
+#### 6.3.2 결측치 처리 알고리즘
 
-```typescript
-function normalizeKosisData(data: KosisRawData): NormalizedTimeSeriesData {
-  // 날짜 변환 유틸리티
-  const convertPeriodToDate = (period: string): string => {
-    // 월간(M) 데이터: "2024-01" -> "2024-01-15" (월 중간일)
-    if (period.match(/^\d{4}-\d{2}$/)) {
-      return `${period}-15`;
-    }
-    // 분기(Q) 데이터: "2024-Q1" -> "2024-02-15" (분기 중간월)
-    else if (period.match(/^\d{4}-Q\d$/)) {
-      const year = period.substring(0, 4);
-      const quarter = parseInt(period.substring(6, 7));
-      const month = (quarter - 1) * 3 + 2; // Q1->2월, Q2->5월, Q3->8월, Q4->11월
-      return `${year}-${month.toString().padStart(2, '0')}-15`;
-    }
-    // 연간(A) 데이터: "2024" -> "2024-07-01" (연도 중간)
-    else if (period.match(/^\d{4}$/)) {
-      return `${period}-07-01`;
-    }
-    return period;
-  };
-
-  // 데이터 변환 및 정규화
-  return {
-    source: "KOSIS",
-    indicatorCode: data.StatCode,
-    indicatorName: data.StatisticsName,
-    period: data.Period as "M" | "Q" | "A",
-    unit: "", // KOSIS에서 별도로 추출 필요
-    data: data.Items.flatMap(item => 
-      item.Values.map(valueItem => ({
-        date: convertPeriodToDate(valueItem.Period),
-        value: parseFloat(valueItem.Value),
-        formattedDate: valueItem.Period,
-        metadata: {
-          category: item.Category,
-          item: item.Item,
-          itemCode: item.ItemCode
-        }
-      }))
-    )
-  };
-}
-```
-
-##### ECOS 데이터 구조
-
-ECOS(한국은행 경제통계시스템)는 더 다양한 주기(일별, 월별, 분기별, 연간)를 지원하며 다음과 같은 구조로 데이터를 제공합니다:
-
-```typescript
-// ECOS 원본 데이터 구조
-interface EcosRawData {
-  STAT_NAME: string;
-  STAT_CODE: string;
-  ITEM_NAME1: string;
-  ITEM_CODE1: string;
-  ITEM_NAME2?: string;
-  ITEM_CODE2?: string;
-  UNIT_NAME: string;
-  TIME: Array<{
-    DATA_VALUE: string;
-    TIME: string; // "20240101", "202401", "2024Q1", "2024"
-  }>;
-}
-
-// ECOS 정규화 로직
-function normalizeEcosData(data: EcosRawData): NormalizedTimeSeriesData {
-  // ECOS 날짜 변환 유틸리티 (각 주기별 변환)
-  const convertEcosTimeToDate = (time: string): string => {
-    // 일별(D) 데이터: "20240101" -> "2024-01-01"
-    if (time.length === 8) {
-      return `${time.substring(0, 4)}-${time.substring(4, 6)}-${time.substring(6, 8)}`;
-    }
-    // 월간(M) 데이터: "202401" -> "2024-01-15"
-    else if (time.length === 6) {
-      return `${time.substring(0, 4)}-${time.substring(4, 6)}-15`;
-    }
-    // 분기(Q) 데이터: "2024Q1" -> "2024-02-15"
-    else if (time.includes('Q')) {
-      const year = time.substring(0, 4);
-      const quarter = parseInt(time.substring(5, 6));
-      const month = (quarter - 1) * 3 + 2;
-      return `${year}-${month.toString().padStart(2, '0')}-15`;
-    }
-    // 연간(A) 데이터: "2024" -> "2024-07-01"
-    else if (time.length === 4) {
-      return `${time}-07-01`;
-    }
-    return time;
-  };
-
-  // 주기 판별
-  const detectPeriod = (times: Array<{TIME: string}>): "D" | "M" | "Q" | "A" => {
-    const sampleTime = times[0]?.TIME;
-    if (!sampleTime) return "M"; // 기본값
-    
-    if (sampleTime.length === 8) return "D";
-    if (sampleTime.length === 6) return "M";
-    if (sampleTime.includes('Q')) return "Q";
-    return "A";
-  };
-
-  return {
-    source: "ECOS",
-    indicatorCode: data.STAT_CODE,
-    indicatorName: data.STAT_NAME,
-    period: detectPeriod(data.TIME),
-    unit: data.UNIT_NAME,
-    data: data.TIME.map(item => ({
-      date: convertEcosTimeToDate(item.TIME),
-      value: parseFloat(item.DATA_VALUE),
-      formattedDate: item.TIME,
-      metadata: {
-        item1: data.ITEM_NAME1,
-        item1Code: data.ITEM_CODE1,
-        item2: data.ITEM_NAME2,
-        item2Code: data.ITEM_CODE2
-      }
-    }))
-  };
-}
-```
-
-##### OECD 데이터 구조
-
-OECD 데이터는 국제 기준을 따르며 다음과 같은 구조로 제공됩니다:
-
-```typescript
-// OECD 원본 데이터 구조
-interface OecdRawData {
-  indicator: string;
-  indicator_id: string;
-  subject: string;
-  measure: string;
-  frequency: string; // "A", "Q", "M"
-  unit: string;
-  observations: Array<{
-    time: string; // "2024", "2024-Q1", "2024-01"
-    value: number;
-  }>;
-}
-
-// OECD 정규화 로직
-function normalizeOecdData(data: OecdRawData): NormalizedTimeSeriesData {
-  // OECD 날짜 변환 유틸리티
-  const convertOecdTimeToDate = (time: string, frequency: string): string => {
-    // 월간(M) 데이터: "2024-01" -> "2024-01-15"
-    if (frequency === "M") {
-      return `${time}-15`;
-    }
-    // 분기(Q) 데이터: "2024-Q1" -> "2024-02-15"
-    else if (frequency === "Q") {
-      const year = time.substring(0, 4);
-      const quarter = parseInt(time.substring(6, 7));
-      const month = (quarter - 1) * 3 + 2;
-      return `${year}-${month.toString().padStart(2, '0')}-15`;
-    }
-    // 연간(A) 데이터: "2024" -> "2024-07-01"
-    else if (frequency === "A") {
-      return `${time}-07-01`;
-    }
-    return time;
-  };
-
-  // 주기 매핑
-  const frequencyMap: Record<string, "D" | "M" | "Q" | "A"> = {
-    "D": "D",
-    "M": "M",
-    "Q": "Q",
-    "A": "A"
-  };
-
-  return {
-    source: "OECD",
-    indicatorCode: data.indicator_id,
-    indicatorName: data.indicator,
-    period: frequencyMap[data.frequency] || "A",
-    unit: data.unit,
-    data: data.observations.map(item => ({
-      date: convertOecdTimeToDate(item.time, data.frequency),
-      value: item.value,
-      formattedDate: item.time,
-      metadata: {
-        subject: data.subject,
-        measure: data.measure
-      }
-    }))
-  };
-}
-```
-
-#### 6.4.2 결측치 처리 알고리즘
-
-시계열 데이터에서 결측치는 일반적으로 다음 방법으로 처리합니다:
+시계열 데이터의 결측치는 다음 방법으로 처리합니다:
 
 ```typescript
 enum InterpolationMethod {
@@ -585,113 +277,29 @@ enum InterpolationMethod {
   NONE = "none"
 }
 
+// 결측치 처리 함수 - 주요 알고리즘만 표시
 function handleMissingValues(
   data: NormalizedTimeSeriesData,
   method: InterpolationMethod = InterpolationMethod.LINEAR
 ): NormalizedTimeSeriesData {
+  // 결측치가 없거나 처리 불필요시 원본 반환
   if (method === InterpolationMethod.NONE || data.data.length <= 1) {
     return data;
   }
 
-  // 날짜 정렬
-  const sortedData = [...data.data].sort((a, b) => 
-    new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
-
-  // 결측치 처리
-  for (let i = 1; i < sortedData.length; i++) {
-    const prevDate = new Date(sortedData[i-1].date);
-    const currDate = new Date(sortedData[i].date);
-    
-    // 주기 간격 확인 (예: 월간 데이터는 대략 30일 간격)
-    let expectedGap: number;
-    switch (data.period) {
-      case "D": expectedGap = 1; break;
-      case "M": expectedGap = 30; break;
-      case "Q": expectedGap = 90; break;
-      case "A": expectedGap = 365; break;
-      default: expectedGap = 30;
-    }
-    
-    const daysDiff = (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
-    
-    // 예상 간격의 1.5배 이상이면 결측치로 간주
-    if (daysDiff > expectedGap * 1.5) {
-      // 결측치 개수 계산 (반올림)
-      const missingCount = Math.round(daysDiff / expectedGap) - 1;
-      
-      // 보간법에 따른 값 계산
-      for (let j = 1; j <= missingCount; j++) {
-        const missingDate = new Date(prevDate);
-        missingDate.setDate(prevDate.getDate() + Math.round(j * daysDiff / (missingCount + 1)));
-        
-        let missingValue: number;
-        switch (method) {
-          case InterpolationMethod.LINEAR:
-            // 선형 보간
-            missingValue = sortedData[i-1].value + 
-              (sortedData[i].value - sortedData[i-1].value) * (j / (missingCount + 1));
-            break;
-          case InterpolationMethod.PREVIOUS:
-            // 이전 값 사용
-            missingValue = sortedData[i-1].value;
-            break;
-          case InterpolationMethod.NEXT:
-            // 다음 값 사용
-            missingValue = sortedData[i].value;
-            break;
-          case InterpolationMethod.ZERO:
-            // 0 사용
-            missingValue = 0;
-            break;
-          default:
-            missingValue = sortedData[i-1].value;
-        }
-        
-        // 결측치 데이터 삽입
-        sortedData.splice(i, 0, {
-          date: missingDate.toISOString().split('T')[0],
-          value: missingValue,
-          formattedDate: formatDateByPeriod(missingDate, data.period),
-          metadata: { interpolated: true, method }
-        });
-        
-        i++; // 인덱스 조정
-      }
-    }
-  }
+  // 데이터 처리 로직...
+  // 1. 날짜별로 정렬
+  // 2. 기대 간격 계산 (기간에 따라 다름)
+  // 3. 결측치 위치 확인
+  // 4. 선택한 방법으로 결측치 보간
   
-  return {
-    ...data,
-    data: sortedData
-  };
-}
-
-// 주기별 날짜 포맷팅
-function formatDateByPeriod(date: Date, period: "D" | "M" | "Q" | "A"): string {
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  
-  switch (period) {
-    case "D":
-      return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-    case "M":
-      return `${year}-${month.toString().padStart(2, '0')}`;
-    case "Q":
-      const quarter = Math.ceil(month / 3);
-      return `${year}-Q${quarter}`;
-    case "A":
-      return `${year}`;
-    default:
-      return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-  }
+  return processedData;
 }
 ```
 
-#### 6.4.3 기간 동기화 전략
+#### 6.3.3 기간 동기화 전략
 
-서로 다른 주기를 가진 데이터를 비교하거나 통합할 때의 기간 동기화 전략입니다:
+서로 다른 주기의 데이터를 비교하거나 통합할 때 사용하는 전략입니다:
 
 ```typescript
 enum SynchronizationMethod {
@@ -708,12 +316,15 @@ enum AggregationMethod {
   MIN = "min"
 }
 
+// 시계열 동기화 함수 - 주요 개념만 표시
 function synchronizeTimeSeries(
   seriesArray: NormalizedTimeSeriesData[],
   targetPeriod: "D" | "M" | "Q" | "A",
   method: SynchronizationMethod = SynchronizationMethod.DOWNSAMPLE,
   aggregation: AggregationMethod = AggregationMethod.AVERAGE
 ): NormalizedTimeSeriesData[] {
+  // 주기 우선순위: D > M > Q > A
+  
   return seriesArray.map(series => {
     // 이미 타겟 주기와 같으면 변환 불필요
     if (series.period === targetPeriod) {
@@ -729,247 +340,9 @@ function synchronizeTimeSeries(
     return downsampleTimeSeries(series, targetPeriod, aggregation);
   });
 }
-
-// 다운샘플링 구현 (높은 주기 → 낮은 주기)
-function downsampleTimeSeries(
-  series: NormalizedTimeSeriesData,
-  targetPeriod: "D" | "M" | "Q" | "A",
-  aggregation: AggregationMethod
-): NormalizedTimeSeriesData {
-  // 주기 우선순위: D > M > Q > A
-  const periodPriority: Record<string, number> = { "D": 3, "M": 2, "Q": 1, "A": 0 };
-  
-  // 현재 주기가 타겟 주기보다 낮거나 같으면 다운샘플링 불필요
-  if (periodPriority[series.period] <= periodPriority[targetPeriod]) {
-    return series;
-  }
-  
-  // 각 데이터 포인트를 타겟 주기로 그룹화
-  const groupedData: Record<string, number[]> = {};
-  
-  for (const point of series.data) {
-    const date = new Date(point.date);
-    let groupKey: string;
-    
-    switch (targetPeriod) {
-      case "M":
-        groupKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
-        break;
-      case "Q":
-        const quarter = Math.ceil((date.getMonth() + 1) / 3);
-        groupKey = `${date.getFullYear()}-Q${quarter}`;
-        break;
-      case "A":
-        groupKey = `${date.getFullYear()}`;
-        break;
-      default:
-        groupKey = point.date;
-    }
-    
-    if (!groupedData[groupKey]) {
-      groupedData[groupKey] = [];
-    }
-    
-    groupedData[groupKey].push(point.value);
-  }
-  
-  // 집계 함수로 각 그룹의 값 계산
-  const aggregateFunction = (values: number[]): number => {
-    if (values.length === 0) return 0;
-    
-    switch (aggregation) {
-      case AggregationMethod.AVERAGE:
-        return values.reduce((sum, val) => sum + val, 0) / values.length;
-      case AggregationMethod.SUM:
-        return values.reduce((sum, val) => sum + val, 0);
-      case AggregationMethod.FIRST:
-        return values[0];
-      case AggregationMethod.LAST:
-        return values[values.length - 1];
-      case AggregationMethod.MAX:
-        return Math.max(...values);
-      case AggregationMethod.MIN:
-        return Math.min(...values);
-      default:
-        return values.reduce((sum, val) => sum + val, 0) / values.length;
-    }
-  };
-  
-  // 결과 데이터 생성
-  const resultData = Object.entries(groupedData).map(([key, values]) => {
-    let date: string;
-    
-    // 타겟 주기에 맞는 날짜 생성
-    switch (targetPeriod) {
-      case "M":
-        date = `${key}-15`; // 월 중간일
-        break;
-      case "Q":
-        const [year, quarter] = key.split('-Q');
-        const month = (parseInt(quarter) - 1) * 3 + 2; // Q1->2월, Q2->5월, Q3->8월, Q4->11월
-        date = `${year}-${month.toString().padStart(2, '0')}-15`;
-        break;
-      case "A":
-        date = `${key}-07-01`; // 연도 중간
-        break;
-      default:
-        date = key;
-    }
-    
-    return {
-      date,
-      value: aggregateFunction(values),
-      formattedDate: key,
-      metadata: {
-        aggregated: true,
-        method: aggregation,
-        count: values.length
-      }
-    };
-  });
-  
-  // 날짜 기준 정렬
-  resultData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  
-  return {
-    ...series,
-    period: targetPeriod,
-    data: resultData
-  };
-}
-
-// 업샘플링 구현 (낮은 주기 → 높은 주기)
-function upsampleTimeSeries(
-  series: NormalizedTimeSeriesData,
-  targetPeriod: "D" | "M" | "Q" | "A"
-): NormalizedTimeSeriesData {
-  // 주기 우선순위: D > M > Q > A
-  const periodPriority: Record<string, number> = { "D": 3, "M": 2, "Q": 1, "A": 0 };
-  
-  // 현재 주기가 타겟 주기보다 높거나 같으면 업샘플링 불필요
-  if (periodPriority[series.period] >= periodPriority[targetPeriod]) {
-    return series;
-  }
-  
-  // 업샘플링은 기본적으로 값을 복제하는 방식으로 구현
-  // (더 정교한 보간법을 적용할 수도 있음)
-  
-  const resultData: Array<{
-    date: string;
-    value: number;
-    formattedDate: string;
-    metadata?: Record<string, any>;
-  }> = [];
-  
-  // 데이터 정렬
-  const sortedData = [...series.data].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
-  
-  for (let i = 0; i < sortedData.length - 1; i++) {
-    const currentPoint = sortedData[i];
-    const nextPoint = sortedData[i + 1];
-    
-    const currentDate = new Date(currentPoint.date);
-    const nextDate = new Date(nextPoint.date);
-    
-    // 현재 포인트 추가
-    resultData.push({
-      ...currentPoint,
-      metadata: {
-        ...currentPoint.metadata,
-        upsampled: false
-      }
-    });
-    
-    // 중간 포인트 생성
-    const dates: Date[] = [];
-    
-    if (targetPeriod === "D") {
-      // 일별 데이터로 업샘플링
-      const daysDiff = Math.floor((nextDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
-      
-      for (let day = 1; day < daysDiff; day++) {
-        const newDate = new Date(currentDate);
-        newDate.setDate(currentDate.getDate() + day);
-        dates.push(newDate);
-      }
-    } else if (targetPeriod === "M" && (series.period === "Q" || series.period === "A")) {
-      // 월별 데이터로 업샘플링
-      let month = currentDate.getMonth();
-      const endMonth = nextDate.getMonth() + (nextDate.getFullYear() - currentDate.getFullYear()) * 12;
-      
-      for (let m = month + 1; m < endMonth; m++) {
-        const newDate = new Date(currentDate);
-        newDate.setMonth(m % 12);
-        newDate.setFullYear(currentDate.getFullYear() + Math.floor(m / 12));
-        dates.push(newDate);
-      }
-    } else if (targetPeriod === "Q" && series.period === "A") {
-      // 분기별 데이터로 업샘플링
-      const currentYear = currentDate.getFullYear();
-      const nextYear = nextDate.getFullYear();
-      
-      // 현재 연도의 남은 분기
-      for (let q = Math.ceil((currentDate.getMonth() + 1) / 3) + 1; q <= 4; q++) {
-        const newDate = new Date(currentYear, (q - 1) * 3 + 1, 15);
-        dates.push(newDate);
-      }
-      
-      // 중간 연도의 모든 분기
-      for (let y = currentYear + 1; y < nextYear; y++) {
-        for (let q = 1; q <= 4; q++) {
-          const newDate = new Date(y, (q - 1) * 3 + 1, 15);
-          dates.push(newDate);
-        }
-      }
-      
-      // 다음 연도의 이전 분기
-      for (let q = 1; q < Math.ceil((nextDate.getMonth() + 1) / 3); q++) {
-        const newDate = new Date(nextYear, (q - 1) * 3 + 1, 15);
-        dates.push(newDate);
-      }
-    }
-    
-    // 선형 보간으로 중간 값 계산
-    for (const date of dates) {
-      const ratio = (date.getTime() - currentDate.getTime()) / (nextDate.getTime() - currentDate.getTime());
-      const interpolatedValue = currentPoint.value + (nextPoint.value - currentPoint.value) * ratio;
-      
-      resultData.push({
-        date: date.toISOString().split('T')[0],
-        value: interpolatedValue,
-        formattedDate: formatDateByPeriod(date, targetPeriod),
-        metadata: {
-          upsampled: true,
-          interpolated: true,
-          originalPeriod: series.period
-        }
-      });
-    }
-  }
-  
-  // 마지막 포인트 추가
-  resultData.push({
-    ...sortedData[sortedData.length - 1],
-    metadata: {
-      ...sortedData[sortedData.length - 1].metadata,
-      upsampled: false
-    }
-  });
-  
-  // 날짜 기준 정렬
-  resultData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  
-  return {
-    ...series,
-    period: targetPeriod,
-    data: resultData
-  };
-}
 ```
 
-이러한 데이터 통합 및 정규화 로직을 통해 다양한 소스에서 수집된 경제지표 데이터를 일관된 형식으로 변환하고, 결측치 처리 및 기간 동기화를 수행하여 의미 있는 시각화 및 분석이 가능하도록 합니다.
+데이터 변환 및 처리 관련 상세 알고리즘은 `packages/data-sources` 모듈의 구현 코드를 참조하십시오.
 
 ## 7. 데이터 캐싱 전략
 
@@ -996,7 +369,7 @@ flowchart TD
 | 공유 대시보드 | 10분 | 3시간 | 수동 또는 주기적 | 댓글 작성, 별점 변경 |
 | 경제지표 데이터 | 1시간 | 12시간 | 수동 또는 주기적 | 시간 범위 변경 |
 | 실시간 지표 | 1분 | 10분 | 주기적 (1분) | 자동 만료 |
-| 사용자 구독 정보 | 30분 | 1시간 | 윈도우 포커스 시 | 구독 변경 후 |
+| 시스템 메타데이터 | 1일 | 1주일 | 앱 시작 시 | 버전 업데이트 |
 
 ### 7.3 다중 계층 캐싱
 
@@ -1012,6 +385,8 @@ flowchart TD
     G -->|미스| I[데이터베이스 쿼리]
     I --> J[응답 캐싱 및 반환]
 ```
+
+TanStack Query를 활용한 캐싱 전략에 대한 상세 구현은 `state-management.md` 문서를 참조하십시오.
 
 ## 8. 클라이언트-서버 통신 최적화
 
