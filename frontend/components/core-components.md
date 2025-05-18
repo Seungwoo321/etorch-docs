@@ -156,6 +156,7 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임
+
 - **ChartComponent**: 최상위 래퍼 컴포넌트, props 검증 및 기본값 제공
 - **ChartRenderer**: 차트 유형에 따라 적절한 렌더러 선택
 - **Specialized Chart Components**: 각 차트 유형별 구현 (Recharts 활용)
@@ -181,6 +182,7 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임
+
 - **ChartEditor**: 에디터 전체 레이아웃 및 상태 관리
 - **ChartPreview**: 현재 설정으로 차트 미리보기 제공
 - **OptionsPanel**: 차트 시각적 옵션 편집 UI
@@ -253,6 +255,542 @@ export function TooltipOptions({ chartId }: { chartId: string }) {
 }
 ```
 
+### 3.4 옵션 컴포넌트 실제 구현
+
+차트 에디터의 옵션 컴포넌트는 복잡한 차트 설정을 사용자 친화적으로 편집할 수 있도록 설계되어 있습니다. 이 섹션에서는 UI 요구사항 명세(PO-001~RB-010)를 기반으로 한 실제 구현 전략을 다룹니다.
+
+#### 옵션 컴포넌트 아키텍처
+
+```typescript
+// 옵션 컴포넌트의 구조
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/packages/ui/components/ui/form';
+import { Input, Select, Checkbox, ColorPicker, Slider } from '@/packages/ui/components/ui/form-controls';
+
+// 패널 옵션 스키마 (PO-001~003)
+const panelOptionsSchema = z.object({
+  title: z.string().max(100, '제목은 최대 100자까지 입력 가능합니다.'),
+  description: z.string().max(200, '설명은 최대 200자까지 입력 가능합니다.'),
+  transparent: z.boolean().default(false)
+});
+
+// 폼 컴포넌트
+function PanelOptionsForm({ 
+  initialValues, 
+  onSubmit 
+}: { 
+  initialValues: z.infer<typeof panelOptionsSchema>, 
+  onSubmit: (values: z.infer<typeof panelOptionsSchema>) => void 
+}) {
+  // React Hook Form 설정
+  const form = useForm<z.infer<typeof panelOptionsSchema>>({
+    resolver: zodResolver(panelOptionsSchema),
+    defaultValues: initialValues,
+    mode: 'onChange' // 입력 변경 시 즉시 유효성 검사
+  });
+  
+  // 폼 제출 핸들러
+  const handleSubmit = form.handleSubmit(onSubmit);
+  
+  // 변경 시 자동 저장
+  const handleAutoSave = useCallback(
+    debounce((values: z.infer<typeof panelOptionsSchema>) => {
+      onSubmit(values);
+    }, 500),
+    [onSubmit]
+  );
+  
+  // 폼 값 변경 감지 및 자동 저장
+  useEffect(() => {
+    const subscription = form.watch((values) => {
+      handleAutoSave(values as z.infer<typeof panelOptionsSchema>);
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form, handleAutoSave]);
+  
+  return (
+    <Form {...form}>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>제목</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="차트 제목 입력..." />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>설명</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="차트에 대한 간략한 설명..." />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="transparent"
+          render={({ field }) => (
+            <FormItem className="flex items-center gap-2">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormLabel>배경 투명</FormLabel>
+            </FormItem>
+          )}
+        />
+      </form>
+    </Form>
+  );
+}
+```
+
+#### 의존적 옵션 패턴
+
+UI 요구사항 명세에 포함된 의존성 규칙(R-TS-001~005 등)을 구현하기 위한 패턴입니다:
+
+```typescript
+// Y축 보조 옵션 의존성 처리 (R-TS-001)
+function YAxisOptions({
+  options,
+  onChange
+}: {
+  options: YAxisOptions,
+  onChange: (options: YAxisOptions) => void
+}) {
+  // 보조 Y축 표시 여부에 따른 UI 조건부 렌더링
+  const showSecondaryOptions = options.secondary?.visibility || false;
+  
+  // 보조 Y축 표시 상태 변경 핸들러
+  const handleSecondaryVisibilityChange = (visible: boolean) => {
+    onChange({
+      ...options,
+      secondary: {
+        ...options.secondary,
+        visibility: visible
+      }
+    });
+  };
+  
+  return (
+    <div className="space-y-4">
+      {/* 기본 Y축 옵션 */}
+      <PrimaryYAxisOptions
+        options={options.primary}
+        onChange={(primaryOptions) => onChange({ ...options, primary: primaryOptions })}
+      />
+      
+      {/* 보조 Y축 활성화 체크박스 */}
+      <FormItem className="flex items-center gap-2">
+        <Checkbox
+          checked={showSecondaryOptions}
+          onCheckedChange={handleSecondaryVisibilityChange}
+        />
+        <Label>보조 Y축 표시</Label>
+      </FormItem>
+      
+      {/* 보조 Y축이 활성화된 경우에만 옵션 표시 */}
+      {showSecondaryOptions && (
+        <SecondaryYAxisOptions
+          options={options.secondary || { visibility: true }}
+          onChange={(secondaryOptions) => onChange({ ...options, secondary: secondaryOptions })}
+        />
+      )}
+    </div>
+  );
+}
+
+// 그래프 스타일 의존성 처리 (R-TS-002, R-TS-003)
+function GraphStyleOptions({
+  options,
+  onChange
+}: {
+  options: GraphStyleOptions,
+  onChange: (options: GraphStyleOptions) => void
+}) {
+  // 그래프 스타일 변경 핸들러
+  const handleStyleChange = (style: 'Line' | 'Area' | 'Bar') => {
+    onChange({
+      ...options,
+      style
+    });
+  };
+  
+  return (
+    <div className="space-y-4">
+      {/* 그래프 스타일 선택 */}
+      <FormItem>
+        <FormLabel>스타일</FormLabel>
+        <Select
+          value={options.style}
+          onValueChange={handleStyleChange}
+        >
+          <SelectItem value="Line">Line</SelectItem>
+          <SelectItem value="Area">Area</SelectItem>
+          <SelectItem value="Bar">Bar</SelectItem>
+        </Select>
+      </FormItem>
+      
+      {/* Line 스타일이 선택된 경우에만 선 두께 옵션 표시 (R-TS-002) */}
+      {options.style === 'Line' && (
+        <FormItem>
+          <FormLabel>선 두께</FormLabel>
+          <Slider
+            value={[options.lineWidth || 1]}
+            min={0.5}
+            max={10}
+            step={0.5}
+            onValueChange={([value]) => onChange({ ...options, lineWidth: value })}
+          />
+        </FormItem>
+      )}
+      
+      {/* Area 스타일이 선택된 경우에만 투명도 옵션 표시 (R-TS-003) */}
+      {options.style === 'Area' && (
+        <FormItem>
+          <FormLabel>채우기 투명도</FormLabel>
+          <Slider
+            value={[options.fillOpacity || 35]}
+            min={0}
+            max={100}
+            step={5}
+            onValueChange={([value]) => onChange({ ...options, fillOpacity: value })}
+          />
+        </FormItem>
+      )}
+    </div>
+  );
+}
+```
+
+#### 실시간 미리보기 연동
+
+옵션 변경 시 실시간으로 차트 미리보기를 업데이트하는 메커니즘입니다:
+
+```typescript
+// 차트 에디터 컴포넌트
+function ChartEditor({ chartId }: { chartId: string }) {
+  // 차트 구성 로드
+  const { data: chartConfig, isLoading } = useQuery({
+    queryKey: ['chartConfig', chartId],
+    queryFn: () => fetchChartConfig(chartId)
+  });
+  
+  // 차트 데이터 로드
+  const { data: chartData } = useQuery({
+    queryKey: ['chartData', chartId, chartConfig?.dataSourceSettings],
+    queryFn: () => fetchChartData(chartId, chartConfig?.dataSourceSettings),
+    enabled: !!chartConfig
+  });
+  
+  // 옵션 변경 핸들러
+  const handleOptionsChange = useCallback(
+    debounce((section: string, options: any) => {
+      // 차트 옵션 업데이트 뮤테이션
+      updateChartConfig({
+        chartId,
+        path: section,
+        options
+      });
+    }, 500),
+    [chartId]
+  );
+  
+  // 로딩 표시
+  if (isLoading) {
+    return <EditorSkeleton />;
+  }
+  
+  return (
+    <EditorLayout>
+      {/* 차트 미리보기 영역 */}
+      <PreviewPanel>
+        <ChartPreview
+          config={chartConfig}
+          data={chartData}
+        />
+      </PreviewPanel>
+      
+      {/* 옵션 패널 */}
+      <OptionsPanel>
+        <Tabs>
+          <TabsList>
+            <TabsTrigger value="panel">패널</TabsTrigger>
+            <TabsTrigger value="tooltip">툴팁</TabsTrigger>
+            <TabsTrigger value="legend">범례</TabsTrigger>
+            <TabsTrigger value="axes">축</TabsTrigger>
+            <TabsTrigger value="style">스타일</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="panel">
+            <PanelOptionsForm
+              initialValues={chartConfig.panelOptions}
+              onSubmit={(options) => handleOptionsChange('panelOptions', options)}
+            />
+          </TabsContent>
+          
+          <TabsContent value="tooltip">
+            <TooltipOptionsForm
+              initialValues={chartConfig.tooltipOptions}
+              onSubmit={(options) => handleOptionsChange('tooltipOptions', options)}
+            />
+          </TabsContent>
+          
+          {/* 다른 옵션 탭 */}
+        </Tabs>
+      </OptionsPanel>
+      
+      {/* 데이터 소스 패널 */}
+      <DataSourcePanel
+        settings={chartConfig.dataSourceSettings}
+        onChange={(settings) => handleOptionsChange('dataSourceSettings', settings)}
+      />
+    </EditorLayout>
+  );
+}
+```
+
+#### 차트 유형별 옵션 관리
+
+차트 유형에 따라 다른 옵션 세트를 표시하는 패턴입니다:
+
+```typescript
+// 차트 유형별 옵션 컴포넌트 선택
+function ChartTypeOptions({ 
+  chartType, 
+  options, 
+  onChange 
+}: { 
+  chartType: ChartType, 
+  options: Record<string, any>,
+  onChange: (options: Record<string, any>) => void
+}) {
+  // 차트 유형에 따른 옵션 컴포넌트 선택
+  switch (chartType) {
+    case 'timeSeries':
+      return (
+        <TimeSeriesOptions
+          options={options}
+          onChange={onChange}
+        />
+      );
+    
+    case 'bar':
+      return (
+        <BarChartOptions
+          options={options}
+          onChange={onChange}
+        />
+      );
+    
+    case 'scatter':
+      return (
+        <ScatterChartOptions
+          options={options}
+          onChange={onChange}
+        />
+      );
+    
+    case 'radar':
+      return (
+        <RadarChartOptions
+          options={options}
+          onChange={onChange}
+        />
+      );
+    
+    case 'radialBar':
+      return (
+        <RadialBarChartOptions
+          options={options}
+          onChange={onChange}
+        />
+      );
+    
+    default:
+      return <div>Unsupported chart type: {chartType}</div>;
+  }
+}
+```
+
+#### 옵션 의존성 관리
+
+차트 옵션 간의 의존성을 관리하기 위한 패턴입니다:
+
+```typescript
+// 옵션 의존성 관리자
+function useChartOptionsDependencies(
+  chartType: ChartType,
+  options: ChartOptions
+): ChartOptions {
+  // 의존성 규칙 적용 및 옵션 값 조정
+  return useMemo(() => {
+    let updatedOptions = { ...options };
+    
+    // 시계열 차트 의존성 규칙
+    if (chartType === 'timeSeries') {
+      // R-TS-001: 보조 Y축 설정이 비활성화되면 관련 필드 초기화
+      if (!updatedOptions.yAxis.secondary?.visibility) {
+        updatedOptions.yAxis.secondary = { visibility: false };
+      }
+      
+      // R-TS-002: Line 스타일이 아닌 경우 Line 관련 옵션 비활성화
+      if (updatedOptions.graphStyle.style !== 'Line') {
+        delete updatedOptions.graphStyle.lineWidth;
+      }
+      
+      // R-TS-003: Area 스타일이 아닌 경우 Area 관련 옵션 비활성화
+      if (updatedOptions.graphStyle.style !== 'Area') {
+        delete updatedOptions.graphStyle.fillOpacity;
+      }
+      
+      // R-TS-004: 시리즈의 Y축 설정
+      updatedOptions.series = updatedOptions.series.map(series => {
+        // 보조 Y축이 비활성화되었는데 시리즈가 보조 Y축을 사용하는 경우
+        if (!updatedOptions.yAxis.secondary?.visibility && series.yAxisId === 'secondary') {
+          return { ...series, yAxisId: 'primary' };
+        }
+        return series;
+      });
+    }
+    
+    // 산점도 차트 의존성 규칙
+    if (chartType === 'scatter') {
+      // 회귀선 표시 여부에 따른 회귀선 유형 활성화/비활성화
+      if (!updatedOptions.scatter.showRegressionLine) {
+        delete updatedOptions.scatter.regressionType;
+      }
+    }
+    
+    return updatedOptions;
+  }, [chartType, options]);
+}
+```
+
+#### 유효성 검사 전략
+
+Zod를 활용한 차트 옵션 유효성 검사 전략입니다:
+
+```typescript
+// 차트 옵션 스키마 정의
+import { z } from 'zod';
+
+// 패널 옵션 스키마 (PO-001~003)
+const panelOptionsSchema = z.object({
+  title: z.string().max(100, '제목은 최대 100자까지 입력 가능합니다.'),
+  description: z.string().max(200, '설명은 최대 200자까지 입력 가능합니다.').optional(),
+  transparent: z.boolean().default(false)
+});
+
+// 툴팁 옵션 스키마 (TO-001~005)
+const tooltipOptionsSchema = z.object({
+  mode: z.enum(['default', 'active', 'hidden']),
+  maxWidth: z.number().min(60).max(500).default(160),
+  cursorStyle: z.enum(['solid', 'dash']).default('solid'),
+  dashPattern: z.string().optional().refine(val => {
+    if (val && !val.match(/^\d+,\d+$/)) {
+      return false;
+    }
+    return true;
+  }, { message: "대시 패턴은 '숫자,숫자' 형식이어야 합니다." }),
+  cursorWidth: z.number().min(1).max(10).default(2)
+});
+
+// X축 옵션 스키마 (XA-001~010)
+const xAxisOptionsSchema = z.object({
+  visibility: z.boolean().default(true),
+  dataKey: z.string().default('date'),
+  type: z.enum(['category', 'number']).default('category'),
+  minValue: z.union([z.number(), z.literal('auto')]).default(0),
+  maxValue: z.union([z.number(), z.literal('auto')]).default('auto'),
+  showAxis: z.boolean().default(true),
+  tickCount: z.number().min(2).max(20).default(5),
+  tickAngle: z.number().min(-90).max(90).default(0),
+  showTick: z.boolean().default(true),
+  tickSize: z.number().min(0).max(20).default(6)
+});
+
+// 전체 차트 옵션 스키마
+const chartOptionsSchema = z.object({
+  panel: panelOptionsSchema,
+  tooltip: tooltipOptionsSchema,
+  legend: legendOptionsSchema,
+  xAxis: xAxisOptionsSchema,
+  yAxis: yAxisOptionsSchema,
+  // 차트 유형별 특화 옵션은 조건부로 추가
+}).refine(data => {
+  // 복합 유효성 검사
+  if (data.tooltip.cursorStyle === 'dash' && !data.tooltip.dashPattern) {
+    return false;
+  }
+  return true;
+}, {
+  message: "대시 스타일을 선택한 경우 대시 패턴을 입력해야 합니다.",
+  path: ['tooltip', 'dashPattern']
+});
+
+// 차트 유형별 옵션 스키마 확장
+function getChartOptionsSchema(chartType: ChartType) {
+  let schema = chartOptionsSchema;
+  
+  // 시계열 차트
+  if (chartType === 'timeSeries') {
+    schema = schema.extend({
+      graphStyle: graphStyleOptionsSchema,
+      yAxisSecondary: yAxisSecondaryOptionsSchema.optional()
+    });
+  }
+  
+  // 산점도 차트
+  if (chartType === 'scatter') {
+    schema = schema.extend({
+      scatter: scatterOptionsSchema
+    });
+  }
+  
+  // 다른 차트 유형별 스키마 확장...
+  
+  return schema;
+}
+
+// 옵션 유효성 검사 함수
+function validateChartOptions(chartType: ChartType, options: Record<string, any>) {
+  const schema = getChartOptionsSchema(chartType);
+  
+  try {
+    schema.parse(options);
+    return { valid: true, errors: null };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return {
+        valid: false,
+        errors: error.format()
+      };
+    }
+    
+    throw error;
+  }
+}
+```
+
 ## 4. 대시보드 컴포넌트 설계
 
 대시보드 관련 컴포넌트는 레이아웃 관리와 위젯 상호작용에 초점을 맞추어 설계됩니다.
@@ -276,6 +814,7 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임 및 서버/클라이언트 구분
+
 - **DashboardPage** (서버 컴포넌트): 대시보드 페이지 구조 정의 및 초기 데이터 로드
 - **DashboardHeader** (서버 컴포넌트): 대시보드 제목, 설명, 메타 정보 표시
 - **DashboardGrid** (클라이언트 컴포넌트): react-grid-layout 기반 그리드 시스템 관리
@@ -300,6 +839,7 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임 및 서버/클라이언트 구분
+
 - **DashboardEditor** (클라이언트 컴포넌트): 대시보드 편집 모드 전체 관리
 - **EditorToolbar** (클라이언트 컴포넌트): 편집 기능 제공 (저장, 실행 취소/다시 실행, 레이아웃)
 - **WidgetSelector** (클라이언트 컴포넌트): 추가 가능한 위젯 목록 제공
@@ -383,6 +923,7 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임
+
 - **DataQueryBuilder**: 데이터 쿼리 구성 전체 관리
 - **SourceSelector**: 데이터 출처 선택 UI (KOSIS, ECOS, OECD)
 - **IndicatorSelector**: 지표 검색 및 선택 UI
@@ -479,6 +1020,7 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임
+
 - **AuthContainer** (서버 컴포넌트): 인증 관련 레이아웃 및 상태 관리
 - **SNSLoginButtons** (클라이언트 컴포넌트): SNS 로그인 버튼 컨테이너
 - **AuthCallback** (서버 컴포넌트): 인증 콜백 처리 컴포넌트
@@ -503,6 +1045,7 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임
+
 - **ProfileContainer** (서버 컴포넌트): 프로필 관련 레이아웃 및 상태 관리
 - **ProfileSettings** (클라이언트 컴포넌트): 사용자 프로필 설정 UI
 - **SubscriptionManagement** (클라이언트 컴포넌트): 구독 관리 UI
@@ -531,6 +1074,7 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임
+
 - **Header** (서버 컴포넌트): 상단 헤더 바 컴포넌트
 - **Sidebar** (서버 컴포넌트): 측면 내비게이션 바 컴포넌트
 - **UserMenu** (클라이언트 컴포넌트): 사용자 메뉴 드롭다운 컴포넌트
@@ -556,6 +1100,7 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임
+
 - **Toast** (클라이언트 컴포넌트): 토스트 알림 컴포넌트
 - **Dialog** (클라이언트 컴포넌트): 다이얼로그/모달 컴포넌트
 - **Alert** (클라이언트 컴포넌트): 경고 및 알림 컴포넌트
@@ -581,6 +1126,7 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임
+
 - **FormField** (클라이언트 컴포넌트): 개별 폼 필드 래퍼 컴포넌트
 - **FormGroup** (클라이언트 컴포넌트): 관련 폼 필드 그룹 컴포넌트
 - **FormActions** (클라이언트 컴포넌트): 폼 액션 버튼 컨테이너 컴포넌트
@@ -617,6 +1163,7 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임
+
 - **LanguageSelector** (클라이언트 컴포넌트): 언어 선택 UI 제공
 - **DateTimeFormatter** (클라이언트 컴포넌트): 지역화된 날짜/시간 포맷팅 컴포넌트
 - **NumberFormatter** (클라이언트 컴포넌트): 지역화된 숫자 포맷팅 컴포넌트

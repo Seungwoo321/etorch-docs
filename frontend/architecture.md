@@ -956,29 +956,598 @@ Next.js의 서버 액션을 활용하여 폼 제출 및 데이터 변경을 처�
 
 E-Torch는 대량의 경제 데이터를 효율적으로 처리하고 시각화해야 하므로 다음과 같은 성능 최적화 전략을 적용합니다:
 
-1. **코드 분할 및 지연 로딩**:
-   - Next.js의 dynamic import 활용
-   - 차트 유형별 동적 로딩
-   - 대시보드 위젯 지연 로딩
+### 9.1 코드 분할 및 지연 로딩
 
-2. **메모이제이션 및 최적화**:
-   - React.memo를 통한 컴포넌트 리렌더링 최적화
-   - useMemo, useCallback 최적화
-   - 복잡한 계산 결과 캐싱
+Next.js의 dynamic import를 활용하여 필요한 시점에 코드를 로드함으로써 초기 로딩 시간을 단축합니다:
 
-3. **가상화 기법**:
-   - 대량 데이터 렌더링 시 가상화 기법 적용
-   - 대시보드 내 화면에 보이는 위젯만 렌더링
+```typescript
+// 차트 유형별 다이나믹 임포트
+import dynamic from 'next/dynamic';
 
-4. **서버 컴포넌트 최적화**:
-   - 서버 컴포넌트를 통한 JavaScript 번들 크기 축소
-   - 정적 요소의 서버 렌더링
-   - 데이터 페칭 최적화
+// 기본 차트 컴포넌트는 즉시 로드
+import { ChartProps, ChartType } from '@/packages/charts';
+import { ChartSkeleton } from '@/packages/ui/components';
 
-5. **데이터 처리 최적화**:
-   - 클라이언트 측 데이터 처리 최소화
-   - 필요한 데이터만 요청
-   - 효율적인 데이터 변환 알고리즘
+// 차트 유형별 동적 임포트 (필요시 로드)
+const TimeSeriesChart = dynamic(() => import('@/packages/charts/src/components/chart-types/TimeSeriesChart'), {
+  loading: () => <ChartSkeleton type="timeSeries" />,
+  ssr: false // 클라이언트 사이드에서만 렌더링 (Recharts는 SSR 불가)
+});
+
+const BarChart = dynamic(() => import('@/packages/charts/src/components/chart-types/BarChart'), {
+  loading: () => <ChartSkeleton type="bar" />,
+  ssr: false
+});
+
+const ScatterChart = dynamic(() => import('@/packages/charts/src/components/chart-types/ScatterChart'), {
+  loading: () => <ChartSkeleton type="scatter" />,
+  ssr: false
+});
+
+const RadarChart = dynamic(() => import('@/packages/charts/src/components/chart-types/RadarChart'), {
+  loading: () => <ChartSkeleton type="radar" />,
+  ssr: false
+});
+
+const RadialBarChart = dynamic(() => import('@/packages/charts/src/components/chart-types/RadialBarChart'), {
+  loading: () => <ChartSkeleton type="radialBar" />,
+  ssr: false
+});
+
+// 차트 렌더러 컴포넌트 (차트 유형에 따라 적절한 컴포넌트 로드)
+export function ChartRenderer({ type, ...props }: ChartProps & { type: ChartType }) {
+  // 차트 유형에 따라 적절한 컴포넌트 반환
+  switch (type) {
+    case 'timeSeries':
+      return <TimeSeriesChart {...props} />;
+    case 'bar':
+      return <BarChart {...props} />;
+    case 'scatter':
+      return <ScatterChart {...props} />;
+    case 'radar':
+      return <RadarChart {...props} />;
+    case 'radialBar':
+      return <RadialBarChart {...props} />;
+    default:
+      return <div>Unsupported chart type: {type}</div>;
+  }
+}
+```
+
+또한 경로 기반 코드 분할을 활용하여 각 페이지와 관련된 코드만 필요한 시점에 로드합니다:
+
+```typescript
+// app/routes.js
+import { PageNotFoundError } from 'next/navigation';
+
+// 프로젝트 페이지 레이아웃 및 홈페이지는 즉시 로드
+export { default as RootLayout } from './layout';
+export { default as HomePage } from './page';
+
+// 대시보드 및 에디터 페이지는 필요시 동적 로드
+// 대시보드 페이지와 관련 컴포넌트
+export const DashboardPage = dynamic(() => import('./dashboard/page'), {
+  loading: () => <PageLoadingSkeleton />,
+});
+
+// 대시보드 편집 페이지
+export const DashboardEditPage = dynamic(() => import('./dashboard/[id]/edit/page'), {
+  loading: () => <PageLoadingSkeleton />,
+});
+
+// 차트 에디터 페이지
+export const ChartEditorPage = dynamic(() => import('./chart-editor/[id]/page'), {
+  loading: () => <PageLoadingSkeleton />,
+});
+```
+
+에디터 UI 컴포넌트와 데이터 시각화 컴포넌트를 분리하여 필요에 따라 선택적으로 로드합니다:
+
+```typescript
+// 차트 에디터와 뷰어 분리
+const ChartEditorUI = dynamic(() => import('@/packages/charts/src/editor/ChartEditor'), {
+  loading: () => <EditorLoadingSkeleton />,
+  ssr: false
+});
+
+// 뷰어만 필요한 경우 더 가벼운 컴포넌트 로드
+const ChartViewerUI = dynamic(() => import('@/packages/charts/src/components/ChartComponent'), {
+  loading: () => <ChartSkeleton />,
+  ssr: false
+});
+```
+
+### 9.2 메모이제이션 및 최적화
+
+React의 메모이제이션 기능을 활용하여 컴포넌트 리렌더링을 최적화합니다:
+
+```typescript
+// 차트 옵션 메모이제이션 예시
+function TimeSeriesChart({ data, options, width, height }: TimeSeriesChartProps) {
+  // 옵션 변경 시에만 재계산
+  const processedOptions = useMemo(() => {
+    // 복잡한 옵션 처리 로직
+    return {
+      ...options,
+      yAxis: processYAxisOptions(options.yAxis),
+      xAxis: processXAxisOptions(options.xAxis, data),
+      tooltip: processTooltipOptions(options.tooltip)
+    };
+  }, [options]);
+  
+  // 데이터 변경 시에만 재계산
+  const processedData = useMemo(() => {
+    // 데이터 변환 로직 (포맷팅, 필터링 등)
+    return processTimeSeriesData(data);
+  }, [data]);
+  
+  // 이벤트 핸들러 메모이제이션
+  const handleMouseMove = useCallback((e) => {
+    // 마우스 이벤트 처리 로직
+  }, []);
+  
+  // 차트 컴포넌트 메모이제이션
+  return useMemo(() => (
+    <ResponsiveContainer width={width} height={height}>
+      <LineChart data={processedData} onMouseMove={handleMouseMove}>
+        {/* 차트 구성 요소 */}
+        <XAxis {...processedOptions.xAxis} />
+        <YAxis {...processedOptions.yAxis} />
+        <Tooltip {...processedOptions.tooltip} />
+        <Legend {...processedOptions.legend} />
+        <Line
+          type="monotone"
+          dataKey="value"
+          stroke={processedOptions.color}
+          strokeWidth={processedOptions.strokeWidth}
+          dot={processedOptions.showDots}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  ), [processedData, processedOptions, width, height, handleMouseMove]);
+}
+
+// 컴포넌트 자체도 메모이제이션
+export default memo(TimeSeriesChart);
+```
+
+차트 옵션 편집 시 효율적인 상태 관리를 위한 패턴:
+
+```typescript
+// 옵션 그룹별 메모이제이션
+function ChartOptionsPanel({ options, onChange }: ChartOptionsPanelProps) {
+  // 각 옵션 그룹별 변경 핸들러 메모이제이션
+  const handlePanelOptionsChange = useCallback((panelOptions) => {
+    onChange({ ...options, panel: panelOptions });
+  }, [options, onChange]);
+  
+  const handleTooltipOptionsChange = useCallback((tooltipOptions) => {
+    onChange({ ...options, tooltip: tooltipOptions });
+  }, [options, onChange]);
+  
+  const handleAxisOptionsChange = useCallback((axisType, axisOptions) => {
+    if (axisType === 'xAxis') {
+      onChange({ ...options, xAxis: axisOptions });
+    } else if (axisType === 'yAxis') {
+      onChange({ ...options, yAxis: axisOptions });
+    }
+  }, [options, onChange]);
+  
+  // 각 옵션 패널 컴포넌트 메모이제이션
+  const PanelOptionsComponent = useMemo(() => (
+    <PanelOptions
+      options={options.panel}
+      onChange={handlePanelOptionsChange}
+    />
+  ), [options.panel, handlePanelOptionsChange]);
+  
+  const TooltipOptionsComponent = useMemo(() => (
+    <TooltipOptions
+      options={options.tooltip}
+      onChange={handleTooltipOptionsChange}
+    />
+  ), [options.tooltip, handleTooltipOptionsChange]);
+  
+  const XAxisOptionsComponent = useMemo(() => (
+    <AxisOptions
+      axisType="xAxis"
+      options={options.xAxis}
+      onChange={(opts) => handleAxisOptionsChange('xAxis', opts)}
+    />
+  ), [options.xAxis, handleAxisOptionsChange]);
+  
+  // 렌더링
+  return (
+    <OptionsContainer>
+      <Tabs defaultValue="panel">
+        <TabsList>
+          <TabsTrigger value="panel">패널</TabsTrigger>
+          <TabsTrigger value="tooltip">툴팁</TabsTrigger>
+          <TabsTrigger value="axes">축</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="panel">
+          {PanelOptionsComponent}
+        </TabsContent>
+        
+        <TabsContent value="tooltip">
+          {TooltipOptionsComponent}
+        </TabsContent>
+        
+        <TabsContent value="axes">
+          {XAxisOptionsComponent}
+        </TabsContent>
+      </Tabs>
+    </OptionsContainer>
+  );
+}
+```
+
+### 9.3 가상화 기법
+
+대량의 데이터를 효율적으로 렌더링하기 위한 가상화 기법을 적용합니다:
+
+```typescript
+// 대용량 시계열 데이터의 다운샘플링 알고리즘 (LTTB: Largest-Triangle-Three-Buckets)
+function downsampleTimeSeries(data: DataPoint[], targetPoints: number): DataPoint[] {
+  // 데이터 포인트가 목표보다 적으면 다운샘플링 필요 없음
+  if (data.length <= targetPoints) {
+    return data;
+  }
+  
+  // 결과 배열 초기화
+  const sampled: DataPoint[] = [];
+  
+  // 첫 포인트는 항상 유지
+  sampled.push(data[0]);
+  
+  // 각 버킷 크기 계산
+  const bucketSize = (data.length - 2) / (targetPoints - 2);
+  
+  // 각 버킷에서 최적의 포인트 선택
+  for (let i = 0; i < targetPoints - 2; i++) {
+    // 현재 버킷의 시작과 끝 인덱스
+    const startIdx = Math.floor((i) * bucketSize) + 1;
+    const endIdx = Math.floor((i + 1) * bucketSize) + 1;
+    
+    // 이전 포인트와 다음 버킷의 평균 포인트
+    const prevPoint = sampled[sampled.length - 1];
+    const nextBucketAvg = calculateBucketAverage(data, endIdx, Math.min(endIdx + bucketSize, data.length));
+    
+    // 각 포인트의 삼각형 면적 계산하여 최대 면적을 가진 포인트 선택
+    let maxArea = -1;
+    let maxAreaIdx = startIdx;
+    
+    for (let j = startIdx; j < endIdx; j++) {
+      const area = calculateTriangleArea(prevPoint, data[j], nextBucketAvg);
+      if (area > maxArea) {
+        maxArea = area;
+        maxAreaIdx = j;
+      }
+    }
+    
+    // 선택된 포인트 추가
+    sampled.push(data[maxAreaIdx]);
+  }
+  
+  // 마지막 포인트는 항상 유지
+  sampled.push(data[data.length - 1]);
+  
+  return sampled;
+}
+
+// 버킷 내 평균 포인트 계산
+function calculateBucketAverage(data: DataPoint[], startIdx: number, endIdx: number): DataPoint {
+  let sumX = 0;
+  let sumY = 0;
+  let count = 0;
+  
+  for (let i = startIdx; i < endIdx; i++) {
+    const timestamp = new Date(data[i].date).getTime();
+    sumX += timestamp;
+    sumY += data[i].value;
+    count++;
+  }
+  
+  return {
+    date: new Date(sumX / count).toISOString(),
+    value: sumY / count
+  };
+}
+
+// 세 점으로 이루어진 삼각형 면적 계산
+function calculateTriangleArea(p1: DataPoint, p2: DataPoint, p3: DataPoint): number {
+  const x1 = new Date(p1.date).getTime();
+  const y1 = p1.value;
+  
+  const x2 = new Date(p2.date).getTime();
+  const y2 = p2.value;
+  
+  const x3 = new Date(p3.date).getTime();
+  const y3 = p3.value;
+  
+  return Math.abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2);
+}
+
+// 시계열 차트에서 가상화 적용
+function TimeSeriesChartWithVirtualization({ data, width, height, options }: TimeSeriesChartProps) {
+  // 화면 해상도에 따른 다운샘플링 포인트 수 계산
+  const targetPoints = useMemo(() => {
+    // 화면 너비당 최대 1픽셀에 1개 데이터 포인트 (최소 100개, 최대 1000개)
+    return Math.min(Math.max(Math.floor(width), 100), 1000);
+  }, [width]);
+  
+  // 다운샘플링 적용
+  const optimizedData = useMemo(() => {
+    return downsampleTimeSeries(data, targetPoints);
+  }, [data, targetPoints]);
+  
+  // 차트 렌더링
+  return (
+    <ResponsiveContainer width={width} height={height}>
+      <LineChart data={optimizedData}>
+        {/* 차트 구성 요소 */}
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+```
+
+대시보드 위젯 목록을 위한 가상화:
+
+```typescript
+import { FixedSizeList } from 'react-window';
+
+// 가상화된 대시보드 위젯 목록
+function VirtualizedWidgetList({ widgets, onSelect }: WidgetListProps) {
+  const Row = ({ index, style }: { index: number, style: React.CSSProperties }) => {
+    const widget = widgets[index];
+    return (
+      <div style={style}>
+        <WidgetListItem
+          widget={widget}
+          onClick={() => onSelect(widget.id)}
+        />
+      </div>
+    );
+  };
+  
+  return (
+    <FixedSizeList
+      height={400}
+      width="100%"
+      itemCount={widgets.length}
+      itemSize={60}
+    >
+      {Row}
+    </FixedSizeList>
+  );
+}
+```
+
+### 9.4 서버 컴포넌트 최적화
+
+Next.js의 서버 컴포넌트를 활용하여 데이터 페칭과 변환 로직을 서버에서 처리합니다:
+
+```typescript
+// 서버 컴포넌트에서 데이터 페칭 및 변환
+export default async function DashboardPage({ params }: { params: { id: string } }) {
+  // 서버에서 대시보드 데이터 페칭
+  const dashboard = await fetchDashboard(params.id);
+  
+  // 서버에서 차트 데이터 페칭 및 변환
+  const chartsData = await Promise.all(
+    dashboard.chartIds.map(async (chartId) => {
+      const chartConfig = await fetchChartConfig(chartId);
+      const rawData = await fetchChartData(chartId, dashboard.timeRange, dashboard.period);
+      
+      // 서버에서 데이터 변환 및 처리
+      const processedData = processChartData(rawData, chartConfig.transformations);
+      
+      return {
+        id: chartId,
+        config: chartConfig,
+        data: processedData
+      };
+    })
+  );
+  
+  // 클라이언트 컴포넌트에 데이터 전달
+  return (
+    <DashboardLayout>
+      <DashboardHeader
+        title={dashboard.title}
+        description={dashboard.description}
+        timeRange={dashboard.timeRange}
+        period={dashboard.period}
+      />
+      
+      <DashboardGrid
+        layout={dashboard.layout}
+        chartsData={chartsData}
+      />
+    </DashboardLayout>
+  );
+}
+```
+
+React Server Components를 활용한 최적화:
+
+```typescript
+// 대시보드 컨텐츠를 서버에서 렌더링
+export default async function DashboardContent({ id }: { id: string }) {
+  // 서버에서 데이터 페칭
+  const dashboard = await fetchDashboard(id);
+  const widgets = await fetchDashboardWidgets(id);
+  
+  // 위젯별 메타데이터 계산
+  const widgetsWithMeta = await Promise.all(
+    widgets.map(async (widget) => {
+      // 서버에서 메타데이터 계산
+      const meta = await calculateWidgetMetadata(widget);
+      return { ...widget, meta };
+    })
+  );
+  
+  return (
+    <div>
+      <h1>{dashboard.title}</h1>
+      <p>{dashboard.description}</p>
+      
+      {/* 스트리밍 서버 컴포넌트로 위젯 렌더링 */}
+      <Suspense fallback={<DashboardSkeleton />}>
+        <DashboardGrid layout={dashboard.layout}>
+          {widgetsWithMeta.map((widget) => (
+            <WidgetWrapper key={widget.id} widget={widget} />
+          ))}
+        </DashboardGrid>
+      </Suspense>
+    </div>
+  );
+}
+
+// 위젯 컴포넌트 - 서버에서 데이터를 페칭하여 클라이언트 컴포넌트에 전달
+async function WidgetWrapper({ widget }: { widget: Widget }) {
+  // 서버에서 위젯 데이터 페칭
+  const widgetData = await fetchWidgetData(widget.id);
+  
+  // 클라이언트 컴포넌트에 데이터 전달
+  return (
+    <ClientWidgetRenderer
+      widget={widget}
+      initialData={widgetData}
+    />
+  );
+}
+```
+
+### 9.5 데이터 처리 최적화
+
+클라이언트 측에서의 데이터 처리를 최적화합니다:
+
+```typescript
+// 시계열 데이터의 변환 최적화
+function optimizedDataTransformation(
+  data: TimeSeriesData,
+  transformation: TransformationType,
+  options: TransformationOptions
+): TimeSeriesData {
+  // 웹 워커로 무거운 계산 오프로드
+  if (data.length > 10000 && typeof Worker !== 'undefined') {
+    return new Promise((resolve, reject) => {
+      const worker = new Worker(new URL('./dataWorker.js', import.meta.url));
+      
+      worker.onmessage = (e) => {
+        resolve(e.data);
+        worker.terminate();
+      };
+      
+      worker.onerror = (error) => {
+        reject(error);
+        worker.terminate();
+      };
+      
+      worker.postMessage({
+        data,
+        transformation,
+        options
+      });
+    });
+  }
+  
+  // 웹 워커를 사용할 수 없는 경우 메인 스레드에서 처리
+  switch (transformation) {
+    case 'original':
+      return data; // 원본 데이터 반환
+    
+    case 'change':
+      // 최적화된 변화율 계산 (이전 계산 결과 캐싱)
+      return calculateChangeRate(data, options);
+    
+    case 'changePct':
+      // 최적화된 변화율(%) 계산
+      return calculatePercentageChange(data, options);
+    
+    case 'cumulative':
+      // 최적화된 누적값 계산
+      return calculateCumulative(data, options);
+    
+    default:
+      return data;
+  }
+}
+
+// 캐싱을 활용한 최적화
+const transformationCache = new Map<string, TimeSeriesData>();
+
+function calculateChangeRate(data: TimeSeriesData, options: TransformationOptions): TimeSeriesData {
+  // 캐시 키 생성
+  const cacheKey = `change-${data[0]?.date}-${data[data.length-1]?.date}-${options.baseline}`;
+  
+  // 캐시된 결과가 있으면 반환
+  if (transformationCache.has(cacheKey)) {
+    return transformationCache.get(cacheKey)!;
+  }
+  
+  // 결과 계산
+  const result = data.map((point, index) => {
+    if (index === 0) {
+      // 첫 번째 포인트는 변화율 0 또는 null
+      return { ...point, value: options.fillFirst ? 0 : null };
+    }
+    
+    // 이전 값과의 차이 계산
+    const prevValue = data[index - 1].value;
+    const change = point.value - prevValue;
+    
+    return {
+      ...point,
+      value: change
+    };
+  });
+  
+  // 결과 캐싱
+  transformationCache.set(cacheKey, result);
+  
+  return result;
+}
+
+// 프로그레시브 로딩
+function ChartWithProgressiveLoading({ chartId, config }: { chartId: string, config: ChartConfig }) {
+  // 초기 저해상도 데이터 로드 (빠른 표시)
+  const { data: lowResData, isLoading } = useQuery({
+    queryKey: ['chart-data', chartId, 'low-res'],
+    queryFn: () => fetchChartDataLowRes(chartId),
+    staleTime: 5 * 60 * 1000 // 5분
+  });
+  
+  // 고해상도 데이터는 지연 로드
+  const { data: highResData } = useQuery({
+    queryKey: ['chart-data', chartId, 'high-res'],
+    queryFn: () => fetchChartDataHighRes(chartId),
+    staleTime: 5 * 60 * 1000, // 5분
+    enabled: !isLoading && !!lowResData // 저해상도 데이터 로드 후 활성화
+  });
+  
+  // 가용한 최고 해상도 데이터 사용
+  const displayData = highResData || lowResData;
+  
+  // 로딩 표시
+  if (isLoading) {
+    return <ChartSkeleton />;
+  }
+  
+  return (
+    <ChartComponent
+      data={displayData}
+      config={config}
+      isHighRes={!!highResData}
+    />
+  );
+}
+```
+
+이러한 성능 최적화 전략을 통해 E-Torch는 대량의 경제 데이터를 효율적으로 처리하고 시각화하여 우수한 사용자 경험을 제공합니다.
 
 ## 10. 결론 및 확장성 고려사항
 
