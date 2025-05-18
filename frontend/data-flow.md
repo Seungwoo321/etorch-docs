@@ -423,11 +423,106 @@ flowchart TD
     I --> J[응답 캐싱 및 반환]
 ```
 
-7.2 캐시 무효화 전략
+## 7.2 캐시 무효화 전략
 
-시간 기반 무효화: 데이터 유형별 적절한 캐시 만료 시간 설정
-이벤트 기반 무효화: 사용자 액션이나 서버 푸시에 의한 캐시 무효화
-선택적 무효화: 특정 키나 패턴에 해당하는 캐시만 무효화
+E-Torch는 데이터의 최신성과 일관성을 보장하기 위해 다음과 같은 캐시 무효화 전략을 구현합니다:
+
+### 7.2.1 시간 기반 무효화
+
+데이터 유형별로 적절한 캐시 만료 시간을 설정하여 자동 무효화를 구현합니다:
+
+```typescript
+// 지표 유형별 캐시 만료 시간 설정
+const cacheTTLConfig = {
+  'FINANCIAL_REALTIME': 60 * 1000, // 1분
+  'FINANCIAL_DAILY': 30 * 60 * 1000, // 30분
+  'ECONOMIC_MONTHLY': 3 * 60 * 60 * 1000, // 3시간
+  'ECONOMIC_QUARTERLY': 12 * 60 * 60 * 1000 // 12시간
+};
+```
+
+### 7.2.2 이벤트 기반 무효화
+
+사용자 액션이나 서버 푸시에 의한 데이터 변경 시 관련 캐시를 즉시 무효화합니다:
+
+- **사용자 액션**: 대시보드 저장, 차트 업데이트 등 사용자 액션 후 관련 캐시 무효화
+- **웹훅**: Supabase 테이블 변경 이벤트에 구독하여 데이터 변경 시 캐시 무효화
+- **서버 푸시**: 중요 데이터 업데이트 시 서버에서 클라이언트로 무효화 이벤트 전송
+
+```typescript
+// 서버 액션에서의 캐시 무효화 예시
+export async function updateDashboardAction(dashboardId: string, data: any) {
+  // 데이터 업데이트 로직...
+  
+  // 관련 캐시 무효화
+  revalidatePath(`/dashboard/${dashboardId}`);
+  revalidatePath('/dashboard');
+  
+  // 맞춤형 태그 기반 무효화
+  revalidateTag(`dashboard-${dashboardId}`);
+}
+```
+
+### 7.2.3 선택적 무효화
+
+네트워크 요청을 최소화하기 위해 필요한 캐시만 선택적으로 무효화합니다:
+
+```typescript
+// TanStack Query에서의 선택적 쿼리 무효화
+const invalidateDashboardCharts = (dashboardId: string, chartId?: string) => {
+  if (chartId) {
+    // 특정 차트 데이터만 무효화
+    queryClient.invalidateQueries({ 
+      queryKey: queryKeys.charts.detail(chartId)
+    });
+  } else {
+    // 대시보드의 모든 차트 데이터 무효화
+    queryClient.invalidateQueries({ 
+      queryKey: queryKeys.charts.byDashboard(dashboardId)
+    });
+  }
+  
+  // 대시보드 메타데이터는 유지 (차트 데이터만 리페치)
+};
+```
+
+### 7.2.4 선제적 리페치
+
+중요 데이터의 경우 만료 전에 백그라운드에서 선제적으로 리페치하여 항상 최신 데이터를 유지합니다:
+
+```typescript
+// 금융 시장 데이터는 만료 15초 전에 백그라운드 리페치
+useQuery({
+  queryKey: ['market', 'realtime'],
+  queryFn: fetchMarketData,
+  staleTime: 60 * 1000, // 1분
+  refetchInterval: 45 * 1000, // 45초마다 백그라운드 리페치
+});
+```
+
+### 7.2.5 우선순위 기반 무효화
+
+리소스 사용 최적화를 위해 캐시 무효화 우선순위를 설정합니다:
+
+- **즉시 무효화**: 사용자가 현재 보고 있는 화면의 데이터
+- **지연 무효화**: 백그라운드 데이터 또는 현재 화면에 표시되지 않는 데이터
+- **조건부 무효화**: 특정 조건 충족 시에만 무효화 (예: 변경 감지된 경우)
+
+```typescript
+// IntersectionObserver를 활용한 가시성 기반 리페치
+const { ref, inView } = useInView();
+useQuery({
+  queryKey: ['chart', chartId],
+  queryFn: () => fetchChartData(chartId),
+  // 화면에 보이는 차트만 자주 리페치
+  refetchInterval: inView ? 30000 : false,
+});
+
+return <div ref={ref}>{/* 차트 컴포넌트 */}</div>;
+```
+
+이러한 다층적 캐시 무효화 전략을 통해 E-Torch는 데이터의 최신성을 보장하면서도 네트워크 요청과 서버 부하를 최소화합니다.
+
 
 ## 8. 클라이언트-서버 통신 최적화
 
