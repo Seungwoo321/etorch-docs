@@ -67,17 +67,10 @@ E-Torch는 경제에 횃불을 더해 길을 밝혀준다는 의미를 담은 �
 
 ## 문서 바로가기
 
-### 기획서
+### 기획 문서
 
-- []
-
-### 메인 디렉토리
-
-- [API 문서](./api/)
-- [프론트엔드 문서](./frontend/)
-- [백엔드 문서](./backend/)
-- [UI 디자인 문서](./ui-design/)
-- [개발 노트](./dev-notes/)
+- [E-Torch: 경제지표 대시보드 서비스 기획서](./spec/product-spec.md)
+- [E-Torch: 차트 컴포넌트 기능 명세서](./spec/chart-feature-specs.md)
 
 ### API 문서
 
