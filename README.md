@@ -29,10 +29,12 @@ E-Torch는 경제에 횃불을 더해 길을 밝혀준다는 의미를 담은 �
 
 ### API 문서
 
-- [API 엔드포인트 정의](./api/endpoints.md)
+-
+
+<!-- - [API 엔드포인트 정의](./api/endpoints.md)
 - [모킹 데이터 구조](./api/mock-data-structure.md)
 - [JSON Server 설정](./api/json-server-setup.md)
-- [백엔드 마이그레이션 계획](./api/migration-plan.md)
+- [백엔드 마이그레이션 계획](./api/migration-plan.md) -->
 
 ### 프론트엔드 문서
 
@@ -44,23 +46,26 @@ E-Torch는 경제에 횃불을 더해 길을 밝혀준다는 의미를 담은 �
 
 ### 백엔드 문서
 
-- [데이터베이스 스키마](./backend/db-schema.md)
+-
+
+<!-- - [데이터베이스 스키마](./backend/db-schema.md)
 - [서버 아키텍처 계획](./backend/server-architecture.md)
-- [API 구현 계획](./backend/api-implementation.md)
+- [API 구현 계획](./backend/api-implementation.md) -->
 
 ### UI 디자인 문서
 
-- [디자인 시스템](./ui-design/design-system.md)
-- [사용자 흐름](./ui-design/user-flows.md)
+<!-- - [디자인 시스템](./ui-design/design-system.md) -->
+<!-- - [사용자 흐름](./ui-design/user-flows.md) -->
 - [UI 요구사항 명세](./ui-design/ui-requirements.md)
 - [와이어프레임 디렉토리](./ui-design/wireframes/)
 
 ### 개발 노트
 
-- [프론트엔드 개발 진행 상황](./dev-notes/frontend-progress.md)
+- 
+<!-- - [프론트엔드 개발 진행 상황](./dev-notes/frontend-progress.md)
 - [모킹 데이터 생성 함수](./dev-notes/mock-data-generation.md)
 - [개발 프로세스 상세](./dev-notes/development-process.md)
-- [UI/UX 피드백](./dev-notes/ui-ux-feedback.md)
+- [UI/UX 피드백](./dev-notes/ui-ux-feedback.md) -->
 
 ## 기술 스택
 
