@@ -342,36 +342,73 @@ function synchronizeTimeSeries(
 }
 ```
 
+### 6.4 데이터 다운샘플링 알고리즘
+
+대량의 시계열 데이터를 효율적으로 시각화하기 위해 다음과 같은 데이터 다운샘플링 알고리즘을 적용합니다:
+
+- **LTTB(Largest-Triangle-Three-Buckets)**: 시각적 특성을 보존하면서 데이터 포인트 수를 줄이는 알고리즘
+- **M4 알고리즘**: 구간별 최대, 최소, 첫 값, 마지막 값을 유지하여 트렌드 보존
+- **리샘플링**: 균등한 간격으로 데이터 포인트를 재배치
+
+이 알고리즘들은 대시보드 성능 최적화를 위해 시각화 계층에서 활용됩니다.
+
+```tsx
+// LTTB(Largest-Triangle-Three-Buckets) 알고리즘
+function downsampleTimeSeries(data: DataPoint[], targetPoints: number): DataPoint[] {
+  // 데이터가 목표 포인트 수보다 적으면 그대로 반환
+  if (data.length <= targetPoints) {
+    return data;
+  }
+  
+  // 결과 배열 초기화
+  const sampled: DataPoint[] = [];
+  
+  // 첫 포인트는 항상 유지
+  sampled.push(data[0]);
+  
+  // 각 버킷 크기 계산
+  const bucketSize = (data.length - 2) / (targetPoints - 2);
+  
+  // 각 버킷에서 최적의 포인트 선택
+  for (let i = 0; i < targetPoints - 2; i++) {
+    // 현재 버킷의 시작과 끝 인덱스
+    const startIdx = Math.floor((i) * bucketSize) + 1;
+    const endIdx = Math.floor((i + 1) * bucketSize) + 1;
+    
+    // 이전 포인트와 다음 버킷의 평균 포인트
+    const prevPoint = sampled[sampled.length - 1];
+    const nextBucketAvg = calculateBucketAverage(data, endIdx, Math.min(endIdx + bucketSize, data.length));
+    
+    // 각 포인트의 삼각형 면적 계산하여 최대 면적을 가진 포인트 선택
+    let maxArea = -1;
+    let maxAreaIdx = startIdx;
+    
+    for (let j = startIdx; j < endIdx; j++) {
+      const area = calculateTriangleArea(prevPoint, data[j], nextBucketAvg);
+      if (area > maxArea) {
+        maxArea = area;
+        maxAreaIdx = j;
+      }
+    }
+    
+    // 선택된 포인트 추가
+    sampled.push(data[maxAreaIdx]);
+  }
+  
+  // 마지막 포인트는 항상 유지
+  sampled.push(data[data.length - 1]);
+  
+  return sampled;
+}
+```
+
 데이터 변환 및 처리 관련 상세 알고리즘은 `packages/data-sources` 모듈의 구현 코드를 참조하십시오.
 
 ## 7. 데이터 캐싱 전략
 
-E-Torch는 다층적 캐싱 전략을 통해 성능을 최적화합니다.
+E-Torch는 다층적 캐싱 전략을 통해 성능을 최적화합니다. 이 섹션에서는 데이터 캐싱의 기술적 구현에 초점을 맞춥니다. 상태 관리 관점의 캐싱 전략은 `state-management.md` 문서를 참조하십시오.
 
-### 7.1 TanStack Query 캐싱 설정
-
-```mermaid
-flowchart TD
-    A[API 요청] --> B[캐시 확인]
-    B -->|캐시 있음 & 신선함| C[캐시된 데이터 사용]
-    B -->|캐시 있음 & 신선하지 않음| D[백그라운드 리페치]
-    B -->|캐시 없음| E[새 데이터 페칭]
-    D --> F[UI 업데이트]
-    E --> G[캐시 저장]
-    G --> F
-```
-
-### 7.2 데이터 유형별 캐싱 전략
-
-| 데이터 유형 | staleTime | gcTime | 리페치 전략 | 무효화 조건 |
-|------------|-----------|--------|------------|------------|
-| 사용자 대시보드 | 5분 | 1시간 | 윈도우 포커스 시 | 대시보드 변경 후 |
-| 공유 대시보드 | 10분 | 3시간 | 수동 또는 주기적 | 댓글 작성, 별점 변경 |
-| 경제지표 데이터 | 1시간 | 12시간 | 수동 또는 주기적 | 시간 범위 변경 |
-| 실시간 지표 | 1분 | 10분 | 주기적 (1분) | 자동 만료 |
-| 시스템 메타데이터 | 1일 | 1주일 | 앱 시작 시 | 버전 업데이트 |
-
-### 7.3 다중 계층 캐싱
+### 7.1 캐싱 계층 구조
 
 ```mermaid
 flowchart TD
@@ -386,7 +423,11 @@ flowchart TD
     I --> J[응답 캐싱 및 반환]
 ```
 
-TanStack Query를 활용한 캐싱 전략에 대한 상세 구현은 `state-management.md` 문서를 참조하십시오.
+7.2 캐시 무효화 전략
+
+시간 기반 무효화: 데이터 유형별 적절한 캐시 만료 시간 설정
+이벤트 기반 무효화: 사용자 액션이나 서버 푸시에 의한 캐시 무효화
+선택적 무효화: 특정 키나 패턴에 해당하는 캐시만 무효화
 
 ## 8. 클라이언트-서버 통신 최적화
 
@@ -421,11 +462,14 @@ sequenceDiagram
 
 ### 9.2 Supabase Realtime을 활용한 실시간 업데이트
 
-Supabase의 Realtime 기능을 활용하여 협업 시나리오를 지원합니다:
+Supabase의 Realtime 기능을 활용하여 다음과 같은 실시간 협업 시나리오를 지원합니다:
 
-1. **대시보드 공동 편집**: 여러 사용자가 동시에 대시보드 편집
-2. **실시간 댓글 및 피드백**: 대시보드에 대한 실시간 댓글 및 피드백
-3. **알림**: 데이터 변경 또는 이벤트 발생 시 실시간 알림
+- **대시보드 공동 편집**: 여러 사용자가 동시에 대시보드 편집
+- **실시간 댓글 및 피드백**: 대시보드에 대한 실시간 댓글 및 피드백
+- **알림**: 데이터 변경 또는 이벤트 발생 시 실시간 알림
+- **사용자 상태 표시**: 현재 대시보드를 보고 있는 사용자 표시
+
+구현 상세는 Supabase Realtime 문서를 참조하십시오.
 
 ```mermaid
 flowchart TD

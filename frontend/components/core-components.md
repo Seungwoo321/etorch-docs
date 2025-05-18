@@ -629,6 +629,10 @@ E-Torch는 WCAG 2.1 AA 수준 준수를 목표로 접근성 컴포넌트를 통�
 
 ### 8.1 키보드 내비게이션 컴포넌트
 
+- **SkipLink**: 키보드 사용자를 위한 메인 콘텐츠 바로가기 링크
+- **FocusTrap**: 모달 및 다이얼로그에서 포커스를 가두는 컴포넌트
+- **KeyboardNavMenu**: 키보드 방향키로 탐색 가능한 내비게이션 메뉴
+
 ```tsx
 // 키보드 사용자를 위한 메인 콘텐츠 바로가기 링크
 function SkipLink({ targetId }: { targetId: string }) {
@@ -662,6 +666,9 @@ function FocusTrap({ children }: { children: React.ReactNode }) {
 ```
 
 ### 8.2 스크린 리더 지원 컴포넌트
+
+- **AccessibleChartTable**: 차트 데이터를 스크린 리더가 인식할 수 있는 테이블로 변환
+- **VisuallyHidden**: 시각적으로는 숨겨지지만 스크린 리더는 읽을 수 있는 텍스트
 
 ```tsx
 // 차트를 위한 접근성 테이블 컴포넌트
@@ -697,6 +704,9 @@ function AccessibleChartTable({
 ```
 
 ### 8.3 색상 및 대비 컴포넌트
+
+- **StatusIndicator**: 색상에만 의존하지 않는 상태 표시 컴포넌트 (아이콘+텍스트 패턴)
+- **AccessibleChartPatterns**: 색맹 사용자를 위한 차트 패턴 제공 컴포넌트
 
 ```tsx
 // 색상에 의존하지 않는 상태 표시 컴포넌트
@@ -772,57 +782,8 @@ export function ChartRenderer({ type, ...props }: ChartProps & { type: ChartType
 
 ### 9.2 데이터 다운샘플링
 
-대량의 시계열 데이터를 효율적으로 처리하기 위한 다운샘플링 알고리즘:
-
-```tsx
-// LTTB(Largest-Triangle-Three-Buckets) 알고리즘
-function downsampleTimeSeries(data: DataPoint[], targetPoints: number): DataPoint[] {
-  // 데이터가 목표 포인트 수보다 적으면 그대로 반환
-  if (data.length <= targetPoints) {
-    return data;
-  }
-  
-  // 결과 배열 초기화
-  const sampled: DataPoint[] = [];
-  
-  // 첫 포인트는 항상 유지
-  sampled.push(data[0]);
-  
-  // 각 버킷 크기 계산
-  const bucketSize = (data.length - 2) / (targetPoints - 2);
-  
-  // 각 버킷에서 최적의 포인트 선택
-  for (let i = 0; i < targetPoints - 2; i++) {
-    // 현재 버킷의 시작과 끝 인덱스
-    const startIdx = Math.floor((i) * bucketSize) + 1;
-    const endIdx = Math.floor((i + 1) * bucketSize) + 1;
-    
-    // 이전 포인트와 다음 버킷의 평균 포인트
-    const prevPoint = sampled[sampled.length - 1];
-    const nextBucketAvg = calculateBucketAverage(data, endIdx, Math.min(endIdx + bucketSize, data.length));
-    
-    // 각 포인트의 삼각형 면적 계산하여 최대 면적을 가진 포인트 선택
-    let maxArea = -1;
-    let maxAreaIdx = startIdx;
-    
-    for (let j = startIdx; j < endIdx; j++) {
-      const area = calculateTriangleArea(prevPoint, data[j], nextBucketAvg);
-      if (area > maxArea) {
-        maxArea = area;
-        maxAreaIdx = j;
-      }
-    }
-    
-    // 선택된 포인트 추가
-    sampled.push(data[maxAreaIdx]);
-  }
-  
-  // 마지막 포인트는 항상 유지
-  sampled.push(data[data.length - 1]);
-  
-  return sampled;
-}
-```
+대량 시계열 데이터를 효율적으로 처리하기 위해 다운샘플링 전략을 사용합니다.
+데이터 다운샘플링 알고리즘에 대한 상세 내용은 `data-flow.md` 문서의 데이터 변환 및 처리 파이프라인 섹션을 참조하십시오.
 
 ## 10. 결론
 

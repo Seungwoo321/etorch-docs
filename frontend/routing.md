@@ -267,9 +267,9 @@ flowchart TD
 
 E-Torch의 네비게이션 시스템은 다음과 같은 주요 컴포넌트로 구성됩니다:
 
-- **MainSidebar**: 주요 메뉴 항목 및 네비게이션 링크 제공
-- **HeaderNav**: 현재 페이지 제목, 사용자 메뉴, 검색 바 등
-- **Breadcrumbs**: 현재 위치 및 상위 카테고리 표시
+- **SideNavigation**: 주요 메뉴 항목 및 네비게이션 링크 제공
+- **HeaderNavigation**: 현재 페이지 제목, 사용자 메뉴, 검색 바 등
+- **BreadcrumbNavigation**: 현재 위치 및 상위 카테고리 표시
 
 ### 8.2 라우트 보호 아키텍처
 
@@ -434,6 +434,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 
 ## 11. 서버 액션 활용 전략
 
+Next.js 서버 액션을 활용하여 클라이언트-서버 통신을 간소화합니다. 이 섹션에서는 서버 액션의 라우팅 관점에서의 활용에 초점을 맞춥니다. 컴포넌트 통합 관점의 서버 액션 패턴은 `core-components.md` 문서를 참조하십시오.
+
 ### 11.1 서버 액션 워크플로우
 
 ```mermaid
@@ -452,7 +454,12 @@ flowchart LR
     E --> F
 ```
 
-### 11.2 주요 서버 액션 구현
+### 11.2 라우팅 관련 서버 액션 패턴
+
+- 폼 제출 처리: 사용자 입력 검증 및 데이터베이스 저장 (`/dashboard/new`, `/dashboard/edit`)
+- 캐시 무효화: 관련 페이지의 캐시 자동 무효화 (`revalidatePath`)
+- 리디렉션: 액션 완료 후 적절한 페이지로 이동 (`redirect`)
+- 데이터 프리페칭: 페이지 전환 전 데이터 미리 로드 (`prefetch`)
 
 ```tsx
 // app/actions/dashboard.ts
