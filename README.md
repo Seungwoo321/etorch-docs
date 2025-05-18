@@ -1,217 +1,177 @@
 # E-Torch: 경제지표 대시보드 서비스
 
-## 목차
-
-- [개요](#개요)
-- [문서 바로가기](#문서-바로가기)
-- [기술 스택](#기술-스택)
-- [설치 및 실행](#설치-및-실행)
-
-## 개요
-
-E-Torch는 경제에 횃불을 더해 길을 밝혀준다는 의미를 담은 경제지표 대시보드 서비스입니다. 다양한 출처(KOSIS, ECOS, OECD)의 경제지표 데이터를 통합 제공하고, 사용자 맞춤형 대시보드를 통해 경제지표를 시각화하며 인사이트를 도출합니다.
-
-**서비스 목적**:
-
-- 다양한 출처의 경제지표 데이터 통합 제공
-- 사용자 맞춤형 대시보드를 통한 경제지표 시각화 및 인사이트 도출
-- 전문가와 일반 사용자 모두를 위한 경제데이터 접근성 향상
-
-**개발 방식**:
-
-프론트엔드 주도 개발을 채택하여 UI/UX 설계를 바탕으로 프론트엔드를 먼저 개발하고, json-server를 활용한 모킹 API로 기능을 구현한 후, 최종적으로 Node.js 백엔드로 마이그레이션합니다.
-
-## 문서 바로가기
-
-### 기획 문서
-
-- [E-Torch: 경제지표 대시보드 서비스 기획서](./product-spec.md)
-
-### API 문서
-
--
-
-<!-- - [API 엔드포인트 정의](./api/endpoints.md)
-- [모킹 데이터 구조](./api/mock-data-structure.md)
-- [JSON Server 설정](./api/json-server-setup.md)
-- [백엔드 마이그레이션 계획](./api/migration-plan.md) -->
-
-### 프론트엔드 문서
-
-- [프론트엔드 아키텍처](./frontend/architecture.md)
-- [상태 관리 접근법](./frontend/state-management.md)
-- [핵심 컴포넌트 설계](./frontend/components/core-components.md)
-- [라우팅 구조](./frontend/routing.md)
-- [데이터 흐름 및 API 연동](./frontend/data-flow.md)
-
-### 백엔드 문서
-
--
-
-<!-- - [데이터베이스 스키마](./backend/db-schema.md)
-- [서버 아키텍처 계획](./backend/server-architecture.md)
-- [API 구현 계획](./backend/api-implementation.md) -->
-
-### UI 디자인 문서
-
-- [디자인 시스템](./ui-design/design-system.md)
-- [사용자 흐름](./ui-design/user-flows.md)
-- [UI 요구사항 명세](./ui-design/ui-requirements.md)
-- [와이어프레임](./ui-design/wireframes/)
-
-### 개발 노트
-
--
-<!-- - [프론트엔드 개발 진행 상황](./dev-notes/frontend-progress.md)
-- [모킹 데이터 생성 함수](./dev-notes/mock-data-generation.md)
-- [개발 프로세스 상세](./dev-notes/development-process.md)
-- [UI/UX 피드백](./dev-notes/ui-ux-feedback.md) -->
+E-Torch는 다양한 출처(KOSIS, ECOS, OECD)의 경제지표 데이터를 통합하여 시각화하는 대시보드 서비스입니다. 복잡한 경제 데이터를 누구나 쉽게 이해하고 활용할 수 있도록 직관적인 시각화를 제공합니다.
 
 ## 기술 스택
 
-- **프론트엔드**: React 19 + Next.js 15
-- **UI 프레임워크**: Shandcn/UI + Tailwind CSS 4
-- **그래프 및 차트**: Recharts
-- **대시보드 편집**: react-grid-layout
-- **상태 관리**:
-  - 클라이언트 상태: Zustand (대시보드 구성, 편집 시 복잡한 상태 관리)
-  - 서버 상태: Tanstack Query (데이터 캐싱 및 관리)
-- **모킹 서버**: json-server
-- **백엔드**: Node.js
-- **데이터베이스**: MariaDB
-- **인증**: Supabase
+- **프레임워크**: React 19, Next.js 15
+- **모노레포**: Turborepo, pnpm
+- **상태 관리**: Zustand 5, TanStack Query 5
+- **UI 프레임워크**: Shadcn/UI, Tailwind CSS 4
+- **차트 시각화**: Recharts 2.10+
+- **폼 관리**: React Hook Form 7, Zod 3
+- **타입 관리**: TypeScript 5.5+
+- **테스트**: Vitest, Testing Library, Playwright
 
-## 설치 및 실행
+## 프로젝트 구조
 
-```bash
-# 레포지토리 클론
-git clone [레포지토리 URL]
-
-# 프론트엔드 실행
-cd [프론트엔드 디렉토리]
-npm install
-npm start
-
-# json-server 실행
-cd [json-server 디렉토리]
-npm install
-npm run mock-server
+```
+e-torch/
+├── apps/                # 애플리케이션
+│   ├── web/            # 웹 애플리케이션
+│   └── docs/           # 문서 사이트
+│
+├── packages/            # 공유 패키지
+│   ├── core/           # 타입, 상수, 인터페이스
+│   ├── ui/             # UI 컴포넌트
+│   ├── charts/         # 차트 컴포넌트
+│   ├── dashboard/      # 대시보드 컴포넌트
+│   ├── data-sources/   # 데이터 소스 연동
+│   ├── state/          # 상태 관리
+│   ├── utils/          # 유틸리티 함수
+│   └── server-api/     # API 경로 및 서버 액션
+│
+├── ui-design/          # UI/UX 설계 문서
+│   ├── design-system.md       # 디자인 시스템
+│   ├── ui-requirements.md     # UI 요구사항
+│   ├── user-flows.md          # 사용자 흐름
+│   └── wireframes/            # 와이어프레임
+│
+└── frontend/           # 프론트엔드 아키텍처 문서
+    ├── architecture.md         # 아키텍처 개요
+    ├── components/             # 컴포넌트 설계
+    │   └── core-components.md  # 핵심 컴포넌트
+    ├── data-flow.md            # 데이터 흐름
+    ├── routing.md              # 라우팅 구조
+    └── state-management.md     # 상태 관리
 ```
 
-## 개발 현황 TODO LIST
+## 시작하기
 
-### 1. UI/UX 기획 및 디자인
+### 개발 환경 설정
 
-- [ ] 타겟 사용자 페르소나 정의 (전문 투자자/경제 전문가, 일반 투자자/경제 관심층)
-- [ ] 주요 사용자 시나리오 작성
-- [ ] 대시보드 레이아웃 구조 설계
-- [ ] 디자인 시스템 정의 (색상, 타이포그래피, 아이콘)
-- [ ] 메인 대시보드 화면 와이어프레임 작성 (SVG)
-- [ ] 차트 에디터 화면 와이어프레임 작성 (SVG)
-- [ ] 대시보드 에디터 화면 와이어프레임 작성 (SVG)
-- [ ] 구독 관리 화면 와이어프레임 작성 (SVG)
-- [ ] 반응형 디자인 가이드라인 작성
-- [ ] 디자인 리뷰 및 수정
-- [ ] 최종 UI 규격 문서화
+```bash
+# 저장소 클론
+git clone https://github.com/your-org/e-torch.git
+cd e-torch
 
-### 2. API 설계 및 모킹
+# 의존성 설치
+pnpm install
 
-- [ ] 통합 데이터 조회 API 엔드포인트 정의
-- [ ] 대시보드 관리 API 엔드포인트 정의
-- [ ] 사용자 관리 API 엔드포인트 정의
-- [ ] 구독 및 결제 API 엔드포인트 정의
-- [ ] 각 엔드포인트별 요청/응답 형식 명세
-- [ ] 경제지표 데이터 스키마 설계 (KOSIS, ECOS, OECD)
-- [ ] 모킹 데이터 생성 함수 작성
-  - [ ] KOSIS 지표 모킹 데이터 생성
-  - [ ] ECOS 지표 모킹 데이터 생성
-  - [ ] OECD 지표 모킹 데이터 생성
-- [ ] json-server 설정 파일 생성
-- [ ] API 엔드포인트 테스트
-- [ ] API 문서 작성 (Swagger/OpenAPI)
+# 개발 서버 실행
+pnpm dev
+```
 
-### 3. 프론트엔드 개발
+### 빌드 및 배포
 
-- [ ] 프로젝트 초기화 (Next.js 15 + React 19)
-- [ ] Shadcn/UI + Tailwind CSS 4 설정
-- [ ] 폴더 구조 및 아키텍처 설계
-- [ ] 라우팅 구조 구현
-- [ ] 상태 관리 설정 (Zustand, Tanstack Query)
-- [ ] 공통 컴포넌트 개발
-  - [ ] 헤더/푸터 컴포넌트
-  - [ ] 대시보드 레이아웃 컴포넌트 (react-grid-layout)
-  - [ ] 차트 컴포넌트 (Recharts)
-  - [ ] 단일 지표 카드 컴포넌트
-  - [ ] 텍스트 및 설명 카드 컴포넌트
-- [ ] 차트 에디터 컴포넌트 개발
-  - [ ] 차트 유형 선택 기능
-  - [ ] 데이터 소스 및 지표 선택 기능
-  - [ ] 차트 속성 편집 패널
-  - [ ] 추세선, 기준선 추가 기능
-- [ ] 대시보드 에디터 컴포넌트 개발
-  - [ ] 컴포넌트 추가, 이동, 크기 조절 기능
-  - [ ] 대시보드 저장 및 공유 기능
-- [ ] SNS 로그인 연동 (Supabase)
-- [ ] 구독 관리 화면 개발
-- [ ] 화면별 컴포넌트 개발
-  - [ ] 메인 대시보드 화면
-  - [ ] 차트 에디터 화면
-  - [ ] 대시보드 에디터 화면
-  - [ ] 구독 관리 화면
-- [ ] 경제지표 시각화 고급 기능 개발
-  - [ ] 장단기 추세선 자동 생성
-  - [ ] 지표 간 상관관계 분석
-  - [ ] 특정 이벤트 포인트 마킹
-- [ ] 반응형 디자인 적용
-- [ ] 다크모드 지원
-- [ ] 접근성(A11Y) 개선
-- [ ] 성능 최적화
-- [ ] 단위 테스트 작성
-- [ ] E2E 테스트 작성
+```bash
+# 프로젝트 빌드
+pnpm build
 
-### 4. 백엔드 개발
+# 테스트 실행
+pnpm test
 
-- [ ] Node.js 프로젝트 초기화
-- [ ] MariaDB 데이터베이스 스키마 설계
-- [ ] 데이터베이스 연결 설정
-- [ ] 데이터 마이그레이션 스크립트 개발
-- [ ] API 라우터 구조 설계
-- [ ] 미들웨어 설정 (로깅, 에러 처리, CORS)
-- [ ] Supabase 인증 통합
-- [ ] 데이터 파이프라인 개발
-  - [ ] KOSIS 데이터 수집 스크립트
-  - [ ] ECOS 데이터 수집 스크립트
-  - [ ] OECD 데이터 수집 스크립트
-  - [ ] 데이터 정규화 모듈
-- [ ] 각 엔드포인트 핸들러 개발
-  - [ ] 통합 데이터 조회 API
-  - [ ] 대시보드 관리 API
-  - [ ] 사용자 관리 API
-  - [ ] 구독 및 결제 API
-- [ ] 토스페이먼츠 결제 연동
-- [ ] 데이터 업데이트 일정 작업 구현
-- [ ] 단위 테스트 작성
-- [ ] 통합 테스트 작성
-- [ ] 성능 최적화
-- [ ] 보안 강화 조치
+# 린트 검사
+pnpm lint
+```
 
-### 5. 통합 및 배포
+## 주요 명령어
 
-- [ ] 프론트엔드-백엔드 통합 테스트
-- [ ] 모킹 서버에서 실제 백엔드로 전환
-- [ ] 개발 환경 배포 설정
-- [ ] CI/CD 파이프라인 구축
-- [ ] 배포 자동화 스크립트 작성
-- [ ] 클라우드 인프라 설정 (AWS 등)
-- [ ] 모니터링 및 로깅 설정
-- [ ] 사용자 테스트 및 피드백 수집
-- [ ] 최종 테스트 및 QA
-- [ ] 서비스 출시
+```bash
+# 새 패키지 생성
+pnpm --filter @e-torch/cli create-package
 
-### 6. 마케팅 및 사용자 확보
+# Storybook 실행
+pnpm --filter @e-torch/ui storybook
 
-- [ ] 전문가 대상 무료 체험 프로그램 기획
-- [ ] 경제/금융 관련 커뮤니티 타겟 마케팅 계획
-- [ ] SNS 광고 콘텐츠 제작
-- [ ] 전문가 협업 프로그램 구축
-- [ ] 워터마크가 포함된 공유 기능 구현
+# 특정 앱 빌드
+pnpm --filter @e-torch/web build
+```
+
+## 문서 안내
+
+### 기획 문서
+
+- [서비스 기획서](./product-spec.md): 서비스 개요, 타겟 사용자, 핵심 기능
+
+### UI/UX 문서
+
+- [디자인 시스템](./ui-design/design-system.md): 색상, 타이포그래피, 컴포넌트 가이드라인
+- [UI 요구사항](./ui-design/ui-requirements.md): UI 컴포넌트 상세 요구사항
+- [사용자 흐름](./ui-design/user-flows.md): 주요 사용자 경험 흐름
+- [와이어프레임](./ui-design/wireframes/README.md): UI 레이아웃 설계
+
+### 프론트엔드 아키텍처 문서
+
+- [아키텍처 개요](./frontend/architecture.md): 전체 아키텍처 설계
+- [핵심 컴포넌트](./frontend/components/core-components.md): 주요 컴포넌트 설계
+- [데이터 흐름](./frontend/data-flow.md): API 연동 및 데이터 처리
+- [라우팅 구조](./frontend/routing.md): 페이지 구조 및 라우팅
+- [상태 관리](./frontend/state-management.md): 상태 관리 전략
+
+## 핵심 패키지 가이드
+
+### @e-torch/ui
+
+Shadcn/UI 기반의 재사용 가능한 UI 컴포넌트 라이브러리입니다.
+
+```tsx
+import { Button } from '@e-torch/ui/components';
+```
+
+### @e-torch/charts
+
+차트 렌더링 및 편집 기능을 제공합니다.
+
+```tsx
+import { TimeSeriesChart } from '@e-torch/charts/components';
+```
+
+### @e-torch/dashboard
+
+대시보드 그리드 및 관리 기능을 제공합니다.
+
+```tsx
+import { DashboardGrid } from '@e-torch/dashboard/components';
+```
+
+### @e-torch/data-sources
+
+다양한 경제 데이터 소스와의 통합 및 데이터 처리 로직을 제공합니다.
+
+```tsx
+import { useIndicatorData } from '@e-torch/data-sources/hooks';
+```
+
+## 아키텍처 핵심 원칙
+
+1. **모듈성**: 기능별 독립적 패키지화
+2. **확장성**: 새 차트 유형, 데이터 소스 쉽게 추가 가능
+3. **재사용성**: 공통 컴포넌트 추출
+4. **성능**: 대량 데이터 처리 최적화
+5. **접근성**: WCAG 표준 준수
+6. **서버/클라이언트 분리**: Next.js App Router 아키텍처 활용
+
+## 브랜치 전략
+
+- `main`: 프로덕션 배포 브랜치
+- `develop`: 개발 통합 브랜치
+- `feature/*`: 기능 개발 브랜치
+- `release/*`: 릴리즈 준비 브랜치
+- `hotfix/*`: 긴급 수정 브랜치
+
+## 로드맵
+
+프로젝트 로드맵은 [여기](https://github.com/your-username/e-torch/issues/1)에서 확인할 수 있습니다.
+
+### 주요 개발 계획
+
+- [ ] 2025-05-20 ~ 2025-05-31: 환경 설정 및 인증 시스템
+- [ ] 2025-06-01 ~ 2025-06-17: 데이터 소스 관리 및 차트 컴포넌트
+- [ ] 2025-06-18 ~ 2025-07-06: 대시보드 시스템 및 사용자 관리
+- [ ] 2025-07-07 ~ 2025-07-20: 고급 기능 구현, 최적화 및 배포
+
+## 저작권 고지
+
+© 2025 E-Torch. All Rights Reserved.
+이 소프트웨어와 관련 문서는 개인 저작물로, 저작권자의 명시적 허가 없이 복제, 수정, 배포가 금지됩니다.
