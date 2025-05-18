@@ -30,6 +30,47 @@ flowchart TD
 6. **UI 컴포넌트**: 데이터 표시 및 사용자 상호작용
 7. **사용자 상호작용**: 필터링, 정렬, 데이터 조작
 
+## 2.2 아키텍처 계층과 데이터 흐름 통합
+
+E-Torch의 데이터 흐름과 아키텍처 계층을 통합하면 다음과 같이 매핑됩니다:
+
+```mermaid
+flowchart TD
+    subgraph "데이터 흐름 모델"
+        DS[데이터 소스] --> FL[데이터 페칭 레이어]
+        FL --> TL[데이터 변환 레이어]
+        TL --> CL[데이터 캐싱 레이어]
+        CL --> SL[상태 관리 레이어]
+        SL --> UI[UI 컴포넌트]
+    end
+    
+    subgraph "아키텍처 계층 구조"
+        DC[데이터 계층<br>API, Cache, Storage] --> DMC[도메인 계층<br>State, Service]
+        DMC --> AC[애플리케이션 계층<br>Hooks, Context]
+        AC --> PC[프레젠테이션 계층<br>UI, Pages, Layout]
+    end
+    
+    DS -.-> DC
+    FL -.-> DC
+    TL -.-> DC
+    CL -.-> DC
+    SL -.-> DMC
+    UI -.-> PC
+```
+
+### 계층 간 매핑 테이블
+
+| 데이터 흐름 레이어 | 아키텍처 계층 | 주요 책임 | 구현 기술 |
+|------------------|--------------|---------|----------|
+| **데이터 소스** | 데이터 계층 | 원시 데이터 제공 | KOSIS, ECOS, OECD API |
+| **데이터 페칭 레이어** | 데이터 계층 | API 통신, 서버 액션 | Fetch API, 서버 컴포넌트, API 클라이언트 |
+| **데이터 변환 레이어** | 데이터 계층 | 원시 데이터 가공, 정규화 | 유틸리티 함수, 변환 서비스 |
+| **데이터 캐싱 레이어** | 데이터 계층 | 데이터 임시 저장, 재사용 | Tanstack Query, Next.js 캐시 |
+| **상태 관리 레이어** | 도메인 계층 | 클라이언트 상태 관리 | Zustand 스토어 |
+| **UI 컴포넌트** | 프레젠테이션 계층 | 데이터 시각화, 사용자 인터랙션 | React 컴포넌트, Recharts |
+
+이 통합 모델은 데이터가 소스에서 UI까지 흐르는 프로세스와 아키텍처 내 각 계층의 책임을 명확히 보여줍니다.
+
 ## 3. 데이터 소스 구성
 
 E-Torch는 마이그레이션된 경제지표 데이터와 Supabase를 사용하여 사용자 데이터 및 인증을 관리합니다.
@@ -152,12 +193,106 @@ E-Torch는 다양한 데이터 페칭 전략을 사용하여 성능과 사용자
 
 ### 5.1 서버 컴포넌트에서의 데이터 페칭
 
-Next.js 서버 컴포넌트를 활용한 데이터 페칭:
+Next.js 서버 컴포넌트는 E-Torch의 데이터 페칭 전략에서 핵심적인 역할을 합니다. 서버 컴포넌트에서의 데이터 페칭은 다양한 접근 방식을 포함하며, 사용 사례에 따라 적절한 전략을 선택합니다:
 
-1. **초기 데이터 로드**: 페이지 로드 시 서버에서 필요한 데이터 로드
-2. **SEO 최적화**: 서버에서 메타데이터 생성 및 최적화
-3. **클라이언트 번들 최소화**: 데이터를 서버에서 처리하여 클라이언트 번들 크기 감소
-4. **인증 처리**: 서버 컴포넌트에서 Supabase 서버 SDK를 활용한 인증 처리
+#### 5.1.1 통합 데이터 페칭 패턴
+
+```mermaid
+flowchart TD
+    A[서버 컴포넌트 데이터 페칭] --> B[직접 데이터 페칭]
+    A --> C[Supabase 서버 SDK 활용]
+    A --> D[서버 액션 활용]
+    
+    B --> B1[fetch API 직접 사용]
+    B --> B2[데이터베이스 직접 쿼리]
+    
+    C --> C1[인증 컨텍스트 처리]
+    C --> C2[Row Level Security 활용]
+    
+    D --> D1[Form 제출 처리]
+    D --> D2[데이터 변경 작업]
+```
+
+#### 5.1.2 데이터 페칭 전략 매핑
+
+| 사용 사례 | 권장 접근법 | 이유 |
+|----------|------------|------|
+| **공개 데이터 로드** | 직접 fetch API 호출 | 인증 없이 간단하게 데이터 로드 가능 |
+| **사용자 인증이 필요한 데이터** | Supabase 서버 SDK | 서버 측에서 안전하게 인증 처리 및 데이터 접근 |
+| **대량의 대시보드 데이터** | 최적화된 직접 쿼리 | 데이터 변환 및 필터링을 서버에서 효율적으로 처리 |
+| **사용자 액션 기반 데이터 변경** | 서버 액션 | 폼 제출 및 클라이언트 상호작용과 연계된 데이터 처리 |
+
+#### 5.1.3 서버 컴포넌트 데이터 페칭 예시
+
+```tsx
+// 1. 기본 fetch API를 사용한 공개 데이터 페칭
+// app/(dashboard)/explore/page.tsx
+export default async function ExplorePage() {
+  // 서버 컴포넌트에서 직접 데이터 페칭
+  const publicDashboards = await fetch('https://api.e-torch.com/dashboards/public')
+    .then(res => res.json());
+  
+  return <DashboardExploreGrid dashboards={publicDashboards} />;
+}
+
+// 2. Supabase 서버 SDK를 활용한 인증 처리 및 데이터 페칭
+// app/(dashboard)/dashboard/[id]/page.tsx
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+
+export default async function DashboardPage({ params }: { params: { id: string } }) {
+  // 서버 컴포넌트에서 Supabase 클라이언트 생성
+  const cookieStore = cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: () => cookieStore }
+  );
+  
+  // 인증된 사용자의 대시보드 데이터 로드
+  const { data: dashboard } = await supabase
+    .from('dashboards')
+    .select('*')
+    .eq('id', params.id)
+    .single();
+  
+  // 로드된 데이터를 클라이언트 컴포넌트로 전달
+  return <DashboardComponent initialData={dashboard} />;
+}
+
+// 3. 서버 액션을 활용한 데이터 변경
+// app/actions/dashboard.ts
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+
+export async function saveDashboard(dashboardId: string, data: DashboardData) {
+  const cookieStore = cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: () => cookieStore }
+  );
+  
+  // 데이터 저장
+  const { error } = await supabase
+    .from('dashboards')
+    .update(data)
+    .eq('id', dashboardId);
+  
+  // 캐시 무효화
+  if (!error) {
+    revalidatePath(`/dashboard/${dashboardId}`);
+    return { success: true };
+  }
+  
+  return { success: false, error: error.message };
+}
+```
+
+이 통합된 접근 방식은 `frontend/architecture.md`에서 설명하는 "서버에서 대시보드 데이터 페칭"의 일반적인 개념과 `frontend/data-flow.md`에서 언급하는 "Supabase 서버 SDK를 활용한 인증 처리"의 구체적인 기술을 모두 포괄합니다. E-Torch 프로젝트는 데이터 소스와 인증 요구사항에 따라 이러한 다양한 서버 컴포넌트 데이터 페칭 전략을 적절히 조합하여 사용합니다.
 
 ### 5.2 TanStack Query를 활용한 클라이언트 데이터 페칭
 

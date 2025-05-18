@@ -134,33 +134,90 @@ packages/
         └── DashboardEditor.tsx   # 대시보드 에디터
 ```
 
+### 2.3 아키텍처 관점과 컴포넌트 계층 통합
+
+본 문서에서 정의하는 UI 컴포넌트 계층 구조(Page → Layout → Feature → Complex → Base → Atoms)와 
+`frontend/architecture.md`에서 설명하는 아키텍처 계층 구조(프레젠테이션 → 애플리케이션 → 도메인 → 데이터)는 
+서로 다른 관점에서 동일한 시스템을 설명합니다.
+
+다음 매트릭스는 두 관점의 매핑을 보여줍니다:
+
+| UI 컴포넌트 계층 | 주요 책임 | 아키텍처 계층 매핑 |
+|----------------|----------|-----------------|
+| **Page Components** | 라우트에 직접 매핑, 데이터 페칭 조율 | 프레젠테이션 계층(UI) + 데이터 계층(API) |
+| **Layout Components** | 일관된 페이지 구조 제공 | 프레젠테이션 계층(Layout) |
+| **Feature Components** | 비즈니스 기능 캡슐화 | 프레젠테이션 계층(UI) + 애플리케이션 계층(상태 사용) |
+| **Complex Components** | 재사용 가능한 복합 UI | 프레젠테이션 계층(UI) |
+| **Base Components** | 기본 UI 빌딩 블록 | 프레젠테이션 계층(UI) |
+| **Atoms** | 디자인 시스템의 기본 요소 | 프레젠테이션 계층(UI) |
+
+이 매핑을 통해 각 컴포넌트가 UI 구조와 데이터 흐름 모두에서 어떤 위치와 책임을 가지는지 이해할 수 있습니다.
+
+#### 예시: 컴포넌트의 두 관점 매핑
+
+```tsx
+// DashboardPage: Page Component(UI 계층) + 프레젠테이션/데이터 계층(아키텍처 관점)
+// apps/web/app/(dashboard)/dashboard/[id]/page.tsx
+export default async function DashboardPage({ params }) {
+  // 데이터 계층 접근 (서버 컴포넌트 데이터 페칭)
+  const dashboard = await fetchDashboard(params.id);
+  
+  return (
+    <DashboardLayout>
+      <DashboardHeader title={dashboard.title} />
+      <DashboardGrid layout={dashboard.layout} widgets={dashboard.widgets} />
+    </DashboardLayout>
+  );
+}
+
+// ChartRenderer: Complex Component(UI 계층) + 프레젠테이션 계층(아키텍처 관점)
+// packages/charts/src/components/ChartRenderer.tsx
+export function ChartRenderer({ chartType, data, config }) {
+  // 차트 유형에 따른 렌더링 로직
+  return (
+    <div className="chart-container">
+      {renderChart(chartType, data, config)}
+    </div>
+  );
+}
+```
+
 ## 3. 차트 컴포넌트 설계
 
-차트 표시 및 편집 관련 컴포넌트는 E-Torch의 핵심 기능으로, 다음과 같은 구조로 설계됩니다.
+차트 표시 및 편집 관련 컴포넌트는 E-Torch의 핵심 기능으로, 서버 컴포넌트와 클라이언트 컴포넌트의 조합으로 구현됩니다. 아래는 차트 컴포넌트의 전체 계층 구조를 명확히 보여줍니다:
 
-### 3.1 차트 렌더러 컴포넌트
+### 3.1 차트 컴포넌트 전체 계층
 
 ```mermaid
 flowchart TD
-    A[ChartComponent] --> B[ChartRenderer]
-    B --> C[Specialized Chart Components]
-    C --> C1[TimeSeriesChart]
-    C --> C2[BarChart]
-    C --> C3[ScatterChart]
-    C --> C4[RadarChart]
-    C --> C5[RadialBarChart]
-    A --> D[ChartControls]
-    D --> D1[ZoomControls]
-    D --> D2[DownloadOptions]
-    D --> D3[DataLegend]
+    SSR[ChartServerWrapper] --> DataLoader[ChartDataLoader]
+    DataLoader --> ClientChart[ChartComponent]
+    ClientChart --> Renderer[ChartRenderer]
+    Renderer --> SpecializedCharts[Specialized Chart Components]
+    SpecializedCharts --> TimeSeries[TimeSeriesChart]
+    SpecializedCharts --> Bar[BarChart]
+    SpecializedCharts --> Scatter[ScatterChart]
+    SpecializedCharts --> Other[기타 차트 타입...]
+    
+    Controls[ChartControls] --> ClientChart
+    
+    classDef server fill:#ccffcc,stroke:#333,stroke-width:1px,color:#000;
+    classDef client fill:#ffcccb,stroke:#333,stroke-width:1px,color:#000;
+    
+    class SSR,DataLoader server;
+    class ClientChart,Renderer,SpecializedCharts,TimeSeries,Bar,Scatter,Other,Controls client;
 ```
 
-#### 주요 컴포넌트 책임
+#### 컴포넌트별 책임 정의
 
-- **ChartComponent**: 최상위 래퍼 컴포넌트, props 검증 및 기본값 제공
-- **ChartRenderer**: 차트 유형에 따라 적절한 렌더러 선택
-- **Specialized Chart Components**: 각 차트 유형별 구현 (Recharts 활용)
-- **ChartControls**: 차트와 상호작용하는 기본 제어 도구 제공
+| 컴포넌트 | 유형 | 책임 |
+|---------|------|-----|
+| **ChartServerWrapper** | 서버 | 서버 측 데이터 페칭, 초기 데이터 준비, 메타데이터 로드 |
+| **ChartDataLoader** | 서버 | 차트별 데이터 로드 최적화, 데이터 변환 |
+| **ChartComponent** | 클라이언트 | 차트 렌더링 상태 관리, 이벤트 핸들링, 서버 데이터 hydration |
+| **ChartRenderer** | 클라이언트 | 차트 타입에 따른 렌더링 로직 분기, 공통 렌더링 프로퍼티 관리 |
+| **Specialized Charts** | 클라이언트 | 특정 차트 유형(시계열, 바 차트 등)별 렌더링 로직 |
+| **ChartControls** | 클라이언트 | 차트 인터랙션 컨트롤(확대/축소, 다운로드 등) |
 
 ### 3.2 차트 에디터 컴포넌트
 
@@ -1135,14 +1192,209 @@ flowchart TD
 
 ## 8. 접근성 및 국제화 지원
 
-### 8.1 접근성 컴포넌트
+## 8.1 접근성 컴포넌트
 
-모든 컴포넌트는 WCAG 2.1 AA 준수를 목표로 하며, 다음과 같은 접근성 고려사항을 포함합니다:
+E-Torch는 WCAG 2.1 AA 수준 준수를 목표로 하며, 다음과 같은 접근성 고려사항을 컴포넌트 설계에 포함합니다:
 
-- **SkipLink**: 키보드 사용자를 위한 메인 콘텐츠 바로가기 링크
-- **FocusTrap**: 모달 및 다이얼로그에서 포커스를 가두는 컴포넌트
-- **ScreenReaderOnly**: 시각적으로 숨겨지지만 스크린 리더에서 읽히는 텍스트
-- **KeyboardNavigation**: 키보드 내비게이션 지원 유틸리티
+### 8.1.1 키보드 내비게이션 컴포넌트
+
+```tsx
+// 키보드 사용자를 위한 메인 콘텐츠 바로가기 링크
+function SkipLink({ targetId }: { targetId: string }) {
+  return (
+    <a 
+      href={`#${targetId}`} 
+      className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-white focus:text-primary"
+    >
+      콘텐츠로 건너뛰기
+    </a>
+  );
+}
+
+// 모달 및 다이얼로그에서 포커스를 가두는 컴포넌트
+function FocusTrap({ children }: { children: React.ReactNode }) {
+  // 첫 번째/마지막 포커스 가능 요소 참조
+  const ref = useRef<HTMLDivElement>(null);
+  
+  // 키보드 탐색 제어 로직
+  useEffect(() => {
+    const trapFocus = (e: KeyboardEvent) => {
+      // 포커스 트랩 구현 로직
+    };
+    
+    document.addEventListener('keydown', trapFocus);
+    return () => document.removeEventListener('keydown', trapFocus);
+  }, []);
+  
+  return <div ref={ref}>{children}</div>;
+}
+
+// 키보드 내비게이션 지원 유틸리티
+function KeyboardNavigation({ 
+  items, 
+  onItemSelect,
+  orientation = 'vertical' 
+}: KeyboardNavigationProps) {
+  // 키보드 내비게이션 처리 로직
+  // 수직/수평 방향키 처리, Home/End 키 처리 등
+}
+```
+
+### 8.1.2 스크린 리더 지원
+
+```tsx
+// 시각적으로 숨겨지지만 스크린 리더에서 읽히는 텍스트
+function ScreenReaderOnly({ children }: { children: React.ReactNode }) {
+  return <span className="sr-only">{children}</span>;
+}
+
+// 차트를 위한 접근성 테이블 컴포넌트
+function AccessibleChartTable({ 
+  data, 
+  columns, 
+  summary 
+}: AccessibleChartTableProps) {
+  return (
+    <div className="sr-only">
+      <table>
+        <caption>{summary}</caption>
+        <thead>
+          <tr>
+            {columns.map(column => (
+              <th key={column.key} scope="col">{column.label}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((row, i) => (
+            <tr key={i}>
+              {columns.map(column => (
+                <td key={column.key}>{row[column.key]}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ARIA 라이브 영역 컴포넌트
+function LiveRegion({ 
+  children, 
+  polite = true 
+}: LiveRegionProps) {
+  return (
+    <div 
+      aria-live={polite ? "polite" : "assertive"} 
+      aria-atomic="true"
+    >
+      {children}
+    </div>
+  );
+}
+```
+
+### 8.1.3 색상 및 대비 컴포넌트
+
+```tsx
+// 색상에 의존하지 않는 상태 표시 컴포넌트
+function StatusIndicator({ 
+  status, 
+  label 
+}: StatusIndicatorProps) {
+  // 색상과 함께 아이콘, 텍스트 패턴으로 상태 표시
+  return (
+    <div className={`status-indicator status-${status}`}>
+      <span className="status-icon" aria-hidden="true" />
+      <span>{label}</span>
+    </div>
+  );
+}
+
+// 높은 대비 모드 지원 테마 토글
+function HighContrastToggle({ 
+  enabled, 
+  onChange 
+}: HighContrastToggleProps) {
+  return (
+    <button 
+      onClick={() => onChange(!enabled)}
+      aria-pressed={enabled}
+    >
+      <span className="sr-only">
+        {enabled ? '일반 대비 모드로 전환' : '높은 대비 모드로 전환'}
+      </span>
+      <span aria-hidden="true">
+        {enabled ? 'A' : 'A'}
+      </span>
+    </button>
+  );
+}
+
+// 접근성 차트 패턴 컴포넌트
+function AccessibleChartPatterns() {
+  // SVG 패턴 정의 - 색맹 사용자를 위한 차트 패턴
+  return (
+    <svg width="0" height="0" style={{ position: 'absolute' }}>
+      <defs>
+        <pattern id="pattern-stripe" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45)">
+          <rect width="2" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-dot" patternUnits="userSpaceOnUse" width="4" height="4">
+          <rect width="1" height="1" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        {/* 추가 패턴 */}
+      </defs>
+    </svg>
+  );
+}
+```
+
+### 8.1.4 반응형 접근성 컴포넌트
+
+```tsx
+// 터치 타겟 최적화 컴포넌트
+function TouchTarget({ 
+  children, 
+  as: Component = 'button',
+  ...props 
+}: TouchTargetProps) {
+  return (
+    <Component 
+      className="min-h-[44px] min-w-[44px] flex items-center justify-center" 
+      {...props}
+    >
+      {children}
+    </Component>
+  );
+}
+
+// 반응형 접근성 컨텍스트 제공자
+function AccessibilityProvider({ children }: { children: React.ReactNode }) {
+  // 화면 크기, 입력 방식(터치, 마우스, 키보드), 사용자 선호 설정 등 감지
+  const [inputMethod, setInputMethod] = useState<'touch' | 'pointer' | 'keyboard'>('pointer');
+  const [reducedMotion, setReducedMotion] = useState(false);
+  
+  // 사용자 입력 방식 감지 로직
+  useEffect(() => {
+    // 구현 로직
+  }, []);
+  
+  // prefers-reduced-motion 감지
+  useEffect(() => {
+    // 구현 로직
+  }, []);
+  
+  return (
+    <AccessibilityContext.Provider value={{ inputMethod, reducedMotion }}>
+      {children}
+    </AccessibilityContext.Provider>
+  );
+}
+```
+
+이 컴포넌트들은 `product-spec.md`의 5.3 섹션에서 정의된 접근성 설계 원칙을 구현하며, 모든 E-Torch 컴포넌트에 통합되어 일관된 접근성 경험을 제공합니다.
 
 ### 8.2 국제화 지원 컴포넌트
 

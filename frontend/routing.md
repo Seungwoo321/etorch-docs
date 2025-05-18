@@ -80,16 +80,102 @@ graph TD
     API --> API4["data-sources/"]
 ```
 
-## 4. 페이지별 라우트 설계
+## 4. 기본 및 확장 라우팅 구조
 
-### 4.1 인증 관련 페이지
+E-Torch의 라우팅 구조는 **기본 라우팅**과 **확장 라우팅**으로 구분됩니다. 이는 개발 단계와 기능 구현 우선순위에 따라 점진적으로 구현됩니다.
+
+### 4.1 기본 라우팅 구조
+
+기본 라우팅 구조는 제품의 핵심 기능을 제공하는 필수 경로로 구성됩니다. 이는 MVP(Minimum Viable Product) 단계에서 우선적으로 구현됩니다.
+
+```mermaid
+graph TD
+    Root[app/] --> Auth["(auth)/"]
+    Root --> Dashboard["(dashboard)/"]
+    Root --> Chart["(chart)/"]
+    Root --> Profile["(profile)/"]
+    
+    Auth --> Auth1["login/"]
+    Auth --> Auth2["callback/"]
+    
+    Dashboard --> Dash1["dashboard/"]
+    Dashboard --> Dash2["dashboard/[id]/"]
+    Dashboard --> Dash3["dashboard/new/"]
+    Dashboard --> Dash4["dashboard/[id]/edit/"]
+    Dashboard --> Dash5["explore/"]
+    
+    Chart --> Chart1["chart-editor/[id]/"]
+    Chart --> Chart2["chart/[id]/"]
+    
+    Profile --> Prof1["profile/settings/"]
+    Profile --> Prof2["profile/subscription/"]
+```
+
+### 4.2 확장 라우팅 구조
+
+확장 라우팅 구조는 향상된 사용자 경험을 위한 고급 라우팅 패턴을 포함합니다. 이는 기본 기능 구현 후 점진적으로 추가됩니다.
+
+```mermaid
+graph TD
+    Root[app/] --> Auth["(auth)/"]
+    Root --> Dashboard["(dashboard)/"]
+    Root --> Chart["(chart)/"]
+    Root --> Profile["(profile)/"]
+    Root --> Modal["@modal/"]
+    
+    Auth --> Auth1["login/"]
+    Auth --> Auth2["callback/"]
+    
+    Dashboard --> Dash1["dashboard/"]
+    Dashboard --> Dash2["dashboard/[id]/"]
+    Dashboard --> Dash3["new/"]
+    Dashboard --> Dash4["dashboard/[id]/edit/"]
+    Dashboard --> Dash5["explore/"]
+    Dashboard --> Para["@dashboard/"]
+    
+    Modal --> Modal1["dashboard/[id]/"]
+    Modal --> Modal2["chart/[id]/"]
+    
+    Para --> Para1["info/"]
+    Para --> Para2["share/"]
+    
+    Chart --> Chart1["chart-editor/[id]/"]
+    Chart --> Chart2["chart/[id]/"]
+    Chart --> Chart3["preview/"]
+    
+    Profile --> Prof1["profile/settings/"]
+    Profile --> Prof2["profile/subscription/"]
+    Profile --> Prof3["notifications/"]
+```
+
+### 4.3 라우팅 유형 매핑 테이블
+
+| 경로 | 기본/확장 | 라우팅 패턴 | 구현 우선순위 |
+|-----|-----------|-----------|-------------|
+| `/login`, `/callback` | 기본 | 일반 라우트 | 상 (MVP) |
+| `/dashboard`, `/dashboard/[id]` | 기본 | 일반 라우트 | 상 (MVP) |
+| `/dashboard/new`, `/dashboard/[id]/edit` | 기본 | 일반 라우트 | 상 (MVP) |
+| `/explore` | 기본 | 일반 라우트 | 상 (MVP) |
+| `/chart-editor/[id]`, `/chart/[id]` | 기본 | 일반 라우트 | 상 (MVP) |
+| `/profile/*` | 기본 | 일반 라우트 | 중 |
+| `@modal/dashboard/[id]` | 확장 | 인터셉트 라우트 | 중 |
+| `@modal/chart/[id]` | 확장 | 인터셉트 라우트 | 중 |
+| `@dashboard/info`, `@dashboard/share` | 확장 | 병렬 라우트 | 하 |
+| `/chart/preview` | 확장 | 일반 라우트 | 하 |
+| `/profile/notifications` | 확장 | 일반 라우트 | 하 |
+
+이 구조를 통해 E-Torch는 핵심 기능을 우선적으로 구현하면서도, 향후 사용자 경험을 향상시키기 위한 고급 라우팅 기능을 점진적으로 도입할 수 있습니다.
+
+## 5. 페이지별 라우트 설계
+
+### 5.1 인증 관련 페이지
 
 | 라우트 | 설명 | 권한 | 컴포넌트 타입 |
 |-------|------|------|--------------|
 | `/login` | 로그인 페이지 | Public | 서버 + 클라이언트 폼 |
 | `/callback` | OAuth 콜백 처리 | Public | 서버 컴포넌트 |
 
-### 4.2 대시보드 관련 페이지
+### 5.2 대시보드 관련 페이지
 
 | 라우트 | 설명 | 권한 | 컴포넌트 타입 |
 |-------|------|------|--------------|
@@ -99,14 +185,14 @@ graph TD
 | `/dashboard/[id]/edit` | 대시보드 편집 | Owner | 서버 + 클라이언트 에디터 |
 | `/explore` | 공유 대시보드 탐색 | Authenticated | 서버 + 클라이언트 필터링 |
 
-### 4.3 차트 관련 페이지
+### 5.3 차트 관련 페이지
 
 | 라우트 | 설명 | 권한 | 컴포넌트 타입 |
 |-------|------|------|--------------|
 | `/chart-editor/[id]` | 차트 생성/편집 | Authenticated | 서버 + 클라이언트 에디터 |
 | `/chart/[id]` | 개별 차트 상세 조회 | Authenticated | 서버 + 클라이언트 차트 |
 
-### 4.4 프로필 관련 페이지
+### 5.4 프로필 관련 페이지
 
 | 라우트 | 설명 | 권한 | 컴포넌트 타입 |
 |-------|------|------|--------------|
@@ -114,7 +200,7 @@ graph TD
 | `/profile/subscription` | 구독 관리 | Authenticated | 서버 + 클라이언트 결제 |
 | `/profile/notifications` | 알림 설정 | Authenticated | 서버 + 클라이언트 토글 |
 
-## 5. 레이아웃 구조
+## 6. 레이아웃 구조
 
 E-Torch는 계층적 레이아웃 구조를 사용하여 일관된 사용자 경험을 제공합니다:
 
@@ -147,7 +233,7 @@ flowchart TD
     class Login,Callback,DashboardList,DashboardDetail,DashboardEdit,Explore,ChartEditor,ChartDetail,Settings,Subscription,Notifications page
 ```
 
-### 5.1 레이아웃 책임 분리
+### 6.1 레이아웃 책임 분리
 
 각 레이아웃은 명확한 책임을 갖는 구조로 설계되어 있습니다:
 
@@ -185,9 +271,9 @@ flowchart TD
     end
 ```
 
-## 6. 동적 라우팅 전략
+## 7. 동적 라우팅 전략
 
-### 6.1 대시보드 및 차트 ID 라우팅 패턴
+### 7.1 대시보드 및 차트 ID 라우팅 패턴
 
 ```mermaid
 flowchart LR
@@ -207,7 +293,7 @@ flowchart LR
     end
 ```
 
-### 6.2 동적 라우트 접근 제어 패턴
+### 7.2 동적 라우트 접근 제어 패턴
 
 ```mermaid
 flowchart TD
@@ -218,9 +304,9 @@ flowchart TD
     C -->|권한 없음| F[403 페이지/리디렉션]
 ```
 
-## 7. 네비게이션 및 라우트 보호
+## 8. 네비게이션 및 라우트 보호
 
-### 7.1 네비게이션 컴포넌트 구조
+### 8.1 네비게이션 컴포넌트 구조
 
 ```mermaid
 flowchart TD
@@ -239,7 +325,7 @@ flowchart TD
     end
 ```
 
-### 7.2 라우트 보호 아키텍처
+### 8.2 라우트 보호 아키텍처
 
 ```mermaid
 flowchart TD
@@ -261,9 +347,9 @@ flowchart TD
     B -->|렌더링| C
 ```
 
-## 8. 클라이언트 측 네비게이션 최적화
+## 9. 클라이언트 측 네비게이션 최적화
 
-### 8.1 효율적인 네비게이션 패턴
+### 9.1 효율적인 네비게이션 패턴
 
 ```mermaid
 flowchart LR
@@ -285,7 +371,7 @@ flowchart LR
     end
 ```
 
-### 8.2 모달 라우팅 구조
+### 9.2 모달 라우팅 구조
 
 ```mermaid
 flowchart TD
@@ -301,9 +387,9 @@ flowchart TD
     B1 -.-> |"대체"| C2
 ```
 
-## 9. 메타데이터 전략
+## 10. 메타데이터 전략
 
-### 9.1 메타데이터 계층 구조
+### 10.1 메타데이터 계층 구조
 
 ```mermaid
 flowchart TD
@@ -323,7 +409,7 @@ flowchart TD
     A -->|"상속"| B -->|"상속"| C
 ```
 
-### 9.2 동적 메타데이터 생성 전략
+### 10.2 동적 메타데이터 생성 전략
 
 ```mermaid
 flowchart LR
@@ -344,9 +430,9 @@ flowchart LR
     end
 ```
 
-## 10. 라우트 핸들러 (API 라우트)
+## 11. 라우트 핸들러 (API 라우트)
 
-### 10.1 API 라우트 구조
+### 11.1 API 라우트 구조
 
 ```mermaid
 flowchart TD
@@ -372,7 +458,7 @@ flowchart TD
     end
 ```
 
-### 10.2 라우트 핸들러 응답 패턴
+### 11.2 라우트 핸들러 응답 패턴
 
 ```mermaid
 flowchart TD
@@ -385,9 +471,9 @@ flowchart TD
     end
 ```
 
-## 11. 서버 액션 활용 전략
+## 12. 서버 액션 활용 전략
 
-### 11.1 서버 액션 워크플로우
+### 12.1 서버 액션 워크플로우
 
 ```mermaid
 flowchart LR
@@ -405,7 +491,7 @@ flowchart LR
     E --> F
 ```
 
-### 11.2 주요 서버 액션 분류
+### 12.2 주요 서버 액션 분류
 
 ```mermaid
 flowchart TD
@@ -422,7 +508,7 @@ flowchart TD
     end
 ```
 
-## 12. 결론
+## 13. 결론
 
 E-Torch의 라우팅 구조는 Next.js App Router의 최신 기능을 활용하여 사용자 중심의 직관적인 인터페이스를 제공합니다. 주요 특징은 다음과 같습니다:
 
