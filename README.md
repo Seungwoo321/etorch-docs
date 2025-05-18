@@ -162,7 +162,7 @@ import { useIndicatorData } from '@e-torch/data-sources/hooks';
 
 ## 로드맵
 
-프로젝트 로드맵은 [여기](https://github.com/your-username/e-torch/issues/1)에서 확인할 수 있습니다.
+프로젝트 로드맵은 [여기](./ROADMAP.md)에서 확인할 수 있습니다.
 
 ### 주요 개발 계획
 
