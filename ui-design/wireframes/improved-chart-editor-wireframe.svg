@@ -9,12 +9,6 @@
   <!-- 글로벌 컨트롤 영역 (상단) -->
   <rect x="0" y="60" width="800" height="60" fill="white" stroke="black" stroke-width="1"/>
   
-  <!-- 차트 유형 선택 -->
-  <text x="20" y="85" font-family="Arial" font-size="12">차트 유형:</text>
-  <rect x="90" y="70" width="130" height="25" fill="white" stroke="black" stroke-width="1"/>
-  <text x="100" y="87" font-family="Arial" font-size="12">시계열</text>
-  <polygon points="210,70 220,82 210,95" fill="white" stroke="black" stroke-width="1"/>
-  
   <!-- 조회 기간 -->
   <text x="240" y="85" font-family="Arial" font-size="12">조회 기간:</text>
   <rect x="310" y="70" width="180" height="25" fill="white" stroke="black" stroke-width="1"/>

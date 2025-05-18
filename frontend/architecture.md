@@ -1,8 +1,8 @@
-# E-Torch 프론트엔드 모노레포 아키텍처 고급 설계서
+# E-Torch 프론트엔드 아키텍처 설계 문서
 
 ## 1. 개요
 
-E-Torch는 다양한 출처(KOSIS, ECOS, OECD)의 경제지표 데이터를 통합하여 시각화하는 대시보드 서비스입니다. 본 문서는 E-Torch의 프론트엔드 아키텍처를 모노레포 구조로 설계하며, 특히 Next.js의 서버/클라이언트 컴포넌트 분리 전략과 차트 컴포넌트, 대시보드 시스템 등의 핵심 기능을 모듈화하고 확장 가능한 아키텍처를 제시합니다.
+E-Torch는 다양한 출처(KOSIS, ECOS, OECD)의 경제지표 데이터를 통합하여 시각화하는 대시보드 서비스입니다. 본 문서는 E-Torch의 프론트엔드 아키텍처를 모노레포 구조로 설계하며, 특히 Next.js의 서버/클라이언트 컴포넌트 분리 전략과 차트 컴포넌트, 대시보드 시스템의 핵심 기능을 모듈화하고 확장 가능한 아키텍처를 제시합니다.
 
 ### 1.1 프로젝트 목표
 
@@ -48,18 +48,18 @@ graph TD
 
 | 영역 | 기술 | 선정 이유 | 버전 |
 |------|------|----------|------|
-| **모노레포 관리** | Turborepo | 빌드 캐싱, 병렬 실행, 의존성 관리 기능 우수, pnpm 호환성 | 2.0.0+ |
-| **패키지 관리** | pnpm | 디스크 공간 절약, 의존성 중복 설치 방지, 모노레포 지원 우수 | 8.0.0+ |
-| **프레임워크** | React + Next.js | App Router 지원, 서버 컴포넌트 제공, 최신 기능 활용 | React 19, Next.js 15 |
-| **UI 프레임워크** | Shadcn/UI + Tailwind CSS | 커스터마이징 용이성, 생산성 향상, 확장성 | Tailwind CSS 4 |
-| **상태 관리** | Zustand (클라이언트 상태)<br>Tanstack Query (서버 상태) | 단순한 API, 성능 최적화, 상태 로직 분리 | Zustand 5, Tanstack Query 5 |
-| **차트 라이브러리** | Recharts | React 친화적, 유연한 커스터마이징, 높은 성능 | 2.10.1+ |
-| **대시보드 레이아웃** | react-grid-layout | 드래그 앤 드롭, 리사이징 지원, 반응형 레이아웃 | 1.4.0+ |
-| **타입 검사** | TypeScript | 타입 안정성, 개발 생산성 향상, 오류 감소 | 5.5+ |
-| **폼 관리** | React Hook Form + Zod | 성능 최적화, 선언적 유효성 검사, 타입 안전성 | React Hook Form 7, Zod 3 |
-| **코드 품질 관리** | ESLint + Prettier | 일관된 코드 스타일, 잠재적 오류 감지 | ESLint 9, Prettier 3 |
+| **모노레포 관리** | Turborepo | 빌드 캐싱, 병렬 실행, 의존성 관리 기능 우수 | 2.0.0+ |
+| **패키지 관리** | pnpm | 디스크 공간 절약, 의존성 중복 설치 방지 | 8.0.0+ |
+| **프레임워크** | React + Next.js | App Router, 서버 컴포넌트 제공 | React 19, Next.js 15 |
+| **UI 프레임워크** | Shadcn/UI + Tailwind CSS | 커스터마이징 용이성, 생산성 향상 | Tailwind CSS 4 |
+| **상태 관리** | Zustand, Tanstack Query | 단순한 API, 성능 최적화, 상태 로직 분리 | Zustand 5, TQ 5 |
+| **차트 라이브러리** | Recharts | React 친화적, 유연한 커스터마이징 | 2.10.1+ |
+| **대시보드 레이아웃** | react-grid-layout | 드래그 앤 드롭, 리사이징 지원 | 1.4.0+ |
+| **타입 검사** | TypeScript | 타입 안정성, 개발 생산성 향상 | 5.5+ |
+| **폼 관리** | React Hook Form + Zod | 성능 최적화, 선언적 유효성 검사 | RHF 7, Zod 3 |
+| **코드 품질 관리** | ESLint + Prettier | 일관된 코드 스타일, 오류 감지 | ESLint 9, Prettier 3 |
 | **테스트** | Vitest + Testing Library + Playwright | 단위/통합/E2E 테스트 도구 | Vitest 1, Playwright 1.40+ |
-| **문서화** | Storybook | 컴포넌트 문서화, 시각적 테스트, 개발자 협업 용이성 | 8.0+ |
+| **문서화** | Storybook | 컴포넌트 문서화, 시각적 테스트 | 8.0+ |
 
 ## 3. 아키텍처 계층 구조
 
@@ -156,14 +156,8 @@ graph TD
 - 서버 측 API에 직접 접근해야 하는 경우
 - 민감한 정보(API 키, 토큰 등)가 필요한 경우
 - 대용량 의존성을 클라이언트로 전송하지 않아도 되는 경우
-
-```mermaid
-graph LR
-    A[서버 컴포넌트] -->|데이터 페칭| B[데이터]
-    B -->|데이터 전달| C[클라이언트 컴포넌트]
-    C -->|상호작용 처리| D[사용자 이벤트]
-    D -->|상태 업데이트| C
-```
+- SEO 최적화가 필요한 페이지 컴포넌트
+- 정적 렌더링이 가능한 UI 요소
 
 #### 클라이언트 컴포넌트 사용 지침
 
@@ -173,25 +167,19 @@ graph LR
 - useState, useEffect 등 React 훅을 사용해야 하는 경우
 - 브라우저 전용 API를 사용해야 하는 경우
 - 생명주기 이벤트가 필요한 경우
+- 애니메이션 및 상호작용이 많은 UI 컴포넌트
+- 클라이언트 상태에 의존적인 컴포넌트
 
 #### 하이브리드 패턴
 
 서버/클라이언트 컴포넌트를 효과적으로 조합하는 패턴:
 
-```bash
-app/
-  ├── dashboard/
-  │   ├── [id]/
-  │   │   ├── page.tsx                # 서버 컴포넌트 (페이지)
-  │   │   ├── DashboardClient.tsx     # 클라이언트 컴포넌트
-  │   │   └── ChartContainer.tsx      # 클라이언트 컴포넌트
-  │   └── layout.tsx                  # 서버 컴포넌트 (레이아웃)
-  ├── chart-editor/
-  │   ├── [id]/
-  │   │   ├── page.tsx                # 서버 컴포넌트 (페이지)
-  │   │   ├── EditorClient.tsx        # 클라이언트 컴포넌트
-  │   │   └── ChartPreview.tsx        # 클라이언트 컴포넌트
-  │   └── layout.tsx                  # 서버 컴포넌트 (레이아웃)
+```mermaid
+graph LR
+    A[서버 컴포넌트] -->|데이터 페칭| B[데이터]
+    B -->|데이터 전달| C[클라이언트 컴포넌트]
+    C -->|상호작용 처리| D[사용자 이벤트]
+    D -->|상태 업데이트| C
 ```
 
 ## 4. 모노레포 패키지 구조 설계
@@ -231,9 +219,9 @@ graph TD
     C4 --> C4B[데이터 변환]
     C4 --> C4C[쿼리 관리]
     
-    C5 --> C5A[기본 컴포넌트]
-    C5 --> C5B[폼 컴포넌트]
-    C5 --> C5C[레이아웃 컴포넌트]
+    C5 --> C5A[컴포넌트]
+    C5 --> C5B[서버 래퍼]
+    C5 --> C5C[유틸리티 및 훅]
     
     C6 --> C6A[포맷터]
     C6 --> C6B[유효성 검사]
@@ -251,12 +239,12 @@ graph TD
     classDef client fill:#ffcccb,stroke:#333,stroke-width:1px,color:#000;
     classDef shared fill:#ffffcc,stroke:#333,stroke-width:1px,color:#000;
     
-    class C8,C8A,C8B,C8C server;
-    class C7,C7A,C7B,C7C client;
-    class C1,C1A,C1B,C1C,C2,C2A,C2B,C2C,C3,C3A,C3B,C3C,C4,C4A,C4B,C4C,C5,C5A,C5B,C5C,C6,C6A,C6B,C6C shared;
+    class C8,C8A,C8B,C8C,C5B server;
+    class C7,C7A,C7B,C7C,C5A,C5C client;
+    class C1,C1A,C1B,C1C,C2,C2A,C2B,C2C,C3,C3A,C3B,C3C,C4,C4A,C4B,C4C,C6,C6A,C6B,C6C shared;
 ```
 
-### 4.2 패키지 의존성 구조 상세
+### 4.2 패키지 의존성 구조
 
 각 패키지 간의 의존성을 명확하게 정의하여 순환 의존성을 방지하고 패키지의 책임을 명확히 합니다.
 
@@ -351,198 +339,245 @@ flowchart TD
     class Charts,Dashboard feature;
 ```
 
-### 4.3 패키지별 서버/클라이언트 컴포넌트 구분
+### 4.3 UI 컴포넌트와 서버/클라이언트 통합 전략
 
-각 패키지에서 서버/클라이언트 컴포넌트를 명확히 구분하는 디렉토리 구조와 네이밍 규칙:
-
-```bash
-packages/
-├── ui/
-│   ├── src/
-│   │   ├── server/          # 서버 컴포넌트
-│   │   ├── client/          # 클라이언트 컴포넌트
-│   │   └── shared/          # 서버/클라이언트 모두에서 사용 가능한 컴포넌트
-├── charts/
-│   ├── src/
-│   │   ├── server/          # 서버 컴포넌트 (초기 데이터 로드, SSR용)
-│   │   ├── client/          # 클라이언트 컴포넌트 (인터랙티브 차트)
-│   │   └── shared/          # 공유 타입 및 유틸리티
-├── dashboard/
-│   ├── src/
-│   │   ├── server/          # 서버 컴포넌트 (대시보드 초기 데이터)
-│   │   ├── client/          # 클라이언트 컴포넌트 (인터랙티브 대시보드)
-│   │   └── shared/          # 공유 타입 및 유틸리티
-```
-
-또한 파일 네이밍 규칙을 통해 서버/클라이언트 컴포넌트를 구분:
-
-- 클라이언트 컴포넌트: `*.client.tsx`
-- 서버 컴포넌트: `*.server.tsx`
-- 공유 컴포넌트: `*.tsx`
-
-### 4.4 페이지 라우팅 및 레이아웃 설계
-
-Next.js App Router를 활용한 페이지 라우팅 및 레이아웃 구조:
+Shadcn/UI는 기본적으로 클라이언트 컴포넌트로 제공되므로, 이를 고려한 통합 전략이 필요합니다. 효율적이고 현실적인 접근 방식은 다음과 같습니다:
 
 ```mermaid
-graph TD
-    RootLayout[RootLayout] --> AuthLayout[AuthLayout]
-    RootLayout --> DashboardLayout[DashboardLayout]
-    RootLayout --> EditorLayout[EditorLayout]
-    RootLayout --> ProfileLayout[ProfileLayout]
+flowchart TD
+    subgraph packages/ui
+        UI[UI 패키지] --> Components[컴포넌트]
+        UI --> ServerWrappers[서버 컴포넌트 래퍼]
+        UI --> Hooks[커스텀 훅]
+        UI --> Utils[유틸리티]
+        
+        Components --> ShadcnUI["Shadcn/UI 컴포넌트"]
+        Components --> CustomUI["커스텀 컴포넌트"]
+        
+        ServerWrappers --> ServerButtonWrapper["ButtonWrapper.server.tsx"]
+        ServerWrappers --> ServerCardWrapper["CardWrapper.server.tsx"]
+        ServerWrappers --> ServerDialogWrapper["DialogWrapper.server.tsx"]
+    end
     
-    AuthLayout --> LoginPage[로그인 페이지]
-    AuthLayout --> CallbackPage[OAuth 콜백 페이지]
+    subgraph "사용 패턴"
+        ServerComponent[서버 컴포넌트] --> ServerWrappers
+        ClientComponent[클라이언트 컴포넌트] --> Components
+    end
     
-    DashboardLayout --> DashboardsPage[대시보드 목록 페이지]
-    DashboardLayout --> DashboardDetailPage[대시보드 상세 페이지]
-    DashboardLayout --> DashboardEditPage[대시보드 편집 페이지]
-    DashboardLayout --> ExplorePage[대시보드 탐색 페이지]
+    classDef client fill:#ffcccb,stroke:#333,stroke-width:1px,color:#000;
+    classDef server fill:#ccffcc,stroke:#333,stroke-width:1px,color:#000;
     
-    EditorLayout --> ChartEditorPage[차트 에디터 페이지]
-    
-    ProfileLayout --> ProfileSettingsPage[프로필 설정 페이지]
-    ProfileLayout --> SubscriptionPage[구독 관리 페이지]
-    ProfileLayout --> NotificationPage[알림 설정 페이지]
-    
-    classDef layout fill:#ccffcc,stroke:#333,stroke-width:1px,color:#000;
-    classDef page fill:#ffcccb,stroke:#333,stroke-width:1px,color:#000;
-    
-    class RootLayout,AuthLayout,DashboardLayout,EditorLayout,ProfileLayout layout;
-    class LoginPage,CallbackPage,DashboardsPage,DashboardDetailPage,DashboardEditPage,ExplorePage,ChartEditorPage,ProfileSettingsPage,SubscriptionPage,NotificationPage page;
+    class Components,ShadcnUI,CustomUI,Hooks,Utils,ClientComponent client;
+    class ServerWrappers,ServerButtonWrapper,ServerCardWrapper,ServerDialogWrapper,ServerComponent server;
 ```
+
+#### UI 패키지 구조 및 파일 구성
+
+```
+packages/ui/
+├── src/
+│   ├── components/             # 모든 UI 컴포넌트 (클라이언트)
+│   │   ├── ui/                 # Shadcn/UI 기반 컴포넌트
+│   │   │   ├── button.tsx      # ('use client' 포함)
+│   │   │   ├── card.tsx        # ('use client' 포함)
+│   │   │   └── ...
+│   │   ├── custom/             # 추가 커스텀 컴포넌트
+│   │   └── index.ts            # 통합 내보내기
+│   │
+│   ├── server-wrappers/        # 서버 컴포넌트 래퍼
+│   │   ├── button.server.tsx   # 서버 컴포넌트에서 Button 사용
+│   │   ├── card.server.tsx     # 서버 컴포넌트에서 Card 사용
+│   │   └── index.ts
+│   │
+│   ├── hooks/                  # UI 관련 커스텀 훅
+│   └── utils/                  # UI 유틸리티 함수
+```
+
+#### 서버 컴포넌트 래퍼 패턴 구현
+
+Shadcn/UI와 같은 클라이언트 컴포넌트를 서버 컴포넌트에서 효율적으로 사용하기 위한 래퍼 패턴:
+
+```tsx
+// packages/ui/src/server-wrappers/button.server.tsx
+import { Button } from '../components/ui/button';
+
+export interface ButtonServerProps {
+  children: React.ReactNode;
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  size?: 'default' | 'sm' | 'lg' | 'icon';
+  className?: string;
+}
+
+export function ButtonServer({ 
+  children, 
+  variant = 'default',
+  size = 'default',
+  className 
+}: ButtonServerProps) {
+  // 서버 컴포넌트에서 필요한 로직 (필요시)
+  // 최소한의 props만 전달해 클라이언트 번들 크기 최적화
+  return (
+    <Button variant={variant} size={size} className={className}>
+      {children}
+    </Button>
+  );
+}
+```
+
+#### 페이지 및 레이아웃에서의 사용
+
+```tsx
+// apps/web/app/some-route/page.tsx (서버 컴포넌트)
+import { ButtonServer } from '@/packages/ui/server-wrappers';
+import { SomeClientComponent } from './some-client-component';
+
+export default async function Page() {
+  const data = await fetchSomeData();
+  
+  return (
+    <div>
+      <h1>서버 컴포넌트 페이지</h1>
+      
+      {/* 서버 컴포넌트 래퍼 사용 */}
+      <ButtonServer variant="outline">
+        {data.staticButtonText}
+      </ButtonServer>
+      
+      {/* 클라이언트 컴포넌트 사용 */}
+      <SomeClientComponent clientData={data.clientData} />
+    </div>
+  );
+}
+
+// apps/web/app/some-route/some-client-component.tsx (클라이언트 컴포넌트)
+'use client';
+
+import { Button } from '@/packages/ui/components';
+
+export function SomeClientComponent({ clientData }) {
+  return (
+    <div>
+      {/* 클라이언트 컴포넌트 내에서 직접 UI 컴포넌트 사용 */}
+      <Button 
+        onClick={() => console.log('clicked')}
+        variant="default"
+      >
+        {clientData.buttonText}
+      </Button>
+    </div>
+  );
+}
+```
+
+이 접근 방식은 Shadcn/UI 같은 클라이언트 기반 컴포넌트 라이브러리를 서버 컴포넌트 환경에서 효율적으로 사용할 수 있게 해주며, 불필요한 클라이언트 자바스크립트 전송을 최소화합니다.
 
 ## 5. 핵심 패키지 상세 설계
 
 ### 5.1 `packages/core`
 
-`core` 패키지는 타입 정의, 상수, 공통 인터페이스를 제공합니다. 이 패키지는 다른 모든 패키지의 기반이 되며, 순환 의존성을 방지하기 위해 다른 패키지에 의존하지 않아야 합니다.
+`core` 패키지는 타입 정의, 상수, 인터페이스를 제공합니다. 다른 모든 패키지의 기반이 되며, 순환 의존성 방지를 위해 다른 패키지에 의존하지 않습니다.
 
 #### 5.1.1 타입 시스템 설계
 
-```typescript
-// packages/core/src/types/index.ts
-
-// 사용자 관련 타입
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  avatar?: string;
-  role: 'user' | 'admin';
-  createdAt: string;
-  updatedAt: string;
-}
-
-// 시간 범위 관련 타입
-export type TimeRangePreset = '1D' | '7D' | '1M' | '3M' | '6M' | '1Y' | '5Y' | 'YTD' | 'custom';
-
-export interface TimeRange {
-  from: string;        // ISO 날짜 문자열
-  to: string;          // ISO 날짜 문자열
-  preset?: TimeRangePreset;
-}
-
-// 데이터 관련 타입
-export type DataSource = 'KOSIS' | 'ECOS' | 'OECD';
-export type Period = 'D' | 'M' | 'Q' | 'A';
-
-export interface DataPoint {
-  date: string;        // ISO 날짜 문자열
-  value: number;
-  [key: string]: any;  // 추가 메타데이터
-}
-
-export interface Series {
-  id: string;
-  name: string;
-  data: DataPoint[];
-  color?: string;
-  yAxisId?: 'primary' | 'secondary';
-}
-
-// 차트 관련 타입
-export type ChartType = 
-  | 'timeSeries' 
-  | 'bar' 
-  | 'scatter' 
-  | 'radar' 
-  | 'radialBar' 
-  | 'text';
-
-export interface ChartConfig {
-  id: string;
-  type: ChartType;
-  title: string;
-  description?: string;
-  dataConfig: {
-    queries: DataQuery[];
-    timeRange: TimeRange;
-    refreshInterval?: number;
-  };
-  options: Record<string, any>;  // 차트 유형별 옵션
-}
-
-// 대시보드 관련 타입
-export interface DashboardItem {
-  id: string;
-  type: 'chart' | 'text';
-  config: ChartConfig | TextConfig;
-  gridPos: {
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-  };
-}
-
-export interface Dashboard {
-  id: string;
-  title: string;
-  description?: string;
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-  isPublic: boolean;
-  timeRange?: TimeRange;
-  refreshInterval?: number;
-  items: DashboardItem[];
-  layouts: {
-    [breakpoint: string]: any[];  // react-grid-layout 레이아웃
-  };
-}
+```mermaid
+classDiagram
+    class User {
+        +string id
+        +string email
+        +string name
+        +string? avatar
+        +string role
+        +string createdAt
+        +string updatedAt
+    }
+    
+    class TimeRange {
+        +string from
+        +string to
+        +TimeRangePreset? preset
+    }
+    
+    class DataPoint {
+        +string date
+        +number value
+        +any metadata
+    }
+    
+    class Series {
+        +string id
+        +string name
+        +DataPoint[] data
+        +string? color
+        +string? yAxisId
+    }
+    
+    class ChartConfig {
+        +string id
+        +ChartType type
+        +string title
+        +string? description
+        +DataConfig dataConfig
+        +Record~string,any~ options
+    }
+    
+    class Dashboard {
+        +string id
+        +string title
+        +string? description
+        +string createdBy
+        +string createdAt
+        +string updatedAt
+        +boolean isPublic
+        +TimeRange? timeRange
+        +number? refreshInterval
+        +DashboardItem[] items
+        +Record~string,any[]~ layouts
+    }
+    
+    class DashboardItem {
+        +string id
+        +string type
+        +ChartConfig|TextConfig config
+        +GridPosition gridPos
+    }
+    
+    Dashboard "1" --> "*" DashboardItem
+    DashboardItem "1" --> "1" ChartConfig
+    ChartConfig --> "1..*" Series
+    Series --> "*" DataPoint
+    ChartConfig --> "1" TimeRange
+    Dashboard --> "0..1" TimeRange
 ```
 
 ### 5.2 `packages/charts`
 
-`charts` 패키지는 차트 렌더링 및 편집을 위한 컴포넌트를 제공합니다. 서버/클라이언트 컴포넌트 경계를 명확히 구분합니다.
+`charts` 패키지는 차트 렌더링 및 편집 기능을 제공합니다. 이 패키지는 서버/클라이언트 컴포넌트 분리 전략을 적용하여 설계됩니다.
 
 #### 5.2.1 차트 컴포넌트 아키텍처
 
 ```mermaid
 flowchart TD
-    subgraph 서버 컴포넌트
+    subgraph "서버 컴포넌트"
         ChartSSR[ChartServerWrapper]
         ChartDataLoader[ChartDataLoader]
         ChartMetadataLoader[ChartMetadataLoader]
     end
     
-    subgraph 클라이언트 컴포넌트
-        ChartComponent[ChartComponent.client.tsx]
-        ChartRenderer[ChartRenderer.client.tsx]
-        TimeSeriesChart[TimeSeriesChart.client.tsx]
-        BarChart[BarChart.client.tsx]
-        ScatterChart[ScatterChart.client.tsx]
-        RadarChart[RadarChart.client.tsx]
-        RadialBarChart[RadialBarChart.client.tsx]
-        ChartControls[ChartControls.client.tsx]
+    subgraph "클라이언트 컴포넌트"
+        ChartComponent[ChartComponent]
+        ChartRenderer[ChartRenderer]
+        TimeSeriesChart[TimeSeriesChart]
+        BarChart[BarChart]
+        ScatterChart[ScatterChart]
+        RadarChart[RadarChart]
+        ChartControls[ChartControls]
     end
     
-    subgraph 에디터 컴포넌트
-        ChartEditor[ChartEditor.client.tsx]
-        OptionsPanel[OptionsPanel.client.tsx]
-        DataSourcePanel[DataSourcePanel.client.tsx]
-        PropertyEditors[PropertyEditors/*.client.tsx]
+    subgraph "에디터 컴포넌트"
+        ChartEditor[ChartEditor]
+        OptionsPanel[OptionsPanel]
+        DataSourcePanel[DataSourcePanel]
+        PropertyEditors[PropertyEditors]
     end
     
     ChartSSR --> ChartDataLoader
@@ -556,7 +591,6 @@ flowchart TD
     ChartRenderer --> BarChart
     ChartRenderer --> ScatterChart
     ChartRenderer --> RadarChart
-    ChartRenderer --> RadialBarChart
     
     ChartEditor --> ChartComponent
     ChartEditor --> OptionsPanel
@@ -568,28 +602,56 @@ flowchart TD
     classDef client fill:#ffcccb,stroke:#333,stroke-width:1px,color:#000;
     
     class ChartSSR,ChartDataLoader,ChartMetadataLoader server;
-    class ChartComponent,ChartRenderer,TimeSeriesChart,BarChart,ScatterChart,RadarChart,RadialBarChart,ChartControls,ChartEditor,OptionsPanel,DataSourcePanel,PropertyEditors client;
+    class ChartComponent,ChartRenderer,TimeSeriesChart,BarChart,ScatterChart,RadarChart,ChartControls,ChartEditor,OptionsPanel,DataSourcePanel,PropertyEditors client;
 ```
 
-#### 5.2.2 서버 컴포넌트와 클라이언트 컴포넌트 인터페이스
+#### 5.2.2 차트 패키지 파일 구조
 
-서버 컴포넌트와 클라이언트 컴포넌트 간의 인터페이스 설계:
+```
+packages/charts/
+├── src/
+│   ├── components/            # 클라이언트 컴포넌트
+│   │   ├── ChartComponent.tsx
+│   │   ├── ChartRenderer.tsx
+│   │   ├── chart-types/       # 차트 유형별 컴포넌트
+│   │   │   ├── TimeSeriesChart.tsx
+│   │   │   ├── BarChart.tsx
+│   │   │   └── ...
+│   │   └── controls/          # 차트 컨트롤 컴포넌트
+│   │       ├── ChartControls.tsx
+│   │       └── ...
+│   │
+│   ├── server/                # 서버 컴포넌트
+│   │   ├── ChartServerWrapper.tsx
+│   │   ├── ChartDataLoader.tsx
+│   │   └── ...
+│   │
+│   ├── editor/                # 차트 에디터 컴포넌트 (클라이언트)
+│   │   ├── ChartEditor.tsx
+│   │   ├── panels/
+│   │   └── property-editors/
+│   │
+│   ├── hooks/                 # 차트 관련 훅
+│   └── utils/                 # 차트 유틸리티 함수
+```
 
-```typescript
-// 서버 컴포넌트
+#### 5.2.3 서버/클라이언트 인터페이스
+
+서버 컴포넌트와 클라이언트 컴포넌트 간의 인터페이스:
+
+```tsx
 // packages/charts/src/server/ChartServerWrapper.tsx
-import { ChartConfig } from '@e-torch/core';
-import { ChartComponent } from '../client/ChartComponent.client';
-import { fetchChartData } from './data-fetchers';
+import { ChartComponent } from '../components/ChartComponent';
+import { fetchChartData } from '@/packages/data-sources/server';
 
-interface ChartServerWrapperProps {
+export interface ChartServerWrapperProps {
   chartId: string;
   config: ChartConfig;
   initialTimeRange?: TimeRange;
 }
 
-export async function ChartServerWrapper({ 
-  chartId, 
+export async function ChartServerWrapper({
+  chartId,
   config,
   initialTimeRange
 }: ChartServerWrapperProps) {
@@ -606,62 +668,6 @@ export async function ChartServerWrapper({
     />
   );
 }
-
-// 클라이언트 컴포넌트
-// packages/charts/src/client/ChartComponent.client.tsx
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { ChartConfig, TimeRange } from '@e-torch/core';
-import { ChartRenderer } from './ChartRenderer.client';
-import { ChartControls } from './ChartControls.client';
-
-interface ChartComponentProps {
-  chartId: string;
-  config: ChartConfig;
-  initialData?: any;
-  initialTimeRange?: TimeRange;
-  isEditable?: boolean;
-}
-
-export function ChartComponent({
-  chartId,
-  config,
-  initialData,
-  initialTimeRange,
-  isEditable = false
-}: ChartComponentProps) {
-  const [timeRange, setTimeRange] = useState(initialTimeRange || config.dataConfig.timeRange);
-  
-  // 초기 데이터 활용 후 필요 시 새로운 데이터 페칭
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['chart-data', chartId, timeRange],
-    queryFn: () => fetchChartDataClient(config, timeRange),
-    initialData: initialData
-  });
-  
-  // 나머지 클라이언트 측 로직...
-  
-  return (
-    <div className="chart-component">
-      {isEditable && (
-        <ChartControls
-          timeRange={timeRange}
-          onTimeRangeChange={setTimeRange}
-        />
-      )}
-      
-      <ChartRenderer
-        type={config.type}
-        data={data}
-        options={config.options}
-        isLoading={isLoading}
-        error={error}
-      />
-    </div>
-  );
-}
 ```
 
 ### 5.3 `packages/dashboard`
@@ -672,23 +678,23 @@ export function ChartComponent({
 
 ```mermaid
 flowchart TD
-    subgraph 서버 컴포넌트
+    subgraph "서버 컴포넌트"
         DashboardSSR[DashboardServerWrapper]
         DashboardLoader[DashboardLoader]
         WidgetDataLoader[WidgetDataLoader]
     end
     
-    subgraph 클라이언트 컴포넌트
-        DashboardComponent[DashboardComponent.client.tsx]
-        DashboardGrid[DashboardGrid.client.tsx]
-        DashboardControls[DashboardControls.client.tsx]
-        WidgetContainer[WidgetContainer.client.tsx]
+    subgraph "클라이언트 컴포넌트"
+        DashboardComponent[DashboardComponent]
+        DashboardGrid[DashboardGrid]
+        DashboardControls[DashboardControls]
+        WidgetContainer[WidgetContainer]
     end
     
-    subgraph 에디터 컴포넌트
-        DashboardEditor[DashboardEditor.client.tsx]
-        WidgetEditor[WidgetEditor.client.tsx]
-        LayoutControls[LayoutControls.client.tsx]
+    subgraph "에디터 컴포넌트"
+        DashboardEditor[DashboardEditor]
+        WidgetEditor[WidgetEditor]
+        LayoutControls[LayoutControls]
     end
     
     DashboardSSR --> DashboardLoader
@@ -710,6 +716,33 @@ flowchart TD
     class DashboardComponent,DashboardGrid,DashboardControls,WidgetContainer,DashboardEditor,WidgetEditor,LayoutControls client;
 ```
 
+#### 5.3.2 대시보드 파일 구조
+
+```
+packages/dashboard/
+├── src/
+│   ├── components/            # 클라이언트 컴포넌트
+│   │   ├── DashboardComponent.tsx
+│   │   ├── DashboardGrid.tsx
+│   │   ├── DashboardControls.tsx
+│   │   └── widgets/
+│   │       ├── WidgetContainer.tsx
+│   │       └── ...
+│   │
+│   ├── server/                # 서버 컴포넌트
+│   │   ├── DashboardServerWrapper.tsx
+│   │   ├── DashboardLoader.tsx
+│   │   └── ...
+│   │
+│   ├── editor/                # 대시보드 에디터 컴포넌트
+│   │   ├── DashboardEditor.tsx
+│   │   ├── WidgetEditor.tsx
+│   │   └── ...
+│   │
+│   ├── hooks/                 # 대시보드 관련 훅
+│   └── utils/                 # 대시보드 유틸리티 함수
+```
+
 ### 5.4 `packages/state`
 
 `state` 패키지는 상태 관리 로직을 제공합니다. Zustand를 사용한 클라이언트 상태와 Tanstack Query를 사용한 서버 상태를 관리합니다.
@@ -718,26 +751,26 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    subgraph 글로벌 상태
+    subgraph "글로벌 상태"
         UserStore[UserStore]
         AppSettingsStore[AppSettingsStore]
         ThemeStore[ThemeStore]
         ErrorStore[ErrorStore]
     end
     
-    subgraph 기능 상태
+    subgraph "기능 상태"
         ChartEditorStore[ChartEditorStore]
         DashboardStore[DashboardStore]
         DataQueryStore[DataQueryStore]
     end
     
-    subgraph 서버 상태
+    subgraph "서버 상태"
         ChartDataQuery[ChartDataQuery]
         DashboardQuery[DashboardQuery]
         UserProfileQuery[UserProfileQuery]
     end
     
-    subgraph 이벤트 버스
+    subgraph "이벤트 버스"
         EventBus[EventBus]
     end
     
@@ -758,420 +791,9 @@ flowchart TD
     class EventBus event;
 ```
 
-#### 5.4.2 Zustand 스토어 설계
+## 6. 상태 관리 아키텍처
 
-```typescript
-// packages/state/src/stores/chart-editor-store.ts
-import { create } from 'zustand';
-import { persist, devtools } from 'zustand/middleware';
-import { immer } from 'zustand/middleware/immer';
-import { ChartConfig, ChartType } from '@e-torch/core';
-
-interface ChartEditorState {
-  // 현재 편집 중인 차트 데이터
-  chartId: string | null;
-  config: ChartConfig | null;
-  isDirty: boolean;
-  history: ChartConfig[];
-  historyIndex: number;
-  
-  // 액션
-  initializeEditor: (chartId: string, config: ChartConfig) => void;
-  updateChartType: (type: ChartType) => void;
-  updateTitle: (title: string) => void;
-  updateOptions: (path: string, value: any) => void;
-  updateDataQuery: (queryIndex: number, update: Partial<DataQuery>) => void;
-  addDataQuery: () => void;
-  removeDataQuery: (queryIndex: number) => void;
-  updateTimeRange: (timeRange: TimeRange) => void;
-  
-  // 히스토리 관리
-  undo: () => void;
-  redo: () => void;
-  saveToHistory: () => void;
-  
-  // 저장/초기화
-  saveChart: () => Promise<void>;
-  resetEditor: () => void;
-}
-
-export const useChartEditorStore = create<ChartEditorState>()(
-  devtools(
-    immer(
-      persist(
-        (set, get) => ({
-          // 초기 상태
-          chartId: null,
-          config: null,
-          isDirty: false,
-          history: [],
-          historyIndex: -1,
-          
-          // 구현 내용...
-        }),
-        {
-          name: 'chart-editor-storage',
-        }
-      )
-    )
-  )
-);
-```
-
-#### 5.4.3 Tanstack Query 훅 설계
-
-```typescript
-// packages/state/src/queries/use-dashboard.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Dashboard, DashboardItem } from '@e-torch/core';
-import { fetchDashboard, saveDashboard, deleteDashboard } from '@e-torch/server-api/client';
-
-export function useDashboard(dashboardId: string) {
-  const queryClient = useQueryClient();
-  
-  const dashboardQuery = useQuery({
-    queryKey: ['dashboard', dashboardId],
-    queryFn: () => fetchDashboard(dashboardId),
-  });
-  
-  const saveDashboardMutation = useMutation({
-    mutationFn: (dashboard: Dashboard) => saveDashboard(dashboard),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['dashboard', dashboardId] });
-    },
-  });
-  
-  const deleteDashboardMutation = useMutation({
-    mutationFn: () => deleteDashboard(dashboardId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dashboards'] });
-    },
-  });
-  
-  return {
-    dashboard: dashboardQuery.data,
-    isLoading: dashboardQuery.isLoading,
-    isError: dashboardQuery.isError,
-    error: dashboardQuery.error,
-    saveDashboard: saveDashboardMutation.mutate,
-    isSaving: saveDashboardMutation.isPending,
-    deleteDashboard: deleteDashboardMutation.mutate,
-    isDeleting: deleteDashboardMutation.isPending,
-  };
-}
-```
-
-### 5.5 `packages/ui`
-
-`ui` 패키지는 Shadcn/UI 기반의 공통 UI 컴포넌트를 제공합니다. 서버/클라이언트 컴포넌트를 명확히 구분합니다.
-
-#### 5.5.1 UI 컴포넌트 아키텍처
-
-```mermaid
-flowchart TD
-    subgraph 서버 컴포넌트
-        ServerButton[Button.server.tsx]
-        ServerCard[Card.server.tsx]
-        ServerAvatar[Avatar.server.tsx]
-    end
-    
-    subgraph 클라이언트 컴포넌트
-        ClientButton[Button.client.tsx]
-        ClientDialog[Dialog.client.tsx]
-        ClientTabs[Tabs.client.tsx]
-        ClientForm[Form.client.tsx]
-    end
-    
-    subgraph 복합 컴포넌트
-        DatePicker[DatePicker.client.tsx]
-        DataTable[DataTable.client.tsx]
-        PropertyEditor[PropertyEditor.client.tsx]
-    end
-    
-    ServerButton --> ClientButton
-    ServerCard --> ClientDialog
-    
-    DatePicker --> ClientDialog
-    DataTable --> ClientDialog
-    PropertyEditor --> ClientForm
-    
-    classDef server fill:#ccffcc,stroke:#333,stroke-width:1px,color:#000;
-    classDef client fill:#ffcccb,stroke:#333,stroke-width:1px,color:#000;
-    classDef composite fill:#ffffcc,stroke:#333,stroke-width:1px,color:#000;
-    
-    class ServerButton,ServerCard,ServerAvatar server;
-    class ClientButton,ClientDialog,ClientTabs,ClientForm client;
-    class DatePicker,DataTable,PropertyEditor composite;
-```
-
-#### 5.5.2 Shadcn/UI 확장 및 커스터마이징
-
-```typescript
-// packages/ui/src/server/Button.server.tsx
-import { VariantProps } from 'class-variance-authority';
-import { buttonVariants } from '../shared/variants';
-import { cn } from '../shared/utils';
-
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-}
-
-export function Button({ className, variant, size, asChild = false, ...props }: ButtonProps) {
-  // 서버 컴포넌트에서 사용할 때의 버튼 렌더링
-  return (
-    <button
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
-  );
-}
-
-// packages/ui/src/client/Button.client.tsx
-'use client';
-
-import { forwardRef } from 'react';
-import { Slot } from '@radix-ui/react-slot';
-import { VariantProps } from 'class-variance-authority';
-import { buttonVariants } from '../shared/variants';
-import { cn } from '../shared/utils';
-
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-}
-
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button";
-    
-    // 클라이언트 컴포넌트에서 사용할 때의 인터랙티브 버튼 렌더링
-    return (
-      <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
-        {...props}
-      />
-    );
-  }
-);
-Button.displayName = "Button";
-```
-
-## 6. Next.js App Router 구현 전략
-
-### 6.1 라우팅 및 레이아웃 구조
-
-```bash
-apps/web/
-├── app/
-│   ├── (auth)/               # 인증 관련 라우트 그룹
-│   │   ├── login/
-│   │   │   ├── page.tsx      # 서버 컴포넌트
-│   │   │   └── LoginForm.client.tsx
-│   │   └── auth/
-│   │       ├── callback/
-│   │       │   └── route.ts  # 인증 콜백 API 라우트
-│   │
-│   ├── (dashboard)/         # 대시보드 관련 라우트 그룹
-│   │   ├── layout.tsx        # 대시보드 레이아웃
-│   │   ├── dashboard/
-│   │   │   ├── page.tsx
-│   │   │   └── DashboardList.client.tsx
-│   │   ├── dashboard/[id]/
-│   │   │   ├── page.tsx
-│   │   │   └── DashboardView.client.tsx
-│   │   ├── dashboard/[id]/edit/
-│   │   │   ├── page.tsx
-│   │   │   └── DashboardEditor.client.tsx
-│   │   └── explore/
-│   │       ├── page.tsx
-│   │       └── ExploreView.client.tsx
-│   │
-│   ├── chart-editor/[id]/    # 차트 에디터 라우트
-│   │   ├── page.tsx
-│   │   └── ChartEditor.client.tsx
-│   │
-│   ├── profile/              # 프로필 관련 라우트
-│   │   ├── layout.tsx
-│   │   ├── settings/
-│   │   │   ├── page.tsx
-│   │   │   └── SettingsForm.client.tsx
-│   │   ├── subscription/
-│   │   │   ├── page.tsx
-│   │   │   └── SubscriptionManager.client.tsx
-│   │   └── notifications/
-│   │       ├── page.tsx
-│   │       └── NotificationSettings.client.tsx
-│   │
-│   ├── api/                  # API 라우트
-│   │   ├── charts/
-│   │   │   └── [...params]/
-│   │   │       └── route.ts
-│   │   ├── dashboards/
-│   │   │   └── [...params]/
-│   │   │       └── route.ts
-│   │   └── auth/
-│   │       └── [...nextauth]/
-│   │           └── route.ts
-│   │
-│   ├── layout.tsx            # 루트 레이아웃
-│   └── page.tsx              # 홈페이지
-```
-
-### 6.2 데이터 페칭 전략
-
-Next.js App Router에서의 데이터 페칭 전략은 서버/클라이언트 컴포넌트에 따라 다릅니다.
-
-#### 6.2.1 서버 컴포넌트에서의 데이터 페칭
-
-```typescript
-// apps/web/app/dashboard/[id]/page.tsx
-import { Suspense } from 'react';
-import { fetchDashboard } from '@e-torch/server-api/server';
-import { DashboardView } from './DashboardView.client';
-import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton';
-
-interface DashboardPageProps {
-  params: {
-    id: string;
-  };
-}
-
-export async function generateMetadata({ params }: DashboardPageProps) {
-  const dashboard = await fetchDashboard(params.id);
-  
-  return {
-    title: `${dashboard.title} - E-Torch`,
-    description: dashboard.description || '경제지표 대시보드',
-  };
-}
-
-export default async function DashboardPage({ params }: DashboardPageProps) {
-  // 서버에서 데이터 페칭
-  const dashboard = await fetchDashboard(params.id);
-  
-  return (
-    <Suspense fallback={<DashboardSkeleton />}>
-      <DashboardView
-        dashboardId={params.id}
-        initialData={dashboard}
-      />
-    </Suspense>
-  );
-}
-```
-
-#### 6.2.2 클라이언트 컴포넌트에서의 데이터 페칭
-
-```typescript
-// apps/web/app/dashboard/[id]/DashboardView.client.tsx
-'use client';
-
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Dashboard, TimeRange } from '@e-torch/core';
-import { DashboardComponent } from '@e-torch/dashboard/client';
-import { fetchDashboardClient } from '@e-torch/server-api/client';
-
-interface DashboardViewProps {
-  dashboardId: string;
-  initialData?: Dashboard;
-}
-
-export function DashboardView({ dashboardId, initialData }: DashboardViewProps) {
-  const [timeRange, setTimeRange] = useState<TimeRange | undefined>(
-    initialData?.timeRange
-  );
-  
-  // 초기 데이터로 시작하고 필요 시 업데이트
-  const { data: dashboard, isLoading, error } = useQuery({
-    queryKey: ['dashboard', dashboardId, timeRange],
-    queryFn: () => fetchDashboardClient(dashboardId, timeRange),
-    initialData,
-  });
-  
-  if (isLoading && !initialData) return <p>로딩 중...</p>;
-  if (error) return <p>오류가 발생했습니다.</p>;
-  if (!dashboard) return <p>대시보드를 찾을 수 없습니다.</p>;
-  
-  return (
-    <DashboardComponent
-      dashboard={dashboard}
-      onTimeRangeChange={setTimeRange}
-    />
-  );
-}
-```
-
-### 6.3 서버 액션 활용
-
-Next.js의 서버 액션을 활용하여 폼 제출 및 데이터 변경을 처리합니다.
-
-```typescript
-// apps/web/app/chart-editor/[id]/actions.ts
-'use server';
-
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-import { ChartConfig } from '@e-torch/core';
-import { saveChart } from '@e-torch/server-api/server';
-
-export async function saveChartAction(chartId: string, config: ChartConfig) {
-  try {
-    const savedChart = await saveChart(chartId, config);
-    
-    // 캐시 무효화 및 리디렉션
-    revalidatePath(`/chart-editor/${chartId}`);
-    revalidatePath(`/dashboard/${savedChart.dashboardId}`);
-    
-    return { success: true, chartId: savedChart.id };
-  } catch (error) {
-    return { success: false, error: (error as Error).message };
-  }
-}
-
-// apps/web/app/chart-editor/[id]/ChartEditor.client.tsx
-'use client';
-
-import { useTransition } from 'react';
-import { useChartEditorStore } from '@e-torch/state';
-import { saveChartAction } from './actions';
-
-export function ChartEditorForm() {
-  const [isPending, startTransition] = useTransition();
-  const { chartId, config, isDirty } = useChartEditorStore();
-  
-  const handleSave = () => {
-    if (!chartId || !config) return;
-    
-    startTransition(async () => {
-      const result = await saveChartAction(chartId, config);
-      
-      if (result.success) {
-        // 성공 처리
-      } else {
-        // 오류 처리
-      }
-    });
-  };
-  
-  return (
-    <form>
-      {/* 폼 요소들 */}
-      <button
-        type="button"
-        onClick={handleSave}
-        disabled={!isDirty || isPending}
-      >
-        {isPending ? '저장 중...' : '저장'}
-      </button>
-    </form>
-  );
-}
-```
-
-## 7. 상태 관리 아키텍처
-
-### 7.1 서버 상태와 클라이언트 상태 분리
+### 6.1 서버 상태와 클라이언트 상태 분리
 
 ```mermaid
 graph TD
@@ -1213,7 +835,7 @@ graph TD
     B3 -.-> C3
 ```
 
-### 7.2 Zustand 상태 설계 원칙
+### 6.2 Zustand 상태 설계 원칙
 
 Zustand 상태는 다음 원칙에 따라 설계합니다:
 
@@ -1223,206 +845,23 @@ Zustand 상태는 다음 원칙에 따라 설계합니다:
 4. **선택적 구독**: 컴포넌트는 필요한 상태만 구독합니다.
 5. **영구 상태 분리**: 로컬 스토리지에 저장할 상태만 `persist` 미들웨어를 사용합니다.
 
-#### 7.2.1 스토어 구성 예시
+### 6.3 Tanstack Query 활용 전략
 
-```typescript
-// 차트 에디터 스토어
-const useChartEditorStore = create<ChartEditorState>()(
-  devtools(
-    immer(
-      persist(
-        (set, get) => ({
-          // 상태 및 액션...
-        }),
-        {
-          name: 'chart-editor-storage',
-          partialize: (state) => ({
-            // 로컬 스토리지에 저장할 상태만 선택
-            chartId: state.chartId,
-            config: state.config,
-          }),
-        }
-      )
-    ),
-    { name: 'chart-editor' }
-  )
-);
+1. **쿼리 키 관리**:
+   - 구조화된 쿼리 키 정의
+   - 관련 데이터에 대한 쿼리 키 정의 일관성 유지
 
-// 컴포넌트에서의 선택적 구독
-function ChartTypeSelector() {
-  // 필요한 상태만 선택적으로 구독
-  const chartType = useChartEditorStore((state) => state.config?.type);
-  const updateChartType = useChartEditorStore((state) => state.updateChartType);
-  
-  // ...
-}
-```
+2. **쿼리 무효화 전략**:
+   - 데이터 변경 시 관련 쿼리 자동 무효화
+   - 상호 의존적 데이터 간 일관성 유지
 
-### 7.3 Tanstack Query 활용 전략
+3. **리액트 쿼리 최적화**:
+   - 적절한 staleTime 설정
+   - 선택적 리페칭 전략 적용
 
-Tanstack Query를 활용한 서버 상태 관리 전략:
+## 7. 데이터 처리 및 변환 파이프라인
 
-1. **리액트 쿼리 클라이언트 설정**:
-
-   ```typescript
-   // apps/web/app/providers.tsx
-   'use client';
-   
-   import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-   import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-   
-   const queryClient = new QueryClient({
-     defaultOptions: {
-       queries: {
-         staleTime: 1000 * 60 * 5, // 5분
-         refetchOnWindowFocus: false,
-         retry: 1,
-       },
-     },
-   });
-   
-   export function Providers({ children }: { children: React.ReactNode }) {
-     return (
-       <QueryClientProvider client={queryClient}>
-         {children}
-         <ReactQueryDevtools initialIsOpen={false} />
-       </QueryClientProvider>
-     );
-   }
-   ```
-
-2. **쿼리 키 관리 전략**:
-
-   ```typescript
-   // packages/state/src/queries/query-keys.ts
-   export const queryKeys = {
-     dashboard: {
-       all: ['dashboards'] as const,
-       detail: (id: string) => ['dashboard', id] as const,
-       byUser: (userId: string) => ['dashboards', 'user', userId] as const,
-     },
-     chart: {
-       detail: (id: string) => ['chart', id] as const,
-       data: (id: string, timeRange?: TimeRange) => 
-         ['chart-data', id, timeRange] as const,
-     },
-     user: {
-       detail: (id: string) => ['user', id] as const,
-       profile: () => ['user', 'profile'] as const,
-     },
-   };
-   ```
-
-3. **쿼리 무효화 전략**:
-
-   ```typescript
-   // 데이터 변경 후 관련 쿼리 무효화
-   const saveDashboardMutation = useMutation({
-     mutationFn: (dashboard: Dashboard) => saveDashboard(dashboard),
-     onSuccess: (data) => {
-       // 해당 대시보드 쿼리 무효화
-       queryClient.invalidateQueries({ 
-         queryKey: queryKeys.dashboard.detail(data.id),
-       });
-       
-       // 관련 차트 쿼리 무효화
-       data.items
-         .filter(item => item.type === 'chart')
-         .forEach(item => {
-           queryClient.invalidateQueries({
-             queryKey: queryKeys.chart.detail(item.id),
-           });
-         });
-       
-       // 사용자의 대시보드 목록 쿼리 무효화
-       queryClient.invalidateQueries({ 
-         queryKey: queryKeys.dashboard.byUser(data.createdBy),
-       });
-     },
-   });
-   ```
-
-### 7.4 이벤트 버스 패턴
-
-컴포넌트 간 느슨한 결합을 위한 이벤트 버스 패턴:
-
-```typescript
-// packages/state/src/event-bus.ts
-import { create } from 'zustand';
-
-export type EventType = 
-  | 'dashboard:timeRangeChanged'
-  | 'dashboard:widgetAdded'
-  | 'dashboard:widgetRemoved'
-  | 'chart:dataUpdated'
-  | 'chart:optionsChanged';
-
-interface EventPayload<T = any> {
-  type: EventType;
-  payload: T;
-}
-
-type EventCallback<T = any> = (payload: T) => void;
-
-interface EventBusState {
-  listeners: Map<EventType, Set<EventCallback>>;
-  
-  subscribe: <T>(type: EventType, callback: EventCallback<T>) => () => void;
-  publish: <T>(type: EventType, payload: T) => void;
-}
-
-export const useEventBus = create<EventBusState>()((set, get) => ({
-  listeners: new Map(),
-  
-  subscribe: (type, callback) => {
-    const { listeners } = get();
-    
-    if (!listeners.has(type)) {
-      listeners.set(type, new Set());
-    }
-    
-    const typeListeners = listeners.get(type)!;
-    typeListeners.add(callback as EventCallback<any>);
-    
-    set({ listeners: new Map(listeners) });
-    
-    // 구독 해제 함수 반환
-    return () => {
-      const { listeners } = get();
-      const typeListeners = listeners.get(type);
-      
-      if (typeListeners) {
-        typeListeners.delete(callback as EventCallback<any>);
-        set({ listeners: new Map(listeners) });
-      }
-    };
-  },
-  
-  publish: (type, payload) => {
-    const { listeners } = get();
-    const typeListeners = listeners.get(type);
-    
-    if (typeListeners) {
-      typeListeners.forEach(callback => {
-        callback(payload);
-      });
-    }
-  },
-}));
-
-// 이벤트 구독 훅
-export function useEventListener<T = any>(type: EventType, callback: EventCallback<T>) {
-  const subscribe = useEventBus(state => state.subscribe);
-  
-  useEffect(() => {
-    return subscribe(type, callback);
-  }, [type, callback, subscribe]);
-}
-```
-
-## 8. 데이터 처리 및 변환 파이프라인
-
-### 8.1 데이터 페칭 및 변환 파이프라인
+### 7.1 데이터 페칭 및 변환 파이프라인
 
 ```mermaid
 flowchart LR
@@ -1450,69 +889,115 @@ flowchart LR
     end
 ```
 
-### 8.2 데이터 파이프라인 구현
+### 7.2 데이터 정규화 전략
 
-```typescript
-// packages/data-sources/src/pipeline/pipeline.ts
-import { DataSource, TimeRange, Period, DataPoint, Series } from '@e-torch/core';
-import { fetchRawData } from './connectors';
-import { normalizeData } from './normalizers';
-import { filterData } from './filters';
-import { transformData } from './transformers';
-import { aggregateData } from './aggregators';
+데이터 소스별로 다른 형식의 데이터를 통일된 형식으로 변환하는 전략:
 
-interface DataPipelineOptions {
-  source: DataSource;
-  indicatorCode: string;
-  timeRange: TimeRange;
-  period: Period;
-  transformation?: 'original' | 'change' | 'change-yoy' | 'cumulative';
-  aggregation?: 'none' | 'sum' | 'average' | 'min' | 'max';
-  filters?: Record<string, any>;
-}
+1. **소스별 어댑터 패턴**: 각 데이터 소스(KOSIS, ECOS, OECD)에 대한 어댑터 구현
+2. **표준 시계열 데이터 형식**: 모든 데이터를 동일한 시계열 데이터 형식으로 변환
+3. **메타데이터 통합**: 소스별 메타데이터를 통합된 형식으로 정규화
+4. **데이터 변환 파이프라인**: 다양한 변환(YoY, MoM, 누적 등)을 지원하는 파이프라인
 
-export async function processDataPipeline(options: DataPipelineOptions): Promise<Series> {
-  // 1. 데이터 추출
-  const rawData = await fetchRawData(
-    options.source, 
-    options.indicatorCode, 
-    options.timeRange, 
-    options.period
-  );
-  
-  // 2. 데이터 정규화
-  const normalizedData = normalizeData(rawData, options.source);
-  
-  // 3. 데이터 필터링
-  const filteredData = filterData(normalizedData, options.filters);
-  
-  // 4. 데이터 변환
-  const transformedData = transformData(
-    filteredData, 
-    options.transformation || 'original'
-  );
-  
-  // 5. 데이터 집계
-  const aggregatedData = aggregateData(
-    transformedData,
-    options.aggregation || 'none'
-  );
-  
-  // 6. 시리즈 생성
-  return {
-    id: `${options.source}_${options.indicatorCode}`,
-    name: `${options.indicatorCode}`,
-    data: aggregatedData,
-  };
-}
+## 8. Next.js App Router 라우팅 및 레이아웃 설계
 
-// 데이터 처리 파이프라인 훅
-export function useDataPipeline(options: DataPipelineOptions) {
-  const { source, indicatorCode, timeRange, period } = options;
-  
-  return useQuery({
-    queryKey: ['data-pipeline', source, indicatorCode, timeRange, period, options],
-    queryFn: () => processDataPipeline(options),
-    staleTime: 1000 * 60 * 10, // 10분
-  });
-}
+### 8.1 라우팅 및 레이아웃 구조
+
+```mermaid
+graph TD
+    RootLayout[RootLayout] --> AuthLayout[AuthLayout]
+    RootLayout --> DashboardLayout[DashboardLayout]
+    RootLayout --> EditorLayout[EditorLayout]
+    RootLayout --> ProfileLayout[ProfileLayout]
+    
+    AuthLayout --> LoginPage[로그인 페이지]
+    AuthLayout --> CallbackPage[OAuth 콜백 페이지]
+    
+    DashboardLayout --> DashboardsPage[대시보드 목록 페이지]
+    DashboardLayout --> DashboardDetailPage[대시보드 상세 페이지]
+    DashboardLayout --> DashboardEditPage[대시보드 편집 페이지]
+    DashboardLayout --> ExplorePage[대시보드 탐색 페이지]
+    
+    EditorLayout --> ChartEditorPage[차트 에디터 페이지]
+    
+    ProfileLayout --> ProfileSettingsPage[프로필 설정 페이지]
+    ProfileLayout --> SubscriptionPage[구독 관리 페이지]
+    ProfileLayout --> NotificationPage[알림 설정 페이지]
+    
+    classDef layout fill:#ccffcc,stroke:#333,stroke-width:1px,color:#000;
+    classDef page fill:#ffcccb,stroke:#333,stroke-width:1px,color:#000;
+    
+    class RootLayout,AuthLayout,DashboardLayout,EditorLayout,ProfileLayout layout;
+    class LoginPage,CallbackPage,DashboardsPage,DashboardDetailPage,DashboardEditPage,ExplorePage,ChartEditorPage,ProfileSettingsPage,SubscriptionPage,NotificationPage page;
+```
+
+### 8.2 데이터 페칭 전략
+
+Next.js App Router에서의 데이터 페칭 전략은 서버/클라이언트 컴포넌트에 따라 다릅니다:
+
+1. **서버 컴포넌트에서 데이터 페칭**:
+   - 직접 데이터 페칭 (API 클라이언트 사용)
+   - 서버 액션을 통한 데이터 조작
+   - 클라이언트 컴포넌트에 초기 데이터 전달
+
+2. **클라이언트 컴포넌트에서 데이터 페칭**:
+   - Tanstack Query를 사용한 데이터 페칭
+   - 서버에서 전달받은 초기 데이터 활용
+   - 동적 상호작용에 필요한 데이터 업데이트
+
+### 8.3 서버 액션 활용
+
+Next.js의 서버 액션을 활용하여 폼 제출 및 데이터 변경을 처리합니다:
+
+1. **폼 처리**: 클라이언트에서 입력한 데이터를 서버 액션으로 제출
+2. **캐시 무효화**: 데이터 변경 후 관련 경로 캐시 무효화
+3. **리디렉션**: 작업 완료 후 적절한 페이지로 리디렉션
+
+## 9. 성능 최적화 전략
+
+E-Torch는 대량의 경제 데이터를 효율적으로 처리하고 시각화해야 하므로 다음과 같은 성능 최적화 전략을 적용합니다:
+
+1. **코드 분할 및 지연 로딩**:
+   - Next.js의 dynamic import 활용
+   - 차트 유형별 동적 로딩
+   - 대시보드 위젯 지연 로딩
+
+2. **메모이제이션 및 최적화**:
+   - React.memo를 통한 컴포넌트 리렌더링 최적화
+   - useMemo, useCallback 최적화
+   - 복잡한 계산 결과 캐싱
+
+3. **가상화 기법**:
+   - 대량 데이터 렌더링 시 가상화 기법 적용
+   - 대시보드 내 화면에 보이는 위젯만 렌더링
+
+4. **서버 컴포넌트 최적화**:
+   - 서버 컴포넌트를 통한 JavaScript 번들 크기 축소
+   - 정적 요소의 서버 렌더링
+   - 데이터 페칭 최적화
+
+5. **데이터 처리 최적화**:
+   - 클라이언트 측 데이터 처리 최소화
+   - 필요한 데이터만 요청
+   - 효율적인 데이터 변환 알고리즘
+
+## 10. 결론 및 확장성 고려사항
+
+E-Torch 프론트엔드 아키텍처는 모듈성, 확장성, 재사용성, 성능, 접근성을 핵심 원칙으로 설계되었습니다. Next.js의 서버/클라이언트 컴포넌트 아키텍처를 효과적으로 활용하고, 모노레포 구조를 통해 코드 재사용성과 개발 효율성을 극대화합니다.
+
+### 10.1 향후 확장 가능성
+
+1. **데이터 소스 확장**: 추가 경제 데이터 소스(FRED, World Bank 등) 통합
+2. **차트 유형 확장**: 더 다양한 시각화 옵션 제공
+3. **협업 기능**: 실시간 대시보드 편집 및 공유 기능
+4. **머신러닝 통합**: 경제 지표 예측 및 이상 감지 기능
+5. **모바일 최적화**: 다양한 디바이스에 최적화된 대시보드 지원
+
+### 10.2 아키텍처 유지 관리 전략
+
+1. **설계 원칙 준수**: 명확한 책임 경계, 단일 책임 원칙 지속 적용
+2. **모듈성 유지**: 기능 확장 시 적절한 패키지 분리 유지
+3. **지속적 테스트**: 자동화된 테스트를 통한 아키텍처 안정성 유지
+4. **성능 모니터링**: 지속적인 성능 지표 모니터링 및 최적화
+5. **문서화**: 아키텍처 변경 사항 지속적 문서화
+
+이 아키텍처는 다양한 경제 데이터 소스를 통합하고, 직관적인 차트 시각화 및 대시보드 기능을 제공하여 사용자 경험을 향상시키는 데 중점을 둡니다. 또한, 확장 가능한 구조로 설계되어 향후 기능 확장과 변경에 유연하게 대응할 수 있습니다.

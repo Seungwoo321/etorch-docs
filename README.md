@@ -20,50 +20,6 @@ E-Torch는 경제에 횃불을 더해 길을 밝혀준다는 의미를 담은 �
 **개발 방식**:
 
 프론트엔드 주도 개발을 채택하여 UI/UX 설계를 바탕으로 프론트엔드를 먼저 개발하고, json-server를 활용한 모킹 API로 기능을 구현한 후, 최종적으로 Node.js 백엔드로 마이그레이션합니다.
-<!-- 
-## 문서 구조
-
-```bash
-/
-├── README.md                     # 프로젝트 개요 및 개발 흐름 설명
-│
-├── api/                          # API 관련 문서
-│   ├── endpoints.md              # API 엔드포인트 정의 및 인터페이스
-│   ├── mock-data-structure.md    # 모킹 데이터 구조 설계
-│   ├── json-server-setup.md      # json-server 설정 및 사용법
-│   └── migration-plan.md         # 실제 백엔드 마이그레이션 계획
-│
-├── frontend/                     # 프론트엔드 관련 문서
-│   ├── architecture.md           # 프론트엔드 아키텍처 설계
-│   ├── state-management.md       # 상태 관리 접근법
-│   ├── components/               # 주요 컴포넌트 문서
-│   │   └── core-components.md    # 핵심 컴포넌트 설계 및 사용법
-│   ├── routing.md                # 라우팅 구조
-│   └── data-flow.md              # 데이터 흐름 및 API 연동 방식
-│
-├── backend/                      # 백엔드 계획 문서
-│   ├── db-schema.md              # 데이터베이스 스키마 설계
-│   ├── server-architecture.md    # Node.js 서버 아키텍처 계획
-│   └── api-implementation.md     # 실제 API 구현 계획
-│
-├── ui-design/                    # UI/UX 관련 문서와 자산
-│   ├── wireframes/               # SVG 와이어프레임 파일 보관
-│   │   ├── dashboard.svg         # 대시보드 화면 와이어프레임
-│   │   ├── chart-editor.svg      # 차트 에디터 화면 와이어프레임
-│   │   └── ...                   # 기타 화면 와이어프레임
-│   │
-│   ├── design-system.md          # 디자인 시스템 문서
-│   ├── user-flows.md             # 사용자 흐름 설명
-│   └── ui-requirements.md        # UI 요구사항 명세
-│
-├── dev-notes/                    # 개발 과정 기록
-│   ├── frontend-progress.md      # 프론트엔드 개발 진행 상황
-│   ├── mock-data-generation.md   # 모킹 데이터 생성 함수 설명
-│   ├── development-process.md    # 상세 개발 프로세스 및 단계
-│   └── ui-ux-feedback.md         # UI/UX 피드백 및 개선사항
-│
-└── assets/                       # 문서용 이미지 및 다이어그램
-``` -->
 
 ## 문서 바로가기
 
