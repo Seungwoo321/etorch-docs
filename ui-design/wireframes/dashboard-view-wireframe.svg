@@ -1,4 +1,4 @@
-<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 800 600" width="800" height="600" xmlns="http://www.w3.org/2000/svg">
   <!-- 헤더 -->
   <rect x="0" y="0" width="800" height="60" fill="white" stroke="black" stroke-width="1"/>
   <text x="20" y="35" font-family="Arial" font-size="18">E-Torch</text>
@@ -46,7 +46,8 @@
   <rect x="220" y="380" width="270" height="200" fill="white" stroke="black" stroke-width="1"/>
   <text x="230" y="400" font-family="Arial" font-size="14">기준금리 추이</text>
   <line x1="220" y1="410" x2="490" y2="410" stroke="black" stroke-width="1"/>
-  <polyline points="230,470 250,470 270,470 290,470 310,450 330,450 350,450 370,450 390,430 410,430 430,430 450,430 470,430" fill="none" stroke="black" stroke-width="1" stroke-width="2"/>
+  <!-- 수정: 중복된 stroke-width 속성 제거 -->
+  <polyline points="230,470 250,470 270,470 290,470 310,450 330,450 350,450 370,450 390,430 410,430 430,430 450,430 470,430" fill="none" stroke="black" stroke-width="2"/>
   <line x1="230" y1="530" x2="470" y2="530" stroke="black" stroke-width="1"/>
   <line x1="230" y1="420" x2="230" y2="530" stroke="black" stroke-width="1"/>
   
