@@ -1,0 +1,98 @@
+<svg width="1200" height="500" viewBox="0 0 1200 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 -->
+  <rect width="1200" height="500" fill="#f8fafc"/>
+  
+  <!-- 섹션 제목 -->
+  <text x="80" y="40" font-family="Inter, sans-serif" font-size="28" font-weight="600" fill="#0c1e3e">3. 버튼 컴포넌트</text>
+  <line x1="80" y1="55" x2="1120" y2="55" stroke="#e2e8f0" stroke-width="1"/>
+  
+  <!-- 기본 버튼 -->
+  <text x="80" y="100" font-family="Inter, sans-serif" font-size="20" font-weight="500" fill="#334155">기본 버튼 스타일</text>
+  
+  <!-- Primary Default -->
+  <rect x="80" y="120" width="150" height="44" rx="6" fill="#0c1e3e" filter="drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1))"/>
+  <text x="155" y="148" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">Primary</text>
+  
+  <!-- Secondary Default -->
+  <rect x="250" y="120" width="150" height="44" rx="6" fill="#1a56db" filter="drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1))"/>
+  <text x="325" y="148" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">Secondary</text>
+  
+  <!-- Outline Default -->
+  <rect x="420" y="120" width="150" height="44" rx="6" fill="#ffffff" stroke="#0c1e3e" stroke-width="1.5" filter="drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.05))"/>
+  <text x="495" y="148" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#0c1e3e" text-anchor="middle">Outline</text>
+  
+  <!-- Ghost Default -->
+  <rect x="590" y="120" width="150" height="44" rx="6" fill="transparent"/>
+  <text x="665" y="148" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#0c1e3e" text-anchor="middle">Ghost</text>
+  
+  <!-- Destructive Default -->
+  <rect x="760" y="120" width="150" height="44" rx="6" fill="#dc2626" filter="drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1))"/>
+  <text x="835" y="148" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">Destructive</text>
+  
+  <!-- 버튼 크기 -->
+  <text x="80" y="200" font-family="Inter, sans-serif" font-size="20" font-weight="500" fill="#334155">버튼 크기</text>
+  
+  <!-- Small -->
+  <rect x="80" y="220" width="120" height="34" rx="6" fill="#0c1e3e" filter="drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.1))"/>
+  <text x="140" y="242" font-family="Inter, sans-serif" font-size="12" font-weight="500" fill="#ffffff" text-anchor="middle">Small</text>
+  
+  <!-- Default -->
+  <rect x="220" y="215" width="150" height="44" rx="6" fill="#0c1e3e" filter="drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1))"/>
+  <text x="295" y="243" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">Default</text>
+  
+  <!-- Large -->
+  <rect x="390" y="210" width="180" height="54" rx="6" fill="#0c1e3e" filter="drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1))"/>
+  <text x="480" y="243" font-family="Inter, sans-serif" font-size="16" font-weight="500" fill="#ffffff" text-anchor="middle">Large</text>
+  
+  <!-- Icon button -->
+  <rect x="590" y="215" width="44" height="44" rx="6" fill="#0c1e3e" filter="drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1))"/>
+  <text x="612" y="243" font-family="Inter, sans-serif" font-size="16" font-weight="500" fill="#ffffff" text-anchor="middle">+</text>
+  
+  <!-- 데이터 액션 버튼 -->
+  <rect x="654" y="215" width="160" height="44" rx="6" fill="#0c1e3e" filter="drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1))"/>
+  <text x="694" y="243" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">데이터 내보내기</text>
+  <line x1="734" y1="228" x2="734" y2="242" stroke="#ffffff" stroke-width="1"/>
+  <polyline points="744,235 754,235 750,240" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+  
+  <!-- 버튼 상태 -->
+  <text x="80" y="300" font-family="Inter, sans-serif" font-size="20" font-weight="500" fill="#334155">버튼 상태</text>
+  
+  <!-- Default -->
+  <rect x="80" y="320" width="150" height="44" rx="6" fill="#0c1e3e" filter="drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1))"/>
+  <text x="155" y="348" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">Default</text>
+  
+  <!-- Hover -->
+  <rect x="250" y="320" width="150" height="44" rx="6" fill="#15345c" filter="drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1))"/>
+  <text x="325" y="348" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">Hover</text>
+  
+  <!-- Active -->
+  <rect x="420" y="320" width="150" height="44" rx="6" fill="#102a4c" filter="drop-shadow(0px 1px 1px rgba(0, 0, 0, 0.1))"/>
+  <text x="495" y="348" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">Active</text>
+  
+  <!-- Disabled -->
+  <rect x="590" y="320" width="150" height="44" rx="6" fill="#94a3b8" filter="drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.05))"/>
+  <text x="665" y="348" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#f8fafc" text-anchor="middle">Disabled</text>
+  
+  <!-- Loading -->
+  <rect x="760" y="320" width="150" height="44" rx="6" fill="#0c1e3e" filter="drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1))"/>
+  <circle cx="805" cy="342" r="8" fill="none" stroke="#ffffff" stroke-width="2"/>
+  <text x="845" y="348" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">로딩 중...</text>
+  
+  <!-- 버튼 그룹 -->
+  <text x="80" y="400" font-family="Inter, sans-serif" font-size="20" font-weight="500" fill="#334155">버튼 그룹</text>
+  
+  <rect x="80" y="420" width="110" height="44" rx="6" fill="#0c1e3e" filter="drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1))"/>
+  <text x="135" y="448" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">일간</text>
+  
+  <rect x="190" y="420" width="110" height="44" rx="6" fill="#1a56db" filter="drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1))"/>
+  <text x="245" y="448" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">주간</text>
+  
+  <rect x="300" y="420" width="110" height="44" rx="6" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.05))"/>
+  <text x="355" y="448" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#334155" text-anchor="middle">월간</text>
+  
+  <rect x="410" y="420" width="110" height="44" rx="6" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.05))"/>
+  <text x="465" y="448" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#334155" text-anchor="middle">분기</text>
+  
+  <rect x="520" y="420" width="110" height="44" rx="6" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.05))"/>
+  <text x="575" y="448" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#334155" text-anchor="middle">연간</text>
+</svg>

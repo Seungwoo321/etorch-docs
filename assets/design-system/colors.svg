@@ -1,0 +1,97 @@
+<svg width="1200" height="600" viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 -->
+  <rect width="1200" height="600" fill="#f8fafc"/>
+  
+  <!-- 섹션 제목 -->
+  <text x="80" y="40" font-family="Inter, sans-serif" font-size="28" font-weight="600" fill="#0c1e3e">1. 색상 팔레트</text>
+  <line x1="80" y1="55" x2="1120" y2="55" stroke="#e2e8f0" stroke-width="1"/>
+  
+  <!-- 브랜드 색상 -->
+  <text x="80" y="100" font-family="Inter, sans-serif" font-size="20" font-weight="500" fill="#334155">브랜드 색상</text>
+  
+  <rect x="80" y="120" width="180" height="90" rx="6" fill="#0c1e3e" filter="drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))"/>
+  <text x="170" y="165" font-family="Inter, sans-serif" font-size="16" font-weight="500" fill="#ffffff" text-anchor="middle">Primary</text>
+  <text x="170" y="190" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#ffffff" text-anchor="middle">#0c1e3e</text>
+  
+  <rect x="280" y="120" width="180" height="90" rx="6" fill="#1a56db" filter="drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))"/>
+  <text x="370" y="165" font-family="Inter, sans-serif" font-size="16" font-weight="500" fill="#ffffff" text-anchor="middle">Secondary</text>
+  <text x="370" y="190" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#ffffff" text-anchor="middle">#1a56db</text>
+  
+  <rect x="480" y="120" width="180" height="90" rx="6" fill="#0284c7" filter="drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))"/>
+  <text x="570" y="165" font-family="Inter, sans-serif" font-size="16" font-weight="500" fill="#ffffff" text-anchor="middle">Tertiary</text>
+  <text x="570" y="190" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#ffffff" text-anchor="middle">#0284c7</text>
+  
+  <!-- 중립 색상 -->
+  <text x="80" y="250" font-family="Inter, sans-serif" font-size="20" font-weight="500" fill="#334155">중립 색상</text>
+  
+  <rect x="80" y="270" width="140" height="70" rx="6" fill="#ffffff" stroke="#e2e8f0" filter="drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.05))"/>
+  <text x="150" y="305" font-family="Inter, sans-serif" font-size="16" font-weight="500" fill="#0f172a" text-anchor="middle">Background</text>
+  <text x="150" y="325" font-family="Inter, sans-serif" font-size="12" font-weight="400" fill="#64748b" text-anchor="middle">#ffffff</text>
+  
+  <rect x="240" y="270" width="140" height="70" rx="6" fill="#f8fafc" stroke="#e2e8f0" filter="drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.05))"/>
+  <text x="310" y="305" font-family="Inter, sans-serif" font-size="16" font-weight="500" fill="#0f172a" text-anchor="middle">Surface</text>
+  <text x="310" y="325" font-family="Inter, sans-serif" font-size="12" font-weight="400" fill="#64748b" text-anchor="middle">#f8fafc</text>
+  
+  <rect x="400" y="270" width="140" height="70" rx="6" fill="#f1f5f9" stroke="#e2e8f0" filter="drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.05))"/>
+  <text x="470" y="305" font-family="Inter, sans-serif" font-size="16" font-weight="500" fill="#0f172a" text-anchor="middle">Surface Alt</text>
+  <text x="470" y="325" font-family="Inter, sans-serif" font-size="12" font-weight="400" fill="#64748b" text-anchor="middle">#f1f5f9</text>
+  
+  <rect x="560" y="270" width="140" height="70" rx="6" fill="#ffffff" stroke="#e2e8f0" filter="drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.05))"/>
+  <text x="630" y="305" font-family="Inter, sans-serif" font-size="16" font-weight="500" fill="#0f172a" text-anchor="middle">Border</text>
+  <text x="630" y="325" font-family="Inter, sans-serif" font-size="12" font-weight="400" fill="#64748b" text-anchor="middle">#e2e8f0</text>
+  
+  <rect x="720" y="270" width="140" height="70" rx="6" fill="#0f172a" filter="drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.05))"/>
+  <text x="790" y="305" font-family="Inter, sans-serif" font-size="16" font-weight="500" fill="#ffffff" text-anchor="middle">Text Primary</text>
+  <text x="790" y="325" font-family="Inter, sans-serif" font-size="12" font-weight="400" fill="#cbd5e1" text-anchor="middle">#0f172a</text>
+  
+  <rect x="880" y="270" width="140" height="70" rx="6" fill="#334155" filter="drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.05))"/>
+  <text x="950" y="305" font-family="Inter, sans-serif" font-size="16" font-weight="500" fill="#ffffff" text-anchor="middle">Text Secondary</text>
+  <text x="950" y="325" font-family="Inter, sans-serif" font-size="12" font-weight="400" fill="#cbd5e1" text-anchor="middle">#334155</text>
+  
+  <!-- 액센트 색상 -->
+  <text x="80" y="380" font-family="Inter, sans-serif" font-size="20" font-weight="500" fill="#334155">액센트 색상</text>
+  
+  <rect x="80" y="400" width="140" height="70" rx="6" fill="#059669" filter="drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))"/>
+  <text x="150" y="435" font-family="Inter, sans-serif" font-size="16" font-weight="500" fill="#ffffff" text-anchor="middle">Success</text>
+  <text x="150" y="455" font-family="Inter, sans-serif" font-size="12" font-weight="400" fill="#e2e8f0" text-anchor="middle">#059669</text>
+  
+  <rect x="240" y="400" width="140" height="70" rx="6" fill="#d97706" filter="drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))"/>
+  <text x="310" y="435" font-family="Inter, sans-serif" font-size="16" font-weight="500" fill="#ffffff" text-anchor="middle">Warning</text>
+  <text x="310" y="455" font-family="Inter, sans-serif" font-size="12" font-weight="400" fill="#e2e8f0" text-anchor="middle">#d97706</text>
+  
+  <rect x="400" y="400" width="140" height="70" rx="6" fill="#dc2626" filter="drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))"/>
+  <text x="470" y="435" font-family="Inter, sans-serif" font-size="16" font-weight="500" fill="#ffffff" text-anchor="middle">Danger</text>
+  <text x="470" y="455" font-family="Inter, sans-serif" font-size="12" font-weight="400" fill="#e2e8f0" text-anchor="middle">#dc2626</text>
+  
+  <rect x="560" y="400" width="140" height="70" rx="6" fill="#2563eb" filter="drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))"/>
+  <text x="630" y="435" font-family="Inter, sans-serif" font-size="16" font-weight="500" fill="#ffffff" text-anchor="middle">Info</text>
+  <text x="630" y="455" font-family="Inter, sans-serif" font-size="12" font-weight="400" fill="#e2e8f0" text-anchor="middle">#2563eb</text>
+  
+  <rect x="720" y="400" width="140" height="70" rx="6" fill="#7c3aed" filter="drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))"/>
+  <text x="790" y="435" font-family="Inter, sans-serif" font-size="16" font-weight="500" fill="#ffffff" text-anchor="middle">Highlight</text>
+  <text x="790" y="455" font-family="Inter, sans-serif" font-size="12" font-weight="400" fill="#e2e8f0" text-anchor="middle">#7c3aed</text>
+  
+  <!-- 차트 색상 -->
+  <text x="80" y="510" font-family="Inter, sans-serif" font-size="20" font-weight="500" fill="#334155">차트 색상</text>
+  
+  <rect x="80" y="530" width="135" height="50" rx="4" fill="#1b3a6b"/>
+  <text x="147" y="560" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">Chart 1</text>
+  
+  <rect x="230" y="530" width="135" height="50" rx="4" fill="#1c7ed6"/>
+  <text x="297" y="560" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">Chart 2</text>
+  
+  <rect x="380" y="530" width="135" height="50" rx="4" fill="#12b886"/>
+  <text x="447" y="560" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">Chart 3</text>
+  
+  <rect x="530" y="530" width="135" height="50" rx="4" fill="#9775fa"/>
+  <text x="597" y="560" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">Chart 4</text>
+  
+  <rect x="680" y="530" width="135" height="50" rx="4" fill="#fd7e14"/>
+  <text x="747" y="560" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">Chart 5</text>
+  
+  <rect x="830" y="530" width="135" height="50" rx="4" fill="#40c057"/>
+  <text x="897" y="560" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">Chart 6</text>
+  
+  <rect x="980" y="530" width="135" height="50" rx="4" fill="#e64980"/>
+  <text x="1047" y="560" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle">Chart 7</text>
+</svg>
