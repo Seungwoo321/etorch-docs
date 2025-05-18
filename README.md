@@ -54,7 +54,7 @@ E-Torch는 경제에 횃불을 더해 길을 밝혀준다는 의미를 담은 �
 
 ### UI 디자인 문서
 
-<!-- - [디자인 시스템](./ui-design/design-system.md) -->
+- [디자인 시스템](./ui-design/design-system.md)
 <!-- - [사용자 흐름](./ui-design/user-flows.md) -->
 - [UI 요구사항 명세](./ui-design/ui-requirements.md)
 - [와이어프레임 디렉토리](./ui-design/wireframes/)
