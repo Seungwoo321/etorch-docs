@@ -193,7 +193,7 @@ export function ButtonServer({
 
 차트 표시 및 편집 관련 컴포넌트는 E-Torch의 핵심 기능으로, 서버 컴포넌트와 클라이언트 컴포넌트의 조합으로 구현됩니다.
 
-### 4.1 차트 컴포넌트 계층 구조
+## 4.1 차트 컴포넌트 계층 구조
 
 ```mermaid
 flowchart TD
@@ -204,7 +204,8 @@ flowchart TD
     SpecializedCharts --> TimeSeries[TimeSeriesChart]
     SpecializedCharts --> Bar[BarChart]
     SpecializedCharts --> Scatter[ScatterChart]
-    SpecializedCharts --> Other[기타 차트 타입...]
+    SpecializedCharts --> Radar[RadarChart]
+    SpecializedCharts --> RadialBar[RadialBarChart]
     
     Controls[ChartControls] --> ClientChart
     
@@ -212,19 +213,41 @@ flowchart TD
     classDef client fill:#ffcccb,stroke:#333,stroke-width:1px,color:#000;
     
     class SSR,DataLoader server;
-    class ClientChart,Renderer,SpecializedCharts,TimeSeries,Bar,Scatter,Other,Controls client;
+    class ClientChart,Renderer,SpecializedCharts,TimeSeries,Bar,Scatter,Radar,RadialBar,Controls client;
 ```
 
 #### 컴포넌트별 책임 정의
 
-| 컴포넌트 | 유형 | 책임 |
-|---------|------|-----|
-| **ChartServerWrapper** | 서버 | 서버 측 데이터 페칭, 초기 데이터 준비, 메타데이터 로드 |
-| **ChartDataLoader** | 서버 | 차트별 데이터 로드 최적화, 데이터 변환 |
-| **ChartComponent** | 클라이언트 | 차트 렌더링 상태 관리, 이벤트 핸들링, 서버 데이터 hydration |
-| **ChartRenderer** | 클라이언트 | 차트 타입에 따른 렌더링 로직 분기, 공통 렌더링 프로퍼티 관리 |
-| **Specialized Charts** | 클라이언트 | 특정 차트 유형(시계열, 바 차트 등)별 렌더링 로직 |
-| **ChartControls** | 클라이언트 | 차트 인터랙션 컨트롤(확대/축소, 다운로드 등) |
+| 컴포넌트 | 유형 | 책임 | 연결된 옵션 컴포넌트 |
+|---------|------|-----|------------------|
+| **ChartServerWrapper** | 서버 | 서버 측 데이터 페칭, 초기 데이터 준비, 메타데이터 로드 | - |
+| **ChartDataLoader** | 서버 | 차트별 데이터 로드 최적화, 데이터 변환 | - |
+| **ChartComponent** | 클라이언트 | 차트 렌더링 상태 관리, 이벤트 핸들링, 서버 데이터 hydration | ChartControls, OptionsPanel |
+| **ChartRenderer** | 클라이언트 | 차트 타입에 따른 렌더링 로직 분기, 공통 렌더링 프로퍼티 관리 | - |
+| **TimeSeriesChart** | 클라이언트 | 시계열 데이터 특화 렌더링 | PanelOptions, TooltipOptions, LegendOptions, XAxis, YAxis, GraphStyles |
+| **BarChart** | 클라이언트 | 범주형 데이터 비교 시각화 | PanelOptions, TooltipOptions, LegendOptions, XAxis, YAxis |
+| **ScatterChart** | 클라이언트 | 상관관계 시각화 | PanelOptions, TooltipOptions, LegendOptions, XAxis, YAxis, ScatterOptions |
+| **RadarChart** | 클라이언트 | 다차원 데이터 비교 | PanelOptions, TooltipOptions, LegendOptions, RadarOptions |
+| **RadialBarChart** | 클라이언트 | 부분-전체 관계 시각화 | PanelOptions, TooltipOptions, LegendOptions, RadialBarOptions |
+| **ChartControls** | 클라이언트 | 차트 인터랙션 컨트롤 | - |
+
+### 차트 옵션 컴포넌트 매핑
+
+모든 차트는 기본적으로 다음 옵션 컴포넌트를 공유합니다:
+
+1. **PanelOptions**: 제목, 설명, 배경 투명도 (PO-001~003)
+2. **TooltipOptions**: 툴팁 표시 방식, 커서 스타일 설정 (TO-001~005)
+3. **LegendOptions**: 범례 표시, 레이아웃, 정렬 설정 (LG-001~004)
+
+차트 유형에 따른 특수 옵션:
+
+| 차트 유형 | 특수 옵션 | 관련 기능 ID |
+|---------|----------|-------------|
+| **TimeSeries** | GraphStyles, XAxis, YAxis, YAxis (Secondary) | GS-001~003, XA-001~010, YA-001~011, YAS-001~011 |
+| **BarChart** | XAxis, YAxis | XA-001~010, YA-001~011 |
+| **ScatterChart** | XAxis, YAxis, ScatterOptions | XA-001~010, YA-001~011, SC-001~006 |
+| **RadarChart** | RadarOptions | RC-001~006 |
+| **RadialBarChart** | RadialBarOptions | RB-001~010 |
 
 ### 4.2 차트 에디터 컴포넌트
 
@@ -306,6 +329,81 @@ function TimeSeriesChart({ data, options, width, height }: TimeSeriesChartProps)
 
 export default memo(TimeSeriesChart);
 ```
+
+### 4.4 차트 데이터 흐름 통합 다이어그램
+
+```mermaid
+flowchart TD
+    subgraph "서버 컴포넌트"
+        A[ChartServerWrapper] --> B[ChartDataLoader]
+        B --> C[서버 데이터 페칭]
+        C --> D[데이터 변환 및 정규화]
+    end
+    
+    subgraph "데이터 레이어"
+        E[API 클라이언트] --> F[데이터 소스 커넥터]
+        F --> G[데이터 변환 서비스]
+        G --> H[데이터 캐싱 레이어]
+    end
+    
+    subgraph "클라이언트 컴포넌트"
+        I[ChartComponent] --> J[Zustand 차트 스토어]
+        I --> K[TanStack Query 훅]
+        J --> L[ChartRenderer]
+        K --> L
+        L --> M[TimeSeriesChart/BarChart 등]
+    end
+    
+    subgraph "상태 관리"
+        N[초기 상태] --> O[차트 상태 스토어]
+        O --> P[Undo/Redo 로직]
+        O --> Q[낙관적 업데이트]
+        P --> R[커맨드 패턴]
+    end
+    
+    D -.-> I
+    H -.-> K
+    
+    classDef server fill:#ccffcc,stroke:#333,stroke-width:1px,color:#000;
+    classDef client fill:#ffcccb,stroke:#333,stroke-width:1px,color:#000;
+    classDef data fill:#ffffcc,stroke:#333,stroke-width:1px,color:#000;
+    
+    class A,B,C,D server;
+    class I,J,K,L,M client;
+    class E,F,G,H data;
+    class N,O,P,Q,R client;
+```
+
+#### 통합된 데이터 상태 관리 접근법
+
+E-Torch 프로젝트의 차트 컴포넌트와 데이터 상태 관리는 다음과 같은 통합된 접근법을 사용합니다:
+
+1. **서버 컴포넌트 데이터 페칭**:
+   - `ChartServerWrapper`에서 서버 측 데이터 페칭 수행
+   - 초기 데이터를 클라이언트 컴포넌트에 전달하여 초기 렌더링 최적화
+   - 페이지 로드 시 필요한 데이터만 선택적으로 페칭
+
+2. **클라이언트 상태 관리**:
+   - `Zustand` 스토어를 사용하여 UI 상태, 에디터 상태 등 관리
+   - 상태를 기능별로 분리하여 관심사 분리와 유지보수성 향상
+   - 불변성과 정규화된 상태 구조를 통한 성능 최적화
+
+3. **서버 상태 관리**:
+   - `TanStack Query`를 사용하여 원격 데이터 캐싱 및 동기화
+   - 경제지표 유형별 최적화된 캐싱 전략 적용
+   - 낙관적 업데이트를 통한 사용자 경험 향상
+
+4. **데이터 변환 파이프라인**:
+   - 데이터 정규화, 변환, 집계 등의 과정을 표준화된 파이프라인으로 구성
+   - 서버와 클라이언트 모두에서 일관된 데이터 모델 유지
+   - 변환된 데이터를 차트 렌더링 컴포넌트에 전달
+
+5. **컴포넌트-상태 통합**:
+   - 차트 컴포넌트는 `useChartStore`, `useChartData` 등의 훅을 통해 상태에 접근
+   - 상태 변경은 스토어의 액션을 통해서만 수행
+   - 컴포넌트는 필요한 상태만 선택적으로 구독하여 불필요한 렌더링 방지
+
+이 통합된 접근법은 서버 컴포넌트와 클라이언트 컴포넌트의 장점을 모두 활용하면서, 데이터 흐름의 일관성과 상태 관리의 효율성을 극대화합니다.
 
 ## 5. 대시보드 컴포넌트 설계
 
