@@ -4,9 +4,9 @@
 
 E-Torch 프로젝트의 핵심 컴포넌트 설계는 모듈성, 재사용성, 확장성을 중심으로 구축됩니다. 본 문서는 E-Torch의 주요 기능 구현에 필요한 핵심 컴포넌트들의 구조, 상호작용, 책임 범위를 정의합니다.
 
-## 2. 컴포넌트 계층 구조
+## 2. 컴포넌트 계층 구조와 패키지 매핑
 
-E-Torch의 컴포넌트 계층 구조는 역할과 책임에 따라 다음과 같이 구성됩니다:
+E-Torch의 컴포넌트 계층 구조는 역할과 책임에 따라 다음과 같이 구성되며, 모노레포 패키지 구조와 매핑됩니다:
 
 ```mermaid
 flowchart TD
@@ -15,32 +15,124 @@ flowchart TD
     C --> D[Complex Components]
     D --> E[Base Components]
     E --> F[Atoms]
+    
+    subgraph "패키지 매핑"
+        P1[apps/web] -.-> A & B
+        P2[packages/dashboard] -.-> C & D
+        P3[packages/charts] -.-> C & D
+        P4[packages/ui] -.-> E & F
+        P5[packages/core] -.-> "공통 타입 및 인터페이스"
+    end
 ```
 
-### 2.1 계층별 정의
+### 2.1 계층별 정의 및 패키지 매핑
 
-1. **Page Components**: 라우트에 연결되는 페이지 단위 컴포넌트
-2. **Layout Components**: 공통 레이아웃 구조를 제공하는 컴포넌트
-3. **Feature Components**: 특정 기능을 담당하는 컴포넌트 (차트 에디터, 대시보드 등)
-4. **Complex Components**: 여러 기본 컴포넌트로 구성된 복합 UI 요소
-5. **Base Components**: Shadcn/UI 기반 기본 컴포넌트 
-6. **Atoms**: 가장 기본적인 UI 요소 (버튼, 입력 필드 등)
+| 계층 | 정의 | 패키지 위치 | 예시 |
+|------|------|-------------|------|
+| **Page Components** | 라우트에 연결되는 페이지 단위 컴포넌트 | `apps/web/app/**/page.tsx` | `DashboardPage`, `ChartEditorPage` |
+| **Layout Components** | 공통 레이아웃 구조를 제공하는 컴포넌트 | `apps/web/app/**/layout.tsx` | `DashboardLayout`, `AuthLayout` |
+| **Feature Components** | 특정 기능을 담당하는 컴포넌트 | `packages/dashboard`, `packages/charts` | `DashboardGrid`, `ChartEditor` |
+| **Complex Components** | 여러 기본 컴포넌트로 구성된 복합 UI 요소 | `packages/dashboard`, `packages/charts` | `WidgetContainer`, `TimeSeriesChart` |
+| **Base Components** | Shadcn/UI 기반 기본 컴포넌트 | `packages/ui/components` | `Button`, `Card`, `Select` |
+| **Atoms** | 가장 기본적인 UI 요소 | `packages/ui/atoms` | `Icon`, `Typography`, `Colors` |
 
 ### 2.2 서버 컴포넌트 vs 클라이언트 컴포넌트
 
 Next.js의 서버/클라이언트 컴포넌트 구분에 따라 각 컴포넌트는 다음과 같이 분류됩니다:
 
+```mermaid
+flowchart LR
+    subgraph "서버 컴포넌트"
+        RSC1[Page Components]
+        RSC2[Layout Components]
+        RSC3[데이터 페칭 컴포넌트]
+        RSC4[메타데이터 컴포넌트]
+    end
+    
+    subgraph "클라이언트 컴포넌트"
+        RCC1[Feature Components]
+        RCC2[Complex Components]
+        RCC3[상호작용 UI 컴포넌트]
+        RCC4[차트 렌더링 컴포넌트]
+    end
+    
+    subgraph "하이브리드 패턴"
+        H1[서버 래퍼]
+        H2[클라이언트 로직]
+    end
+    
+    RSC1 --> H1
+    H1 --> RCC1
+    RSC3 --> RCC4
+```
+
 #### 서버 컴포넌트 (RSC)
-- 데이터 페칭이 필요한 페이지 컴포넌트
-- SEO 관련 메타데이터 컴포넌트
-- 정적 레이아웃 및 UI 요소
-- 렌더링 성능이 중요한 데이터 표시 컴포넌트
+- **데이터 페칭이 필요한 페이지 컴포넌트**: `app/dashboard/[id]/page.tsx`
+- **SEO 관련 메타데이터 컴포넌트**: `app/dashboard/[id]/opengraph-image.tsx`
+- **정적 레이아웃 및 UI 요소**: `app/(dashboard)/layout.tsx`
+- **렌더링 성능이 중요한 데이터 표시 컴포넌트**: `packages/charts/server/ChartDataLoader.tsx`
 
 #### 클라이언트 컴포넌트 (RCC)
-- 인터랙티브한 차트 및 그래프 컴포넌트
-- 사용자 입력 및 이벤트 처리가 필요한 컴포넌트
-- 드래그 앤 드롭 및 애니메이션 관련 컴포넌트
-- 상태를 직접 관리하는 컴포넌트
+- **인터랙티브한 차트 및 그래프 컴포넌트**: `packages/charts/components/TimeSeriesChart.tsx`
+- **사용자 입력 및 이벤트 처리가 필요한 컴포넌트**: `packages/dashboard/editor/DashboardEditor.tsx`
+- **드래그 앤 드롭 및 애니메이션 관련 컴포넌트**: `packages/dashboard/components/DashboardGrid.tsx`
+- **상태를 직접 관리하는 컴포넌트**: `packages/ui/components/DataSourcePanel.tsx`
+
+### 2.3 컴포넌트 명명 및 파일 구조 규칙
+
+```
+apps/web/
+├── app/                          # Next.js App Router
+│   ├── (auth)/                   # 인증 관련 라우트 그룹
+│   │   ├── login/                
+│   │   │   └── page.tsx          # 로그인 페이지 (서버 컴포넌트)
+│   │   └── layout.tsx            # 인증 레이아웃 (서버 컴포넌트)
+│   │
+│   ├── (dashboard)/              # 대시보드 관련 라우트 그룹
+│   │   ├── dashboard/            
+│   │   │   ├── [id]/              
+│   │   │   │   ├── page.tsx      # 대시보드 상세 페이지 (서버 컴포넌트)
+│   │   │   │   └── edit/         
+│   │   │   │       └── page.tsx  # 대시보드 편집 페이지 (서버 컴포넌트)
+│   │   │   └── page.tsx          # 대시보드 목록 페이지 (서버 컴포넌트)
+│   │   └── layout.tsx            # 대시보드 레이아웃 (서버 컴포넌트)
+│   │
+│   └── (chart)/                  # 차트 관련 라우트 그룹
+│       ├── chart-editor/[id]/    
+│       │   └── page.tsx          # 차트 에디터 페이지 (서버 컴포넌트)
+│       └── layout.tsx            # 차트 레이아웃 (서버 컴포넌트)
+
+packages/
+├── ui/                           # UI 기본 컴포넌트
+│   ├── components/               # 클라이언트 컴포넌트
+│   │   ├── ui/                   # Shadcn/UI 기반 컴포넌트
+│   │   └── custom/               # 커스텀 컴포넌트
+│   │
+│   └── server-wrappers/          # 서버 컴포넌트 래퍼
+│       └── button.server.tsx     # 서버 컴포넌트에서 Button 사용
+│
+├── charts/                       # 차트 관련 컴포넌트
+│   ├── components/               # 클라이언트 컴포넌트
+│   │   ├── ChartRenderer.tsx     # 차트 렌더링 컴포넌트
+│   │   └── chart-types/          # 차트 유형별 컴포넌트
+│   │
+│   ├── server/                   # 서버 컴포넌트
+│   │   └── ChartServerWrapper.tsx # 차트 서버 래퍼
+│   │
+│   └── editor/                   # 차트 에디터 컴포넌트
+│       └── ChartEditor.tsx       # 차트 에디터
+│
+└── dashboard/                    # 대시보드 관련 컴포넌트
+    ├── components/               # 클라이언트 컴포넌트
+    │   ├── DashboardGrid.tsx     # 대시보드 그리드
+    │   └── widgets/              # 위젯 컴포넌트
+    │
+    ├── server/                   # 서버 컴포넌트
+    │   └── DashboardServerWrapper.tsx # 대시보드 서버 래퍼
+    │
+    └── editor/                   # 대시보드 에디터 컴포넌트
+        └── DashboardEditor.tsx   # 대시보드 에디터
+```
 
 ## 3. 차트 컴포넌트 설계
 
@@ -95,21 +187,71 @@ flowchart TD
 - **DataSourcePanel**: 데이터 소스 및 쿼리 설정 UI
 - **DataQueryCard**: 개별 데이터 쿼리 설정 UI
 
-### 3.3 차트 옵션 컴포넌트
+### 3.3 차트 옵션 컴포넌트와 차트 기능 명세 매핑
 
-차트 유형별 옵션 컴포넌트는 다음과 같이 구조화됩니다:
+차트 옵션 컴포넌트는 `ui-design/chart-feature-specs.md`에 정의된 차트 기능 명세와 명확하게 매핑됩니다:
 
-#### 공통 옵션 컴포넌트
-- **PanelOptions**: 제목, 설명, 배경 투명도 설정
-- **TooltipOptions**: 툴팁 표시 방식, 커서 스타일 설정
-- **LegendOptions**: 범례 표시 여부, 위치, 스타일 설정
-- **AxisOptions**: 축 범위, 눈금, 레이블 설정
+| 옵션 컴포넌트 | 기능 명세 ID | 구현 경로 | 책임 |
+|-------------|-------------|-----------|------|
+| **PanelOptions** | PO-001~003 | `packages/charts/editor/property-editors/PanelOptions.tsx` | 제목, 설명, 배경 투명도 설정 |
+| **TooltipOptions** | TO-001~005 | `packages/charts/editor/property-editors/TooltipOptions.tsx` | 툴팁 표시 방식, 커서 스타일 설정 |
+| **LegendOptions** | LG-001~004 | `packages/charts/editor/property-editors/LegendOptions.tsx` | 범례 표시 여부, 위치, 스타일 설정 |
+| **AxisOptions** | XA-001~010, YA-001~011, YAS-001~011 | `packages/charts/editor/property-editors/AxisOptions.tsx` | 축 범위, 눈금, 레이블 설정 |
+| **StyleOptions** | GS-001~003, SC-001~006, RC-001~006, RB-001~010 | `packages/charts/editor/property-editors/StyleOptions.tsx` | 차트 유형별 스타일 설정 |
 
-#### 특화 옵션 컴포넌트
-- **TimeSeriesStyleOptions**: 시계열 차트 선 스타일, 영역 채우기 설정
-- **ScatterOptions**: 산점도 포인트 크기, 모양, 회귀선 설정
-- **RadarOptions**: 레이더 차트 그리드, 채우기, 데이터 정규화 설정
-- **RadialBarOptions**: 방사형 바 차트 각도, 반지름, 배경 설정
+#### 구현 패턴 예시 (TooltipOptions):
+
+```tsx
+// packages/charts/editor/property-editors/TooltipOptions.tsx
+'use client';
+
+import { useChartEditorStore } from '@/packages/state';
+import { 
+  Select, 
+  Slider, 
+  Input, 
+  Switch 
+} from '@/packages/ui/components';
+
+export function TooltipOptions({ chartId }: { chartId: string }) {
+  const { 
+    getChartConfig, 
+    updateChartProperty 
+  } = useChartEditorStore();
+  
+  const config = getChartConfig(chartId);
+  const tooltipOptions = config?.options?.tooltip || {};
+  
+  const handleModeChange = (value: string) => {
+    updateChartProperty(chartId, 'options.tooltip.mode', value);
+  };
+  
+  // TO-001: Tooltip Mode
+  // TO-002: Max Width
+  // TO-003: Cursor Style
+  // TO-004: Dash Pattern
+  // TO-005: Cursor Width
+  
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className="text-sm font-medium">Tooltip Mode</label>
+        <Select
+          value={tooltipOptions.mode || 'default'}
+          onValueChange={handleModeChange}
+          options={[
+            { value: 'default', label: 'Default' },
+            { value: 'active', label: 'Active' },
+            { value: 'hidden', label: 'Hidden' }
+          ]}
+        />
+      </div>
+      
+      {/* 나머지 TO-002~005 옵션 구현 */}
+    </div>
+  );
+}
+```
 
 ## 4. 대시보드 컴포넌트 설계
 
@@ -133,12 +275,12 @@ flowchart TD
     D --> D3[ViewOptions]
 ```
 
-#### 주요 컴포넌트 책임
-- **DashboardPage**: 대시보드 페이지 전체 구조 및 상태 관리
-- **DashboardHeader**: 대시보드 제목, 설명, 메타 정보 표시
-- **DashboardGrid**: react-grid-layout 기반 그리드 시스템 관리
-- **GridItem**: 그리드 내 개별 위젯 아이템 래퍼
-- **ChartItem/TextItem**: 위젯 유형별 특화 컴포넌트
+#### 주요 컴포넌트 책임 및 서버/클라이언트 구분
+- **DashboardPage** (서버 컴포넌트): 대시보드 페이지 구조 정의 및 초기 데이터 로드
+- **DashboardHeader** (서버 컴포넌트): 대시보드 제목, 설명, 메타 정보 표시
+- **DashboardGrid** (클라이언트 컴포넌트): react-grid-layout 기반 그리드 시스템 관리
+- **GridItem** (클라이언트 컴포넌트): 그리드 내 개별 위젯 아이템 래퍼
+- **ChartItem/TextItem** (클라이언트 컴포넌트): 위젯 유형별 특화 컴포넌트
 
 ### 4.2 대시보드 편집기 컴포넌트
 
@@ -157,37 +299,64 @@ flowchart TD
     D --> D3[CustomWidgets]
 ```
 
-#### 주요 컴포넌트 책임
-- **DashboardEditor**: 대시보드 편집 모드 전체 관리
-- **EditorToolbar**: 편집 기능 제공 (저장, 실행 취소/다시 실행, 레이아웃)
-- **WidgetSelector**: 추가 가능한 위젯 목록 제공
-- **SaveButton**: 변경사항 저장 및 성공/실패 상태 표시
-- **LayoutControls**: 그리드 레이아웃 설정 관리 (정렬, 크기 조정 등)
+#### 주요 컴포넌트 책임 및 서버/클라이언트 구분
+- **DashboardEditor** (클라이언트 컴포넌트): 대시보드 편집 모드 전체 관리
+- **EditorToolbar** (클라이언트 컴포넌트): 편집 기능 제공 (저장, 실행 취소/다시 실행, 레이아웃)
+- **WidgetSelector** (클라이언트 컴포넌트): 추가 가능한 위젯 목록 제공
+- **SaveButton** (클라이언트 컴포넌트): 변경사항 저장 및 성공/실패 상태 표시
+- **LayoutControls** (클라이언트 컴포넌트): 그리드 레이아웃 설정 관리 (정렬, 크기 조정 등)
 
-### 4.3 공유 대시보드 컴포넌트
+### 4.3 라우팅 구조와 페이지 컴포넌트 연결
 
-```mermaid
-flowchart TD
-    A[DashboardExplore] --> B[DashboardSearchFilter]
-    A --> C[DashboardGrid]
-    A --> D[Pagination]
-    
-    B --> B1[SearchInput]
-    B --> B2[CategoryFilter]
-    B --> B3[SortOptions]
-    
-    C --> C1[DashboardCard]
-    C1 --> C2[ThumbnailPreview]
-    C1 --> C3[AuthorInfo]
-    C1 --> C4[ActionButtons]
+대시보드 관련 컴포넌트와 라우팅 구조의 매핑:
+
+| 라우트 | 페이지 컴포넌트 | 레이아웃 | 주요 기능 컴포넌트 |
+|--------|----------------|---------|-------------------|
+| `/dashboard` | `app/(dashboard)/dashboard/page.tsx` | `app/(dashboard)/layout.tsx` | `DashboardList` |
+| `/dashboard/[id]` | `app/(dashboard)/dashboard/[id]/page.tsx` | `app/(dashboard)/layout.tsx` | `DashboardComponent` |
+| `/dashboard/[id]/edit` | `app/(dashboard)/dashboard/[id]/edit/page.tsx` | `app/(dashboard)/layout.tsx` | `DashboardEditor` |
+| `/explore` | `app/(dashboard)/explore/page.tsx` | `app/(dashboard)/layout.tsx` | `DashboardExplore` |
+
+#### 구현 예시 (대시보드 상세 페이지):
+
+```tsx
+// app/(dashboard)/dashboard/[id]/page.tsx
+import { DashboardServerWrapper } from '@/packages/dashboard/server';
+import { fetchDashboardById } from '@/packages/server-api/dashboard';
+import { notFound } from 'next/navigation';
+
+interface DashboardPageProps {
+  params: { id: string };
+}
+
+export default async function DashboardPage({ params }: DashboardPageProps) {
+  // 서버에서 대시보드 데이터 페칭
+  const dashboard = await fetchDashboardById(params.id);
+  
+  if (!dashboard) {
+    return notFound();
+  }
+  
+  // 서버 래퍼 컴포넌트로 초기 데이터 전달
+  return <DashboardServerWrapper dashboardId={params.id} initialData={dashboard} />;
+}
+
+// 메타데이터 생성
+export async function generateMetadata({ params }: DashboardPageProps) {
+  const dashboard = await fetchDashboardById(params.id);
+  
+  if (!dashboard) {
+    return {
+      title: '대시보드 - E-Torch',
+    };
+  }
+  
+  return {
+    title: `${dashboard.title} - E-Torch`,
+    description: dashboard.description || '경제지표 대시보드',
+  };
+}
 ```
-
-#### 주요 컴포넌트 책임
-- **DashboardExplore**: 공유 대시보드 탐색 페이지 관리
-- **DashboardSearchFilter**: 검색 및 필터링 기능 제공
-- **DashboardCard**: 개별 대시보드 정보 카드 표시
-- **ThumbnailPreview**: 대시보드 미리보기 이미지 제공
-- **ActionButtons**: 미리보기, 구독 등 작업 버튼 제공
 
 ## 5. 데이터 소스 컴포넌트 설계
 
@@ -217,32 +386,77 @@ flowchart TD
 - **DataQueryBuilder**: 데이터 쿼리 구성 전체 관리
 - **SourceSelector**: 데이터 출처 선택 UI (KOSIS, ECOS, OECD)
 - **IndicatorSelector**: 지표 검색 및 선택 UI
-- **TransformControls**: 데이터 변환 옵션 설정 (원본, 변화율, 누적값 등)
+- **TransformControls**: 데이터 변환 옵션 설정
 - **DataPreview**: 선택한 데이터의 미리보기 표시
 
-### 5.2 데이터 시각화 헬퍼 컴포넌트
+### 5.2 상태 관리 및 데이터 흐름 통합
+
+데이터 소스 컴포넌트는 다음과 같이 상태 관리 및 데이터 흐름과 통합됩니다:
 
 ```mermaid
 flowchart TD
-    A[DataVisualizationHelpers] --> B[TimeRangeSelector]
-    A --> C[PeriodSelector]
-    A --> D[ComparisonControls]
+    A[DataSourcePanel] --> B[Zustand 데이터 쿼리 스토어]
+    B --> C[Tanstack Query]
+    C --> D[데이터 변환 파이프라인]
+    D --> E[차트 데이터 모델]
+    E --> F[차트 렌더링]
     
-    B --> B1[DateRangePicker]
-    B --> B2[QuickRanges]
+    B -.-> G[로컬 스토리지]
+    G -.-> B
     
-    C --> C1[PeriodOptions]
-    C --> C2[CustomPeriod]
-    
-    D --> D1[ComparisonType]
-    D --> D2[ComparisonDisplay]
+    H[서버 컴포넌트] --> I[초기 데이터]
+    I --> C
 ```
 
-#### 주요 컴포넌트 책임
-- **TimeRangeSelector**: 시간 범위 선택 UI
-- **PeriodSelector**: 데이터 주기 선택 UI (일간, 월간, 분기, 연간)
-- **ComparisonControls**: 데이터 비교 설정 UI (전년동기, 이전기간 등)
-- **QuickRanges**: 자주 사용하는 시간 범위 빠른 선택 기능
+#### DataQueryBuilder와 상태 관리 통합 예시:
+
+```tsx
+// packages/charts/components/DataQueryBuilder.tsx
+'use client';
+
+import { useQueryBuilderStore } from '@/packages/state';
+import { useChartData } from '@/packages/data-sources/hooks';
+import { SourceSelector, IndicatorSelector, TransformControls } from '@/packages/ui/components';
+
+export function DataQueryBuilder({ chartId }: { chartId: string }) {
+  const { 
+    queryConfig, 
+    updateSourceSelection,
+    updateIndicatorSelection,
+    updateTransformOptions
+  } = useQueryBuilderStore(state => ({
+    queryConfig: state.queries[chartId],
+    updateSourceSelection: state.updateSourceSelection,
+    updateIndicatorSelection: state.updateIndicatorSelection,
+    updateTransformOptions: state.updateTransformOptions
+  }));
+  
+  // Tanstack Query를 통한 데이터 페칭
+  const { data, isLoading, error } = useChartData(queryConfig);
+  
+  // 컴포넌트 렌더링 및 이벤트 핸들러
+  return (
+    <div className="space-y-4">
+      <SourceSelector 
+        value={queryConfig?.source}
+        onChange={source => updateSourceSelection(chartId, source)}
+      />
+      
+      <IndicatorSelector
+        source={queryConfig?.source}
+        value={queryConfig?.indicator}
+        onChange={indicator => updateIndicatorSelection(chartId, indicator)}
+      />
+      
+      <TransformControls
+        options={queryConfig?.transform}
+        onChange={options => updateTransformOptions(chartId, options)}
+        preview={data}
+      />
+    </div>
+  );
+}
+```
 
 ## 6. 인증 및 사용자 컴포넌트 설계
 
@@ -265,11 +479,11 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임
-- **AuthContainer**: 인증 관련 레이아웃 및 상태 관리
-- **SNSLoginButtons**: SNS 로그인 버튼 컨테이너
-- **AuthCallback**: 인증 콜백 처리 컴포넌트
-- **AuthGuard**: 인증 상태 기반 접근 제어 컴포넌트
-- **SubscriptionCheck**: 구독 상태 확인 및 접근 제어
+- **AuthContainer** (서버 컴포넌트): 인증 관련 레이아웃 및 상태 관리
+- **SNSLoginButtons** (클라이언트 컴포넌트): SNS 로그인 버튼 컨테이너
+- **AuthCallback** (서버 컴포넌트): 인증 콜백 처리 컴포넌트
+- **AuthGuard** (클라이언트 컴포넌트): 인증 상태 기반 접근 제어 컴포넌트
+- **SubscriptionCheck** (클라이언트 컴포넌트): 구독 상태 확인 및 접근 제어
 
 ### 6.2 사용자 프로필 컴포넌트
 
@@ -289,11 +503,11 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임
-- **ProfileContainer**: 프로필 관련 레이아웃 및 상태 관리
-- **ProfileSettings**: 사용자 프로필 설정 UI
-- **SubscriptionManagement**: 구독 관리 UI
-- **NotificationSettings**: 알림 설정 UI
-- **SNSLinksManager**: SNS 계정 연결 관리 UI
+- **ProfileContainer** (서버 컴포넌트): 프로필 관련 레이아웃 및 상태 관리
+- **ProfileSettings** (클라이언트 컴포넌트): 사용자 프로필 설정 UI
+- **SubscriptionManagement** (클라이언트 컴포넌트): 구독 관리 UI
+- **NotificationSettings** (클라이언트 컴포넌트): 알림 설정 UI
+- **SNSLinksManager** (클라이언트 컴포넌트): SNS 계정 연결 관리 UI
 
 ## 7. UI/UX 공통 컴포넌트 설계
 
@@ -317,11 +531,11 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임
-- **Header**: 상단 헤더 바 컴포넌트
-- **Sidebar**: 측면 내비게이션 바 컴포넌트
-- **UserMenu**: 사용자 메뉴 드롭다운 컴포넌트
-- **MainNav**: 주요 내비게이션 링크 컴포넌트
-- **SidebarToggle**: 사이드바 토글 버튼 컴포넌트
+- **Header** (서버 컴포넌트): 상단 헤더 바 컴포넌트
+- **Sidebar** (서버 컴포넌트): 측면 내비게이션 바 컴포넌트
+- **UserMenu** (클라이언트 컴포넌트): 사용자 메뉴 드롭다운 컴포넌트
+- **MainNav** (서버 컴포넌트): 주요 내비게이션 링크 컴포넌트
+- **SidebarToggle** (클라이언트 컴포넌트): 사이드바 토글 버튼 컴포넌트
 
 ### 7.2 피드백 컴포넌트
 
@@ -342,11 +556,11 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임
-- **Toast**: 토스트 알림 컴포넌트
-- **Dialog**: 다이얼로그/모달 컴포넌트
-- **Alert**: 경고 및 알림 컴포넌트
-- **Progress**: 진행 상태 표시 컴포넌트
-- **ConfirmDialog**: 확인 다이얼로그 컴포넌트
+- **Toast** (클라이언트 컴포넌트): 토스트 알림 컴포넌트
+- **Dialog** (클라이언트 컴포넌트): 다이얼로그/모달 컴포넌트
+- **Alert** (클라이언트 컴포넌트): 경고 및 알림 컴포넌트
+- **Progress** (클라이언트 컴포넌트): 진행 상태 표시 컴포넌트
+- **ConfirmDialog** (클라이언트 컴포넌트): 확인 다이얼로그 컴포넌트
 
 ### 7.3 폼 컴포넌트
 
@@ -367,11 +581,11 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임
-- **FormField**: 개별 폼 필드 래퍼 컴포넌트
-- **FormGroup**: 관련 폼 필드 그룹 컴포넌트
-- **FormActions**: 폼 액션 버튼 컨테이너 컴포넌트
-- **ColorPicker**: 색상 선택 컴포넌트
-- **FormFieldArray**: 동적 필드 배열 컴포넌트
+- **FormField** (클라이언트 컴포넌트): 개별 폼 필드 래퍼 컴포넌트
+- **FormGroup** (클라이언트 컴포넌트): 관련 폼 필드 그룹 컴포넌트
+- **FormActions** (클라이언트 컴포넌트): 폼 액션 버튼 컨테이너 컴포넌트
+- **ColorPicker** (클라이언트 컴포넌트): 색상 선택 컴포넌트
+- **FormFieldArray** (클라이언트 컴포넌트): 동적 필드 배열 컴포넌트
 
 ## 8. 접근성 및 국제화 지원
 
@@ -403,10 +617,10 @@ flowchart TD
 ```
 
 #### 주요 컴포넌트 책임
-- **LanguageSelector**: 언어 선택 UI 제공
-- **DateTimeFormatter**: 지역화된 날짜/시간 포맷팅 컴포넌트
-- **NumberFormatter**: 지역화된 숫자 포맷팅 컴포넌트
-- **DirectionProvider**: RTL/LTR 방향 설정 제공자
+- **LanguageSelector** (클라이언트 컴포넌트): 언어 선택 UI 제공
+- **DateTimeFormatter** (클라이언트 컴포넌트): 지역화된 날짜/시간 포맷팅 컴포넌트
+- **NumberFormatter** (클라이언트 컴포넌트): 지역화된 숫자 포맷팅 컴포넌트
+- **DirectionProvider** (클라이언트 컴포넌트): RTL/LTR 방향 설정 제공자
 
 ## 9. 컴포넌트 성능 최적화
 
@@ -426,8 +640,150 @@ flowchart TD
 - **ErrorBoundary**: 컴포넌트 에러 처리 경계
 - **DataSplitting**: 데이터 분할 로딩 컴포넌트
 
-## 10. 결론
+## 10. 서버/클라이언트 통합 패턴 예시
+
+다음은 실제 구현에서 서버 컴포넌트와 클라이언트 컴포넌트를 효과적으로 통합하는 패턴의 예시입니다:
+
+### 10.1 서버 컴포넌트에서 데이터 페칭 후 클라이언트 컴포넌트로 전달
+
+```tsx
+// packages/charts/server/ChartServerWrapper.tsx (서버 컴포넌트)
+import { ChartComponent } from '../components/ChartComponent';
+import { fetchChartData } from '@/packages/data-sources/server';
+
+export async function ChartServerWrapper({ chartId, config }: { chartId: string, config: ChartConfig }) {
+  // 서버에서 데이터 페칭
+  const initialData = await fetchChartData(config);
+  
+  // 클라이언트 컴포넌트로 초기 데이터 전달
+  return (
+    <ChartComponent
+      chartId={chartId}
+      config={config}
+      initialData={initialData}
+    />
+  );
+}
+
+// packages/charts/components/ChartComponent.tsx (클라이언트 컴포넌트)
+'use client';
+
+import { useChartData } from '@/packages/data-sources/hooks';
+import { ChartRenderer } from './ChartRenderer';
+
+export function ChartComponent({ 
+  chartId, 
+  config, 
+  initialData 
+}: { 
+  chartId: string; 
+  config: ChartConfig; 
+  initialData?: ChartData;
+}) {
+  // 클라이언트에서 데이터 관리 (초기 데이터로 시작)
+  const { data, isLoading, error, refetch } = useChartData(config, {
+    initialData
+  });
+  
+  // 렌더링 로직
+  return (
+    <div>
+      {isLoading && !initialData ? (
+        <LoadingSpinner />
+      ) : error ? (
+        <ErrorDisplay error={error} onRetry={refetch} />
+      ) : (
+        <ChartRenderer
+          chartId={chartId}
+          config={config}
+          data={data}
+        />
+      )}
+    </div>
+  );
+}
+```
+
+### 10.2 서버 액션과 클라이언트 컴포넌트 통합
+
+```tsx
+// app/actions/dashboard.ts (서버 액션)
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { saveDashboard } from '@/packages/server-api/dashboard';
+
+export async function saveDashboardAction(
+  dashboardId: string,
+  dashboardData: any
+) {
+  try {
+    const result = await saveDashboard(dashboardId, dashboardData);
+    revalidatePath(`/dashboard/${dashboardId}`);
+    return { success: true, data: result };
+  } catch (error) {
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : '저장 중 오류가 발생했습니다.'
+    };
+  }
+}
+
+// packages/dashboard/editor/SaveButton.tsx (클라이언트 컴포넌트)
+'use client';
+
+import { useTransition } from 'react';
+import { Button } from '@/packages/ui/components';
+import { useDashboardStore } from '@/packages/state';
+import { saveDashboardAction } from '@/app/actions/dashboard';
+import { useToast } from '@/packages/ui/hooks';
+
+export function SaveButton({ dashboardId }: { dashboardId: string }) {
+  const [isPending, startTransition] = useTransition();
+  const { dashboard } = useDashboardStore();
+  const { toast } = useToast();
+  
+  const handleSave = () => {
+    startTransition(async () => {
+      const result = await saveDashboardAction(dashboardId, dashboard);
+      
+      if (result.success) {
+        toast({
+          title: '저장 완료',
+          description: '대시보드가 성공적으로 저장되었습니다.',
+          variant: 'success'
+        });
+      } else {
+        toast({
+          title: '저장 실패',
+          description: result.error,
+          variant: 'destructive'
+        });
+      }
+    });
+  };
+  
+  return (
+    <Button 
+      onClick={handleSave}
+      disabled={isPending}
+    >
+      {isPending ? '저장 중...' : '저장'}
+    </Button>
+  );
+}
+```
+
+## 11. 결론
 
 E-Torch의 핵심 컴포넌트 설계는 모듈성, 재사용성, 확장성 원칙을 기반으로 구성되었습니다. 차트 렌더링, 대시보드 관리, 데이터 소스 관리 등 주요 기능별로 특화된 컴포넌트 구조를 갖추고 있으며, Next.js의 서버/클라이언트 컴포넌트 아키텍처를 효과적으로 활용합니다.
+
+특히 다음과 같은 점을 중점적으로 설계했습니다:
+
+1. **명확한 컴포넌트 계층 구조와 패키지 매핑**을 통해 코드 구조 이해도 향상
+2. **서버/클라이언트 컴포넌트 분리 전략**을 통한 성능 최적화
+3. **차트와 대시보드 컴포넌트의 확장 가능한 설계**로 새로운 기능 추가 용이성 확보
+4. **상태 관리 및 데이터 흐름과의 통합** 강화
+5. **라우팅 구조와 페이지 컴포넌트 간 연결** 명확화
 
 이 설계를 통해 E-Torch는 다양한 경제 데이터를 효과적으로 시각화하고 분석할 수 있는 직관적이고 강력한 사용자 경험을 제공할 수 있습니다. 또한, 컴포넌트의 명확한 책임 분리와 계층화된 구조를 통해 향후 기능 확장이나 변경에 유연하게 대응할 수 있는 기반을 마련했습니다.
