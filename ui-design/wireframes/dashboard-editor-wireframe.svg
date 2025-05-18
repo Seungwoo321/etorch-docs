@@ -1,0 +1,118 @@
+<svg width="800" height="700" xmlns="http://www.w3.org/2000/svg">
+  <!-- 헤더 -->
+  <rect x="0" y="0" width="800" height="60" fill="white" stroke="black" stroke-width="1"/>
+  <text x="20" y="35" font-family="Arial" font-size="18">E-Torch</text>
+  <line x1="100" y1="15" x2="100" y2="45" stroke="black" stroke-width="1"/>
+  <text x="120" y="35" font-family="Arial" font-size="14">대시보드 편집기</text>
+  
+  <!-- 대시보드 설정 영역 -->
+  <rect x="0" y="60" width="800" height="80" fill="white" stroke="black" stroke-width="1"/>
+  <text x="20" y="90" font-family="Arial" font-size="14">대시보드 설정</text>
+  
+  <text x="20" y="120" font-family="Arial" font-size="12">제목:</text>
+  <rect x="60" y="105" width="200" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="70" y="122" font-family="Arial" font-size="12">경제 동향 대시보드</text>
+  
+  <text x="280" y="120" font-family="Arial" font-size="12">기간:</text>
+  <rect x="320" y="105" width="180" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="330" y="122" font-family="Arial" font-size="12">최근 1년</text>
+  
+  <text x="520" y="120" font-family="Arial" font-size="12">주기:</text>
+  <rect x="560" y="105" width="80" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="570" y="122" font-family="Arial" font-size="12">월간(M)</text>
+  
+  <rect x="660" y="105" width="120" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="680" y="122" font-family="Arial" font-size="12">자동 새로고침</text>
+  
+  <!-- 툴바 영역 -->
+  <rect x="0" y="140" width="800" height="40" fill="white" stroke="black" stroke-width="1"/>
+  
+  <rect x="20" y="147" width="100" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="35" y="164" font-family="Arial" font-size="12">+ 차트 추가</text>
+  
+  <rect x="130" y="147" width="100" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="145" y="164" font-family="Arial" font-size="12">+ 텍스트 추가</text>
+  
+  <line x1="250" y1="147" x2="250" y2="172" stroke="black" stroke-width="1"/>
+  
+  <rect x="270" y="147" width="80" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="290" y="164" font-family="Arial" font-size="12">배열</text>
+  
+  <rect x="360" y="147" width="80" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="380" y="164" font-family="Arial" font-size="12">이동</text>
+  
+  <line x1="460" y1="147" x2="460" y2="172" stroke="black" stroke-width="1"/>
+  
+  <rect x="680" y="147" width="100" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="705" y="164" font-family="Arial" font-size="12">저장</text>
+  
+  <!-- 대시보드 그리드 영역 -->
+  <rect x="0" y="180" width="800" height="470" fill="white" stroke="black" stroke-width="1" stroke-dasharray="5,5"/>
+  
+  <!-- 그리드 아이템: 차트 1 -->
+  <rect x="20" y="200" width="370" height="200" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="20" y="200" width="370" height="25" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="30" y="217" font-family="Arial" font-size="12">GDP 성장률 추이</text>
+  <circle cx="375" cy="212" r="7" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="370" y1="207" x2="380" y2="217" stroke="black" stroke-width="1"/>
+  <line x1="370" y1="217" x2="380" y2="207" stroke="black" stroke-width="1"/>
+  
+  <polyline points="30,350 50,330 70,340 90,320 110,310 130,300 150,310 170,280 190,290 210,270 230,260 250,270 270,250" fill="none" stroke="black" stroke-width="1"/>
+  <line x1="30" y1="360" x2="370" y2="360" stroke="black" stroke-width="1"/>
+  <line x1="30" y1="250" x2="30" y2="360" stroke="black" stroke-width="1"/>
+  
+  <!-- 그리드 아이템: 차트 2 -->
+  <rect x="410" y="200" width="370" height="200" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="410" y="200" width="370" height="25" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="420" y="217" font-family="Arial" font-size="12">소비자물가 등락률</text>
+  <circle cx="765" cy="212" r="7" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="760" y1="207" x2="770" y2="217" stroke="black" stroke-width="1"/>
+  <line x1="760" y1="217" x2="770" y2="207" stroke="black" stroke-width="1"/>
+  
+  <polyline points="420,310 440,320 460,330 480,340 500,320 520,310 540,300 560,310 580,320 600,300 620,290 640,300 660,290" fill="none" stroke="black" stroke-width="1"/>
+  <line x1="420" y1="360" x2="760" y2="360" stroke="black" stroke-width="1"/>
+  <line x1="420" y1="250" x2="420" y2="360" stroke="black" stroke-width="1"/>
+  
+  <!-- 그리드 아이템: 차트 3 -->
+  <rect x="20" y="420" width="370" height="200" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="20" y="420" width="370" height="25" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="30" y="437" font-family="Arial" font-size="12">기준금리 추이</text>
+  <circle cx="375" cy="432" r="7" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="370" y1="427" x2="380" y2="437" stroke="black" stroke-width="1"/>
+  <line x1="370" y1="437" x2="380" y2="427" stroke="black" stroke-width="1"/>
+  
+  <polyline points="30,510 50,510 70,510 90,510 110,490 130,490 150,490 170,490 190,470 210,470 230,470 250,470 270,470" fill="none" stroke="black" stroke-width="2"/>
+  <line x1="30" y1="580" x2="370" y2="580" stroke="black" stroke-width="1"/>
+  <line x1="30" y1="470" x2="30" y2="580" stroke="black" stroke-width="1"/>
+  
+  <!-- 그리드 아이템: 텍스트 -->
+  <rect x="410" y="420" width="370" height="200" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="410" y="420" width="370" height="25" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="420" y="437" font-family="Arial" font-size="12">주요 경제지표 요약</text>
+  <circle cx="765" cy="432" r="7" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="760" y1="427" x2="770" y2="437" stroke="black" stroke-width="1"/>
+  <line x1="760" y1="437" x2="770" y2="427" stroke="black" stroke-width="1"/>
+  
+  <line x1="410" y1="460" x2="780" y2="460" stroke="black" stroke-width="1"/>
+  <line x1="410" y1="500" x2="780" y2="500" stroke="black" stroke-width="1"/>
+  <line x1="410" y1="540" x2="780" y2="540" stroke="black" stroke-width="1"/>
+  <line x1="410" y1="580" x2="780" y2="580" stroke="black" stroke-width="1"/>
+  <line x1="540" y1="460" x2="540" y2="580" stroke="black" stroke-width="1"/>
+  
+  <text x="420" y="485" font-family="Arial" font-size="12">GDP 성장률</text>
+  <text x="420" y="525" font-family="Arial" font-size="12">소비자물가 등락률</text>
+  <text x="420" y="565" font-family="Arial" font-size="12">기준금리</text>
+  
+  <text x="550" y="485" font-family="Arial" font-size="12">2.6%</text>
+  <text x="550" y="525" font-family="Arial" font-size="12">3.2%</text>
+  <text x="550" y="565" font-family="Arial" font-size="12">3.5%</text>
+  
+  <!-- 푸터: 버튼 영역 -->
+  <rect x="0" y="650" width="800" height="50" fill="white" stroke="black" stroke-width="1"/>
+  
+  <rect x="670" y="660" width="100" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="705" y="680" font-family="Arial" font-size="14" text-anchor="middle">저장</text>
+  
+  <rect x="560" y="660" width="100" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="595" y="680" font-family="Arial" font-size="14" text-anchor="middle">취소</text>
+</svg>

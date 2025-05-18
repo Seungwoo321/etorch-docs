@@ -1,0 +1,68 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <!-- 헤더 -->
+  <rect x="0" y="0" width="800" height="60" fill="white" stroke="black" stroke-width="1"/>
+  <text x="20" y="35" font-family="Arial" font-size="18">E-Torch</text>
+  <line x1="100" y1="15" x2="100" y2="45" stroke="black" stroke-width="1"/>
+  <text x="120" y="35" font-family="Arial" font-size="14">대시보드 > 경제 동향 대시보드</text>
+  
+  <!-- 네비게이션 사이드바 -->
+  <rect x="0" y="60" width="200" height="540" fill="white" stroke="black" stroke-width="1"/>
+  <text x="20" y="90" font-family="Arial" font-size="14">내 대시보드</text>
+  <text x="20" y="120" font-family="Arial" font-size="14">대시보드 탐색</text>
+  <text x="20" y="150" font-family="Arial" font-size="14">설정</text>
+  <text x="20" y="560" font-family="Arial" font-size="14">사용자 프로필</text>
+  
+  <!-- 대시보드 컨텐츠 영역 -->
+  <rect x="200" y="60" width="600" height="80" fill="white" stroke="black" stroke-width="1"/>
+  <text x="220" y="90" font-family="Arial" font-size="18">경제 동향 대시보드</text>
+  
+  <!-- 대시보드 제어 도구 -->
+  <rect x="220" y="100" width="160" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="230" y="120" font-family="Arial" font-size="12">기간: 최근 1년</text>
+  <rect x="390" y="100" width="100" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="400" y="120" font-family="Arial" font-size="12">월간(M)</text>
+  <rect x="500" y="100" width="70" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="515" y="120" font-family="Arial" font-size="12">공유</text>
+  <rect x="580" y="100" width="70" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="595" y="120" font-family="Arial" font-size="12">편집</text>
+  <rect x="660" y="100" width="120" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="675" y="120" font-family="Arial" font-size="12">내보내기</text>
+  
+  <!-- 대시보드 그리드 레이아웃 -->
+  <rect x="220" y="160" width="270" height="200" fill="white" stroke="black" stroke-width="1"/>
+  <text x="230" y="180" font-family="Arial" font-size="14">GDP 성장률 추이</text>
+  <line x1="220" y1="190" x2="490" y2="190" stroke="black" stroke-width="1"/>
+  <polyline points="230,300 250,280 270,290 290,270 310,260 330,250 350,260 370,230 390,240 410,220 430,210 450,220 470,200" fill="none" stroke="black" stroke-width="1"/>
+  <line x1="230" y1="310" x2="470" y2="310" stroke="black" stroke-width="1"/>
+  <line x1="230" y1="200" x2="230" y2="310" stroke="black" stroke-width="1"/>
+  
+  <rect x="510" y="160" width="270" height="200" fill="white" stroke="black" stroke-width="1"/>
+  <text x="520" y="180" font-family="Arial" font-size="14">소비자물가 등락률</text>
+  <line x1="510" y1="190" x2="780" y2="190" stroke="black" stroke-width="1"/>
+  <polyline points="520,260 540,270 560,280 580,290 600,270 620,260 640,250 660,260 680,270 700,250 720,240 740,250 760,240" fill="none" stroke="black" stroke-width="1"/>
+  <line x1="520" y1="310" x2="760" y2="310" stroke="black" stroke-width="1"/>
+  <line x1="520" y1="200" x2="520" y2="310" stroke="black" stroke-width="1"/>
+  
+  <rect x="220" y="380" width="270" height="200" fill="white" stroke="black" stroke-width="1"/>
+  <text x="230" y="400" font-family="Arial" font-size="14">기준금리 추이</text>
+  <line x1="220" y1="410" x2="490" y2="410" stroke="black" stroke-width="1"/>
+  <polyline points="230,470 250,470 270,470 290,470 310,450 330,450 350,450 370,450 390,430 410,430 430,430 450,430 470,430" fill="none" stroke="black" stroke-width="1" stroke-width="2"/>
+  <line x1="230" y1="530" x2="470" y2="530" stroke="black" stroke-width="1"/>
+  <line x1="230" y1="420" x2="230" y2="530" stroke="black" stroke-width="1"/>
+  
+  <rect x="510" y="380" width="270" height="200" fill="white" stroke="black" stroke-width="1"/>
+  <text x="520" y="400" font-family="Arial" font-size="14">주요 경제지표 요약</text>
+  <line x1="510" y1="410" x2="780" y2="410" stroke="black" stroke-width="1"/>
+  <line x1="510" y1="450" x2="780" y2="450" stroke="black" stroke-width="1"/>
+  <line x1="510" y1="490" x2="780" y2="490" stroke="black" stroke-width="1"/>
+  <line x1="510" y1="530" x2="780" y2="530" stroke="black" stroke-width="1"/>
+  <line x1="640" y1="410" x2="640" y2="530" stroke="black" stroke-width="1"/>
+  
+  <text x="520" y="435" font-family="Arial" font-size="12">GDP 성장률</text>
+  <text x="520" y="475" font-family="Arial" font-size="12">소비자물가 등락률</text>
+  <text x="520" y="515" font-family="Arial" font-size="12">기준금리</text>
+  
+  <text x="650" y="435" font-family="Arial" font-size="12">2.6%</text>
+  <text x="650" y="475" font-family="Arial" font-size="12">3.2%</text>
+  <text x="650" y="515" font-family="Arial" font-size="12">3.5%</text>
+</svg>
