@@ -567,7 +567,6 @@ E-Torch 프로젝트는 ESLint 9 버전의 Standard 규칙을 사용하여 코�
 ### 9.1 ESLint 설정
 
 프로젝트 루트의 설정을 따르며, 다음과 같은 규칙을 적용합니다:
-
 - StandardJS 및 StandardJSX 규칙 준수
 - TypeScript ESLint 권장 규칙 준수
 - React Hooks 규칙 준수
