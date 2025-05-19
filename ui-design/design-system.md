@@ -241,7 +241,7 @@ E-Torch는 다음 두 가지 폰트 패밀리를 사용합니다:
 ```tsx
 // apps/web/app/layout.tsx
 import { Inter, JetBrains_Mono } from 'next/font/google';
-import '@e-torch/ui/src/styles/globals.css';
+import '@e-torch/ui/styles/globals.css';
 
 const inter = Inter({ 
   subsets: ['latin'],

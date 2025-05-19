@@ -4,9 +4,9 @@
 
 E-Torch는 Next.js App Router를 활용하여 직관적이고 체계적인 라우팅 구조를 구현합니다. 이 문서는 E-Torch의 라우팅 아키텍처, 페이지 구성, 라우트 그룹, 레이아웃, 그리고 내비게이션 전략을 설명합니다.
 
-## 2. Next.js App Router 활용 전략
+## 2. Next.js 15 App Router 활용 전략
 
-Next.js App Router의 파일 시스템 기반 라우팅을 활용하여 다음과 같은 기능들을 구현합니다:
+Next.js 15의 App Router 파일 시스템 기반 라우팅을 활용하여 다음과 같은 기능들을 구현합니다:
 
 ```mermaid
 flowchart TD
@@ -15,6 +15,7 @@ flowchart TD
     A --> D[중첩 레이아웃]
     A --> E[동적 라우트]
     A --> F[인터셉트 라우트]
+    A --> G[병렬 라우트]
     
     B --> B1[SEO 최적화]
     B --> B2[초기 로딩 성능 향상]
@@ -30,11 +31,14 @@ flowchart TD
     
     F --> F1[모달/팝업 구현]
     F --> F2[전환 없는 데이터 로드]
+    
+    G --> G1[탭 인터페이스]
+    G --> G2[동시 콘텐츠 로드]
 ```
 
 ## 3. 라우팅 구조 설계
 
-E-Torch의 라우팅 구조는 기능별로 그룹화되며, 다음과 같은 주요 섹션으로 구성됩니다:
+E-Torch의 라우팅 구조는 `architecture.md`에 정의된 모노레포 패키지 구조와 통합되어 기능별로 그룹화됩니다:
 
 ```mermaid
 graph TD
@@ -216,7 +220,7 @@ flowchart TD
 
 | 레이아웃 | 책임 |
 |---------|-----|
-| **RootLayout** | 전역 CSS/폰트, 서비스 프로바이더, 테마 설정, 기본 메타데이터 |
+| **RootLayout** | 전역 CSS/폰트(Inter, JetBrains_Mono), 테마 제공자, 메타데이터, 디자인 시스템 CSS 변수 적용 |
 | **AuthLayout** | 최소 디자인, 로고 및 설명, 중앙 정렬 컨테이너 |
 | **DashboardLayout** | 사이드 내비게이션, 상단 헤더, 메인 콘텐츠 영역 |
 | **ChartLayout** | 상단 헤더, 전체 화면 콘텐츠, 백 버튼 |
@@ -232,6 +236,7 @@ flowchart TD
 // app/(dashboard)/dashboard/[id]/page.tsx (서버 컴포넌트)
 import { fetchDashboardById } from '@/packages/server-api/dashboard';
 import { notFound } from 'next/navigation';
+import { DashboardServerWrapper } from '@/packages/dashboard/server';
 
 interface DashboardPageProps {
   params: { id: string };
@@ -245,8 +250,8 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     return notFound();
   }
   
-  // 데이터가 있으면 대시보드 렌더링
-  return <DashboardContent dashboard={dashboard} />;
+  // 서버 래퍼 컴포넌트로 데이터 전달하여 렌더링
+  return <DashboardServerWrapper dashboardId={params.id} initialData={dashboard} />;
 }
 ```
 
@@ -267,9 +272,9 @@ flowchart TD
 
 E-Torch의 네비게이션 시스템은 다음과 같은 주요 컴포넌트로 구성됩니다:
 
-- **SideNavigation**: 주요 메뉴 항목 및 네비게이션 링크 제공
-- **HeaderNavigation**: 현재 페이지 제목, 사용자 메뉴, 검색 바 등
-- **BreadcrumbNavigation**: 현재 위치 및 상위 카테고리 표시
+- **SideNavigation**: 주요 메뉴 항목 및 네비게이션 링크 제공 (`packages/ui/src/components/layout/side-navigation.tsx`)
+- **HeaderNavigation**: 현재 페이지 제목, 사용자 메뉴, 검색 바 등 (`packages/ui/src/components/layout/header-navigation.tsx`)
+- **BreadcrumbNavigation**: 현재 위치 및 상위 카테고리 표시 (`packages/ui/src/components/layout/breadcrumb-navigation.tsx`)
 
 ### 8.2 라우트 보호 아키텍처
 
@@ -278,12 +283,12 @@ E-Torch의 네비게이션 시스템은 다음과 같은 주요 컴포넌트로 
 1. **미들웨어 보호**:
    - 요청 경로 검사
    - 토큰 유효성 검증
-   - 인증 필요 시 리디렉션
+   - 인증 필요 시 리다이렉션
 
 2. **서버 컴포넌트 보호**:
    - 세션 검증
    - 권한 검증
-   - 리디렉션/404 처리
+   - 리다이렉션/404 처리
 
 3. **클라이언트 래퍼 보호**:
    - AuthGuard 컴포넌트
@@ -327,7 +332,7 @@ export function middleware(request: NextRequest) {
 ### 9.1 효율적인 네비게이션 패턴
 
 ```tsx
-// 링크 컴포넌트 사용 예시
+// 링크 컴포넌트 사용 예시 - design-system.md의 디자인 가이드라인 준수
 import Link from 'next/link';
 
 export function DashboardCard({ dashboard }) {
@@ -335,10 +340,11 @@ export function DashboardCard({ dashboard }) {
     <Link 
       href={`/dashboard/${dashboard.id}`}
       prefetch={true} // 자동 prefetch
+      className="rounded-lg border bg-card shadow-sm hover:bg-muted/50 transition-colors"
     >
-      <div className="card">
-        <h3>{dashboard.title}</h3>
-        <p>{dashboard.description}</p>
+      <div className="p-4">
+        <h3 className="text-xl font-semibold leading-snug">{dashboard.title}</h3>
+        <p className="text-sm text-muted-foreground">{dashboard.description}</p>
       </div>
     </Link>
   );
@@ -357,7 +363,14 @@ export function SaveButton({ dashboardId, onSave }) {
     }
   };
   
-  return <button onClick={handleSave}>저장</button>;
+  return (
+    <button 
+      onClick={handleSave} 
+      className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+    >
+      저장
+    </button>
+  );
 }
 ```
 
@@ -378,14 +391,17 @@ app/
 ```tsx
 // app/@modal/dashboard/[id]/page.tsx
 import { fetchDashboardById } from '@/packages/server-api/dashboard';
+import { DashboardModalContent } from '@/packages/dashboard/components/dashboard-modal-content';
 
 export default async function DashboardModal({ params }) {
   const dashboard = await fetchDashboardById(params.id);
   
   return (
-    <div className="modal">
-      <h2>{dashboard.title}</h2>
-      <DashboardModalContent dashboard={dashboard} />
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
+      <div className="fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-[90%] max-w-3xl -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-card p-6 shadow-lg">
+        <h2 className="text-xl font-semibold leading-snug">{dashboard.title}</h2>
+        <DashboardModalContent dashboard={dashboard} />
+      </div>
     </div>
   );
 }
@@ -397,6 +413,19 @@ export default async function DashboardModal({ params }) {
 
 ```tsx
 // app/layout.tsx (기본 메타데이터)
+import { Inter, JetBrains_Mono } from 'next/font/google';
+import '@e-torch/ui/styles/globals.css';
+
+const inter = Inter({ 
+  subsets: ['latin'],
+  variable: '--font-inter'
+});
+
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono'
+});
+
 export const metadata: Metadata = {
   title: {
     template: '%s | E-Torch',
@@ -405,6 +434,16 @@ export const metadata: Metadata = {
   description: '다양한 출처의 경제지표 데이터를 시각화하는 대시보드 서비스',
   // ... 기타 메타데이터
 };
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="ko" className={`${inter.variable} ${jetBrainsMono.variable}`}>
+      <body>
+        {children}
+      </body>
+    </html>
+  );
+}
 
 // app/(dashboard)/layout.tsx (섹션 메타데이터)
 export const metadata: Metadata = {
@@ -507,42 +546,52 @@ export async function saveDashboardAction(
 ```
 
 ```tsx
-// 클라이언트 컴포넌트에서 사용 예시
+// packages/dashboard/components/save-button.tsx (architecture.md 패키지 구조 반영)
 'use client';
 
 import { saveDashboardAction } from '@/app/actions/dashboard';
 import { useTransition } from 'react';
+import { Button } from '@/packages/ui';
+import { useToast } from '@/packages/ui/hooks';
 
-export function DashboardForm({ initialData }) {
+export function SaveButton({ dashboardId, formData }) {
   const [isPending, startTransition] = useTransition();
-  const [formData, setFormData] = useState(initialData || {});
+  const { toast } = useToast();
   
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSave = () => {
     startTransition(async () => {
       const result = await saveDashboardAction(formData);
+      
       if (result.success) {
-        // 성공 처리
+        toast({
+          title: "저장 완료",
+          description: "대시보드가 성공적으로 저장되었습니다.",
+          variant: "default",
+        });
       } else {
-        // 에러 처리
+        toast({
+          title: "저장 실패",
+          description: result.error,
+          variant: "destructive",
+        });
       }
     });
   };
   
   return (
-    <form onSubmit={handleSubmit}>
-      {/* 폼 필드들 */}
-      <button type="submit" disabled={isPending}>
-        {isPending ? '저장 중...' : '저장'}
-      </button>
-    </form>
+    <Button 
+      onClick={handleSave}
+      disabled={isPending}
+    >
+      {isPending ? '저장 중...' : '저장'}
+    </Button>
   );
 }
 ```
 
 ## 12. 결론
 
-E-Torch의 라우팅 구조는 Next.js App Router의 최신 기능을 활용하여 사용자 중심의 직관적인 인터페이스를 제공합니다. 주요 특징은 다음과 같습니다:
+E-Torch의 라우팅 구조는 Next.js 15 App Router의 최신 기능을 활용하여 사용자 중심의 직관적인 인터페이스를 제공합니다. 주요 특징은 다음과 같습니다:
 
 - **계층적 레이아웃**: 페이지 간 일관된 사용자 경험 제공
 - **기능별 라우트 그룹화**: 코드 구조의 명확한 조직화
@@ -551,5 +600,6 @@ E-Torch의 라우팅 구조는 Next.js App Router의 최신 기능을 활용하�
 - **안전한 라우트 보호**: 다층적 인증 및 권한 검증
 - **메타데이터 최적화**: SEO 및 소셜 공유 최적화
 - **서버 액션**: 클라이언트-서버 통신 간소화
+- **디자인 시스템 통합**: OKLCH 색상 체계와 Tailwind CSS 4 클래스 활용
 
 이 구조는 E-Torch의 복잡한 기능을 직관적으로 접근 가능하게 만들며, 향후 기능 추가 시에도 확장 가능한 견고한 기반을 제공합니다.
