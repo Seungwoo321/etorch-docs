@@ -2,7 +2,7 @@
 
 ## 1. 개요
 
-E-Torch 프로젝트의 핵심 컴포넌트 설계는 모듈성, 재사용성, 확장성을 중심으로 구축됩니다. 본 문서는 E-Torch의 주요 기능 구현에 필요한 핵심 컴포넌트들의 구조, 상호작용, 책임 범위를 정의합니다.
+E-Torch 프로젝트의 핵심 컴포넌트 설계는 모듈성, 재사용성, 확장성을 중심으로 구축되었습니다. 본 문서는 E-Torch의 주요 기능 구현에 필요한 핵심 컴포넌트들의 구조, 상호작용, 책임 범위를 정의하며, 특히 Next.js 15의 서버/클라이언트 컴포넌트 아키텍처와 React 19의 새로운 기능을 활용한 설계 패턴을 제시합니다.
 
 ## 2. 컴포넌트 계층 구조와 패키지 매핑
 
@@ -38,7 +38,7 @@ flowchart TD
 
 ## 3. 서버 컴포넌트 vs 클라이언트 컴포넌트
 
-Next.js의 서버/클라이언트 컴포넌트 구분에 따라 각 컴포넌트는 다음과 같이 분류됩니다:
+Next.js 15의 서버/클라이언트 컴포넌트 구분에 따라 각 컴포넌트는 다음과 같이 분류됩니다:
 
 ```mermaid
 flowchart LR
@@ -99,18 +99,18 @@ flowchart LR
 
 ### 3.3 서버/클라이언트 통합 패턴
 
-서버 컴포넌트와.클라이언트 컴포넌트를 효과적으로 통합하는 패턴입니다:
+서버 컴포넌트와 클라이언트 컴포넌트를 효과적으로 통합하는 패턴입니다:
 
 ```tsx
 // 서버 컴포넌트 래퍼 패턴
 
 // packages/charts/server/ChartServerWrapper.tsx (서버 컴포넌트)
-import { ChartComponent } from '../components/ChartComponent';
-import { fetchChartData } from '@/packages/data-sources/server';
+import { ChartComponent } from '../components/ChartComponent'
+import { fetchChartData } from '@/packages/data-sources/server'
 
 export async function ChartServerWrapper({ chartId, config }: { chartId: string, config: ChartConfig }) {
   // 서버에서 데이터 페칭
-  const initialData = await fetchChartData(config);
+  const initialData = await fetchChartData(config)
   
   // 클라이언트 컴포넌트로 초기 데이터 전달
   return (
@@ -119,28 +119,28 @@ export async function ChartServerWrapper({ chartId, config }: { chartId: string,
       config={config}
       initialData={initialData}
     />
-  );
+  )
 }
 
 // packages/charts/components/ChartComponent.tsx (클라이언트 컴포넌트)
-'use client';
+'use client'
 
-import { useChartData } from '@/packages/data-sources/hooks';
-import { ChartRenderer } from './ChartRenderer';
+import { useChartData } from '@/packages/data-sources/hooks'
+import { ChartRenderer } from './ChartRenderer'
 
 export function ChartComponent({ 
   chartId, 
   config, 
   initialData 
 }: { 
-  chartId: string; 
-  config: ChartConfig; 
-  initialData?: ChartData;
+  chartId: string 
+  config: ChartConfig 
+  initialData?: ChartData
 }) {
   // 클라이언트에서 데이터 관리 (초기 데이터로 시작)
   const { data, isLoading, error, refetch } = useChartData(config, {
     initialData
-  });
+  })
   
   return (
     <div>
@@ -156,7 +156,7 @@ export function ChartComponent({
         />
       )}
     </div>
-  );
+  )
 }
 ```
 
@@ -165,14 +165,14 @@ export function ChartComponent({
 Shadcn/UI 같은 클라이언트 컴포넌트를 서버 컴포넌트에서 사용하기 위한 래퍼 패턴입니다:
 
 ```tsx
-// packages/ui/src/server-wrappers/button.server.tsx
-import { Button } from '../components/ui/button';
+// packages/ui/src/server-components/button.server.tsx
+import { Button } from '../components/ui/button'
 
 export interface ButtonServerProps {
-  children: React.ReactNode;
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
-  className?: string;
+  children: React.ReactNode
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
+  size?: 'default' | 'sm' | 'lg' | 'icon'
+  className?: string
 }
 
 export function ButtonServer({ 
@@ -187,7 +187,7 @@ export function ButtonServer({
     <Button variant={variant} size={size} className={className}>
       {children}
     </Button>
-  );
+  )
 }
 ```
 
@@ -195,7 +195,7 @@ export function ButtonServer({
 
 차트 표시 및 편집 관련 컴포넌트는 E-Torch의 핵심 기능으로, 서버 컴포넌트와 클라이언트 컴포넌트의 조합으로 구현됩니다.
 
-## 4.1 차트 컴포넌트 계층 구조
+### 4.1 차트 컴포넌트 계층 구조
 
 ```mermaid
 flowchart TD
@@ -211,11 +211,11 @@ flowchart TD
     
     Controls[ChartControls] --> ClientChart
     
-    classDef server fill:#ccffcc,stroke:#333,stroke-width:1px,color:#000;
-    classDef client fill:#ffcccb,stroke:#333,stroke-width:1px,color:#000;
+    classDef server fill:#ccffcc,stroke:#333,stroke-width:1px,color:#000
+    classDef client fill:#ffcccb,stroke:#333,stroke-width:1px,color:#000
     
-    class SSR,DataLoader server;
-    class ClientChart,Renderer,SpecializedCharts,TimeSeries,Bar,Scatter,Radar,RadialBar,Controls client;
+    class SSR,DataLoader server
+    class ClientChart,Renderer,SpecializedCharts,TimeSeries,Bar,Scatter,Radar,RadialBar,Controls client
 ```
 
 #### 컴포넌트별 책임 정의
@@ -232,24 +232,6 @@ flowchart TD
 | **RadarChart** | 클라이언트 | 다차원 데이터 비교 | PanelOptions, TooltipOptions, LegendOptions, RadarOptions |
 | **RadialBarChart** | 클라이언트 | 부분-전체 관계 시각화 | PanelOptions, TooltipOptions, LegendOptions, RadialBarOptions |
 | **ChartControls** | 클라이언트 | 차트 인터랙션 컨트롤 | - |
-
-### 차트 옵션 컴포넌트 매핑
-
-모든 차트는 기본적으로 다음 옵션 컴포넌트를 공유합니다:
-
-1. **PanelOptions**: 제목, 설명, 배경 투명도 (PO-001~003)
-2. **TooltipOptions**: 툴팁 표시 방식, 커서 스타일 설정 (TO-001~005)
-3. **LegendOptions**: 범례 표시, 레이아웃, 정렬 설정 (LG-001~004)
-
-차트 유형에 따른 특수 옵션:
-
-| 차트 유형 | 특수 옵션 | 관련 기능 ID |
-|---------|----------|-------------|
-| **TimeSeries** | GraphStyles, XAxis, YAxis, YAxis (Secondary) | GS-001~003, XA-001~010, YA-001~011, YAS-001~011 |
-| **BarChart** | XAxis, YAxis | XA-001~010, YA-001~011 |
-| **ScatterChart** | XAxis, YAxis, ScatterOptions | XA-001~010, YA-001~011, SC-001~006 |
-| **RadarChart** | RadarOptions | RC-001~006 |
-| **RadialBarChart** | RadialBarOptions | RB-001~010 |
 
 ### 4.2 차트 에디터 컴포넌트
 
@@ -292,22 +274,22 @@ function TimeSeriesChart({ data, options, width, height }: TimeSeriesChartProps)
       yAxis: processYAxisOptions(options.yAxis),
       xAxis: processXAxisOptions(options.xAxis, data),
       tooltip: processTooltipOptions(options.tooltip)
-    };
-  }, [options, data]);
+    }
+  }, [options, data])
   
   // 데이터 다운샘플링 최적화
   const optimizedData = useMemo(() => {
     // 화면 너비에 맞춰 데이터 다운샘플링
     if (data.length > width / 2) {
-      return downsampleTimeSeries(data, Math.floor(width / 2));
+      return downsampleTimeSeries(data, Math.floor(width / 2))
     }
-    return data;
-  }, [data, width]);
+    return data
+  }, [data, width])
   
   // 이벤트 핸들러 메모이제이션
   const handleMouseMove = useCallback((e) => {
     // 마우스 이벤트 처리 로직
-  }, []);
+  }, [])
   
   // 차트 컴포넌트 자체도 메모이제이션
   return useMemo(() => (
@@ -326,10 +308,10 @@ function TimeSeriesChart({ data, options, width, height }: TimeSeriesChartProps)
         />
       </LineChart>
     </ResponsiveContainer>
-  ), [optimizedData, processedOptions, width, height, handleMouseMove]);
+  ), [optimizedData, processedOptions, width, height, handleMouseMove])
 }
 
-export default memo(TimeSeriesChart);
+export default memo(TimeSeriesChart)
 ```
 
 ### 4.4 차트 데이터 흐름 통합 다이어그램
@@ -366,14 +348,14 @@ flowchart TD
     D -.-> I
     H -.-> K
     
-    classDef server fill:#ccffcc,stroke:#333,stroke-width:1px,color:#000;
-    classDef client fill:#ffcccb,stroke:#333,stroke-width:1px,color:#000;
-    classDef data fill:#ffffcc,stroke:#333,stroke-width:1px,color:#000;
+    classDef server fill:#ccffcc,stroke:#333,stroke-width:1px,color:#000
+    classDef client fill:#ffcccb,stroke:#333,stroke-width:1px,color:#000
+    classDef data fill:#ffffcc,stroke:#333,stroke-width:1px,color:#000
     
-    class A,B,C,D server;
-    class I,J,K,L,M client;
-    class E,F,G,H data;
-    class N,O,P,Q,R client;
+    class A,B,C,D server
+    class I,J,K,L,M client
+    class E,F,G,H data
+    class N,O,P,Q,R client
 ```
 
 #### 통합된 데이터 상태 관리 접근법
@@ -404,8 +386,6 @@ E-Torch 프로젝트의 차트 컴포넌트와 데이터 상태 관리는 다음
    - 차트 컴포넌트는 `useChartStore`, `useChartData` 등의 훅을 통해 상태에 접근
    - 상태 변경은 스토어의 액션을 통해서만 수행
    - 컴포넌트는 필요한 상태만 선택적으로 구독하여 불필요한 렌더링 방지
-
-이 통합된 접근법은 서버 컴포넌트와 클라이언트 컴포넌트의 장점을 모두 활용하면서, 데이터 흐름의 일관성과 상태 관리의 효율성을 극대화합니다.
 
 ## 5. 대시보드 컴포넌트 설계
 
@@ -464,38 +444,38 @@ flowchart TD
 
 ```tsx
 // app/(dashboard)/dashboard/[id]/page.tsx (서버 컴포넌트)
-import { DashboardServerWrapper } from '@/packages/dashboard/server';
-import { fetchDashboardById } from '@/packages/server-api/dashboard';
-import { notFound } from 'next/navigation';
+import { DashboardServerWrapper } from '@/packages/dashboard/server'
+import { fetchDashboardById } from '@/packages/server-api/dashboard'
+import { notFound } from 'next/navigation'
 
 interface DashboardPageProps {
-  params: { id: string };
+  params: { id: string }
 }
 
 export default async function DashboardPage({ params }: DashboardPageProps) {
   // 서버에서 대시보드 데이터 페칭
-  const dashboard = await fetchDashboardById(params.id);
+  const dashboard = await fetchDashboardById(params.id)
   
   if (!dashboard) {
-    return notFound();
+    return notFound()
   }
   
   // 서버 래퍼 컴포넌트로 초기 데이터 전달
-  return <DashboardServerWrapper dashboardId={params.id} initialData={dashboard} />;
+  return <DashboardServerWrapper dashboardId={params.id} initialData={dashboard} />
 }
 
 // packages/dashboard/server/DashboardServerWrapper.tsx (서버 컴포넌트)
-import { DashboardComponent } from '../components/DashboardComponent';
+import { DashboardComponent } from '../components/DashboardComponent'
 
 export async function DashboardServerWrapper({ 
   dashboardId, 
   initialData 
 }: { 
-  dashboardId: string;
-  initialData: Dashboard;
+  dashboardId: string
+  initialData: Dashboard
 }) {
   // 추가 데이터가 필요하면 여기서 페치
-  const widgetsData = await fetchWidgetsData(dashboardId);
+  const widgetsData = await fetchWidgetsData(dashboardId)
   
   // 클라이언트 컴포넌트에 데이터 전달
   return (
@@ -503,38 +483,38 @@ export async function DashboardServerWrapper({
       dashboard={initialData}
       widgetsData={widgetsData}
     />
-  );
+  )
 }
 
 // packages/dashboard/components/DashboardComponent.tsx (클라이언트 컴포넌트)
-'use client';
+'use client'
 
-import { DashboardGrid } from './DashboardGrid';
-import { DashboardControls } from './DashboardControls';
-import { useDashboardStore } from '@/packages/state';
-import { useEffect } from 'react';
+import { DashboardGrid } from './DashboardGrid'
+import { DashboardControls } from './DashboardControls'
+import { useDashboardStore } from '@/packages/state'
+import { useEffect } from 'react'
 
 export function DashboardComponent({ 
   dashboard, 
   widgetsData 
 }: { 
-  dashboard: Dashboard;
-  widgetsData: WidgetData[];
+  dashboard: Dashboard
+  widgetsData: WidgetData[]
 }) {
   // 스토어 초기화
-  const { initDashboard, setWidgetsData } = useDashboardStore();
+  const { initDashboard, setWidgetsData } = useDashboardStore()
   
   useEffect(() => {
-    initDashboard(dashboard);
-    setWidgetsData(widgetsData);
-  }, [dashboard, widgetsData, initDashboard, setWidgetsData]);
+    initDashboard(dashboard)
+    setWidgetsData(widgetsData)
+  }, [dashboard, widgetsData, initDashboard, setWidgetsData])
   
   return (
     <div>
       <DashboardControls />
       <DashboardGrid />
     </div>
-  );
+  )
 }
 ```
 
@@ -574,48 +554,48 @@ flowchart TD
 
 ```tsx
 // packages/data-sources/components/TransformControls.tsx
-'use client';
+'use client'
 
-import { TransformType, TimeSeriesData } from '@/packages/core';
-import { useState, useEffect } from 'react';
-import { Select, Tabs, TabsList, TabsTrigger, TabsContent } from '@/packages/ui/components';
+import { TransformType, TimeSeriesData } from '@/packages/core'
+import { useState, useEffect } from 'react'
+import { Select, Tabs, TabsList, TabsTrigger, TabsContent } from '@/packages/ui/components'
 
 export function TransformControls({
   data,
   initialTransform = 'original',
   onChange
 }: {
-  data: TimeSeriesData;
-  initialTransform?: TransformType;
-  onChange: (type: TransformType, data: TimeSeriesData) => void;
+  data: TimeSeriesData
+  initialTransform?: TransformType
+  onChange: (type: TransformType, data: TimeSeriesData) => void
 }) {
-  const [transform, setTransform] = useState<TransformType>(initialTransform);
+  const [transform, setTransform] = useState<TransformType>(initialTransform)
   
   // 변환 유형에 따라 데이터 처리
   useEffect(() => {
-    if (!data) return;
+    if (!data) return
     
-    let transformedData: TimeSeriesData;
+    let transformedData: TimeSeriesData
     
     switch (transform) {
       case 'original':
-        transformedData = data;
-        break;
+        transformedData = data
+        break
       case 'change':
-        transformedData = calculateChange(data);
-        break;
+        transformedData = calculateChange(data)
+        break
       case 'changeYoY':
-        transformedData = calculateYoYChange(data);
-        break;
+        transformedData = calculateYoYChange(data)
+        break
       case 'cumulative':
-        transformedData = calculateCumulative(data);
-        break;
+        transformedData = calculateCumulative(data)
+        break
       default:
-        transformedData = data;
+        transformedData = data
     }
     
-    onChange(transform, transformedData);
-  }, [transform, data, onChange]);
+    onChange(transform, transformedData)
+  }, [transform, data, onChange])
   
   return (
     <div className="space-y-4">
@@ -647,7 +627,7 @@ export function TransformControls({
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }
 ```
 
@@ -657,60 +637,60 @@ Next.js 서버 액션을 활용하여 데이터 변경을 처리하는 패턴입
 
 ```tsx
 // app/actions/dashboard.ts (서버 액션)
-'use server';
+'use server'
 
-import { revalidatePath } from 'next/cache';
-import { saveDashboard } from '@/packages/server-api/dashboard';
+import { revalidatePath } from 'next/cache'
+import { saveDashboard } from '@/packages/server-api/dashboard'
 
 export async function saveDashboardAction(
   dashboardId: string,
   dashboardData: any
 ) {
   try {
-    const result = await saveDashboard(dashboardId, dashboardData);
-    revalidatePath(`/dashboard/${dashboardId}`);
-    return { success: true, data: result };
+    const result = await saveDashboard(dashboardId, dashboardData)
+    revalidatePath(`/dashboard/${dashboardId}`)
+    return { success: true, data: result }
   } catch (error) {
     return { 
       success: false, 
       error: error instanceof Error ? error.message : '저장 중 오류가 발생했습니다.'
-    };
+    }
   }
 }
 
 // packages/dashboard/editor/SaveButton.tsx (클라이언트 컴포넌트)
-'use client';
+'use client'
 
-import { useTransition } from 'react';
-import { Button } from '@/packages/ui/components';
-import { useDashboardStore } from '@/packages/state';
-import { saveDashboardAction } from '@/app/actions/dashboard';
-import { useToast } from '@/packages/ui/hooks';
+import { useTransition } from 'react'
+import { Button } from '@/packages/ui/components'
+import { useDashboardStore } from '@/packages/state'
+import { saveDashboardAction } from '@/app/actions/dashboard'
+import { useToast } from '@/packages/ui/hooks'
 
 export function SaveButton({ dashboardId }: { dashboardId: string }) {
-  const [isPending, startTransition] = useTransition();
-  const { dashboard } = useDashboardStore();
-  const { toast } = useToast();
+  const [isPending, startTransition] = useTransition()
+  const { dashboard } = useDashboardStore()
+  const { toast } = useToast()
   
   const handleSave = () => {
     startTransition(async () => {
-      const result = await saveDashboardAction(dashboardId, dashboard);
+      const result = await saveDashboardAction(dashboardId, dashboard)
       
       if (result.success) {
         toast({
           title: '저장 완료',
           description: '대시보드가 성공적으로 저장되었습니다.',
           variant: 'success'
-        });
+        })
       } else {
         toast({
           title: '저장 실패',
           description: result.error,
           variant: 'destructive'
-        });
+        })
       }
-    });
-  };
+    })
+  }
   
   return (
     <Button 
@@ -719,7 +699,7 @@ export function SaveButton({ dashboardId }: { dashboardId: string }) {
     >
       {isPending ? '저장 중...' : '저장'}
     </Button>
-  );
+  )
 }
 ```
 
@@ -743,25 +723,25 @@ function SkipLink({ targetId }: { targetId: string }) {
     >
       콘텐츠로 건너뛰기
     </a>
-  );
+  )
 }
 
 // 모달 및 다이얼로그에서 포커스를 가두는 컴포넌트
 function FocusTrap({ children }: { children: React.ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null)
   
   // 키보드 탐색 제어 로직
   useEffect(() => {
     const trapFocus = (e: KeyboardEvent) => {
       // 포커스 트랩 구현 로직
       // ...
-    };
+    }
     
-    document.addEventListener('keydown', trapFocus);
-    return () => document.removeEventListener('keydown', trapFocus);
-  }, []);
+    document.addEventListener('keydown', trapFocus)
+    return () => document.removeEventListener('keydown', trapFocus)
+  }, [])
   
-  return <div ref={ref}>{children}</div>;
+  return <div ref={ref}>{children}</div>
 }
 ```
 
@@ -799,7 +779,7 @@ function AccessibleChartTable({
         </tbody>
       </table>
     </div>
-  );
+  )
 }
 ```
 
@@ -820,7 +800,7 @@ function StatusIndicator({
       <span className="status-icon" aria-hidden="true" />
       <span>{label}</span>
     </div>
-  );
+  )
 }
 
 // 접근성 차트 패턴 컴포넌트
@@ -838,7 +818,7 @@ function AccessibleChartPatterns() {
         {/* 추가 패턴 */}
       </defs>
     </svg>
-  );
+  )
 }
 ```
 
@@ -848,46 +828,90 @@ function AccessibleChartPatterns() {
 
 ```tsx
 // 차트 유형별 다이나믹 임포트
-import dynamic from 'next/dynamic';
+import dynamic from 'next/dynamic'
 
 // 기본 차트 컴포넌트는 즉시 로드
-import { ChartProps, ChartType } from '@/packages/charts';
-import { ChartSkeleton } from '@/packages/ui/components';
+import { ChartProps, ChartType } from '@/packages/charts'
+import { ChartSkeleton } from '@/packages/ui/components'
 
 // 차트 유형별 동적 임포트 (필요시 로드)
 const TimeSeriesChart = dynamic(() => import('@/packages/charts/src/components/chart-types/TimeSeriesChart'), {
   loading: () => <ChartSkeleton type="timeSeries" />,
   ssr: false // 클라이언트 사이드에서만 렌더링 (Recharts는 SSR 불가)
-});
+})
 
 const BarChart = dynamic(() => import('@/packages/charts/src/components/chart-types/BarChart'), {
   loading: () => <ChartSkeleton type="bar" />,
   ssr: false
-});
+})
 
 // 차트 렌더러 컴포넌트 (차트 유형에 따라 적절한 컴포넌트 로드)
 export function ChartRenderer({ type, ...props }: ChartProps & { type: ChartType }) {
   // 차트 유형에 따라 적절한 컴포넌트 반환
   switch (type) {
     case 'timeSeries':
-      return <TimeSeriesChart {...props} />;
+      return <TimeSeriesChart {...props} />
     case 'bar':
-      return <BarChart {...props} />;
+      return <BarChart {...props} />
     // ... 다른 차트 유형
     default:
-      return <div>Unsupported chart type: {type}</div>;
+      return <div>Unsupported chart type: {type}</div>
   }
 }
 ```
 
 ### 9.2 데이터 다운샘플링
 
-대량 시계열 데이터를 효율적으로 처리하기 위해 다운샘플링 전략을 사용합니다.
-데이터 다운샘플링 알고리즘에 대한 상세 내용은 [`data-flow.md`](../data-flow.md) 문서의 데이터 변환 및 처리 파이프라인 섹션을 참조하십시오.
+대량 시계열 데이터를 효율적으로 처리하기 위해 다운샘플링 전략을 사용합니다. 데이터 다운샘플링 알고리즘에 대한 상세 내용은 [`data-flow.md`](../data-flow.md) 문서의 데이터 변환 및 처리 파이프라인 섹션을 참조하십시오.
+
+### 9.3 React 19의 최적화 기능 활용
+
+React 19에서 제공하는 새로운 훅과 최적화 기능을 활용합니다:
+
+```tsx
+// useOptimistic 훅 활용
+'use client'
+
+import { useOptimistic } from 'react'
+import { useDashboardStore } from '@/packages/state'
+import { saveDashboardAction } from '@/app/actions/dashboard'
+
+export function TitleEditor({ dashboardId }: { dashboardId: string }) {
+  const title = useDashboardStore(state => 
+    state.dashboards.byId[dashboardId]?.title || ''
+  )
+  
+  const [optimisticTitle, updateOptimisticTitle] = useOptimistic(
+    title,
+    (state, newTitle: string) => newTitle
+  )
+  
+  const updateTitle = async (formData: FormData) => {
+    const newTitle = formData.get('title') as string
+    
+    // 낙관적 UI 업데이트
+    updateOptimisticTitle(newTitle)
+    
+    // 서버에 저장
+    await saveDashboardAction(dashboardId, { title: newTitle })
+  }
+  
+  return (
+    <form action={updateTitle}>
+      <input
+        name="title"
+        defaultValue={optimisticTitle}
+        className="border border-input bg-background px-3 py-2 rounded-md"
+      />
+      <Button type="submit">저장</Button>
+    </form>
+  )
+}
+```
 
 ## 10. 결론
 
-E-Torch의 핵심 컴포넌트 설계는 모듈성, 재사용성, 확장성 원칙을 기반으로 구성되었습니다. 차트 렌더링, 대시보드 관리, 데이터 소스 관리 등 주요 기능별로 특화된 컴포넌트 구조를 갖추고 있으며, Next.js의 서버/클라이언트 컴포넌트 아키텍처를 효과적으로 활용합니다.
+E-Torch의 핵심 컴포넌트 설계는 모듈성, 재사용성, 확장성 원칙을 기반으로 구성되었습니다. 차트 렌더링, 대시보드 관리, 데이터 소스 관리 등 주요 기능별로 특화된 컴포넌트 구조를 갖추고 있으며, Next.js 15의 서버/클라이언트 컴포넌트 아키텍처와 React 19의 새로운 기능을 효과적으로 활용합니다.
 
 특히 다음과 같은 점을 중점적으로 설계했습니다:
 
@@ -896,5 +920,6 @@ E-Torch의 핵심 컴포넌트 설계는 모듈성, 재사용성, 확장성 원�
 3. **차트와 대시보드 컴포넌트의 확장 가능한 설계**로 새로운 기능 추가 용이성 확보
 4. **상태 관리 및 데이터 흐름과의 통합** 강화
 5. **접근성과 성능 최적화** 통합
+6. **React 19의 새로운 기능(useOptimistic 등)** 활용
 
 이 설계를 통해 E-Torch는 다양한 경제 데이터를 효과적으로 시각화하고 분석할 수 있는 직관적이고 강력한 사용자 경험을 제공할 수 있습니다.
