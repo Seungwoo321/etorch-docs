@@ -320,11 +320,11 @@ E-Torch는 일관된 사용자 경험을 위해 체계적인 디자인 시스템
 
 프론트엔드 기술 아키텍처, 상태 관리, 데이터 흐름, 라우팅 전략에 대한 상세 내용은 다음 문서를 참조하십시오:
 
-- 아키텍처 설계: `architecture.md`
-- 컴포넌트 설계: `core-components.md`
-- 상태 관리: `state-management.md`
-- 데이터 흐름: `data-flow.md`
-- 라우팅 구조: `routing.md`
+- 아키텍처 설계: [`architecture.md`](./frontend/architecture.md)
+- 컴포넌트 설계: [`core-components.md`](./frontend/components/core-components.md)
+- 상태 관리: [`state-management.md`](./frontend/state-management.md)
+- 데이터 흐름: [`data-flow.md`](./frontend/data-flow.md)
+- 라우팅 구조: [`routing.md`](./frontend/routing.md)
 
 ## 11. 마케팅 및 사용자 확보 전략
 

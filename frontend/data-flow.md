@@ -32,7 +32,7 @@ flowchart TD
 
 ### 2.2 아키텍처 계층과 데이터 흐름 통합
 
-E-Torch의 데이터 흐름은 `architecture.md`에 정의된 아키텍처 계층과 통합되어 동작합니다:
+E-Torch의 데이터 흐름은 [`architecture.md`](./architecture.md)에 정의된 아키텍처 계층과 통합되어 동작합니다:
 
 | 데이터 흐름 레이어 | 아키텍처 계층 | 주요 책임 | 구현 기술 |
 |------------------|--------------|---------|----------|
@@ -192,7 +192,7 @@ flowchart TD
 | **대량의 대시보드 데이터** | 최적화된 직접 쿼리 | 데이터 변환 및 필터링을 서버에서 효율적으로 처리 |
 | **사용자 액션 기반 데이터 변경** | 서버 액션 | 폼 제출 및 클라이언트 상호작용과 연계된 데이터 처리 |
 
-서버 컴포넌트에서의 데이터 페칭 패턴에 대한 상세 구현은 `core-components.md` 문서를 참조하십시오.
+서버 컴포넌트에서의 데이터 페칭 패턴에 대한 상세 구현은 [`core-components.md`](./components/core-components.md) 문서를 참조하십시오.
 
 ### 5.2 TanStack Query를 활용한 클라이언트 데이터 페칭
 
@@ -203,7 +203,7 @@ flowchart TD
 5. **낙관적 업데이트**: 사용자 경험 향상을 위한 낙관적 업데이트
 6. **인증 통합**: Supabase 클라이언트를 TanStack Query와 통합하여 인증 관리
 
-TanStack Query를 활용한 클라이언트 상태 관리에 대한 상세 구현은 `state-management.md` 문서를 참조하십시오.
+TanStack Query를 활용한 클라이언트 상태 관리에 대한 상세 구현은 [`state-management.md`](./state-management.md) 문서를 참조하십시오.
 
 ### 5.3 서버 액션을 활용한 데이터 변경
 
@@ -212,7 +212,7 @@ TanStack Query를 활용한 클라이언트 상태 관리에 대한 상세 구�
 3. **트랜잭션 보장**: 여러 데이터 변경의 원자성 보장
 4. **인증 컨텍스트**: 서버 액션에서 사용자 인증 상태 유지 및 확인
 
-서버 액션을 활용한 데이터 변경 패턴에 대한 상세 구현은 `core-components.md` 문서를 참조하십시오.
+서버 액션을 활용한 데이터 변경 패턴에 대한 상세 구현은 [`core-components.md`](./components/core-components.md) 문서를 참조하십시오.
 
 ## 6. 데이터 변환 및 처리 파이프라인
 
@@ -406,7 +406,7 @@ function downsampleTimeSeries(data: DataPoint[], targetPoints: number): DataPoin
 
 ## 7. 데이터 캐싱 전략
 
-E-Torch는 다층적 캐싱 전략을 통해 성능을 최적화합니다. 이 섹션에서는 데이터 캐싱의 기술적 구현에 초점을 맞춥니다. 상태 관리 관점의 캐싱 전략은 `state-management.md` 문서를 참조하십시오.
+E-Torch는 다층적 캐싱 전략을 통해 성능을 최적화합니다. 이 섹션에서는 데이터 캐싱의 기술적 구현에 초점을 맞춥니다. 상태 관리 관점의 캐싱 전략은 [`state-management.md`](./state-management.md) 문서를 참조하십시오.
 
 ### 7.1 캐싱 계층 구조
 
@@ -522,7 +522,6 @@ return <div ref={ref}>{/* 차트 컴포넌트 */}</div>;
 ```
 
 이러한 다층적 캐시 무효화 전략을 통해 E-Torch는 데이터의 최신성을 보장하면서도 네트워크 요청과 서버 부하를 최소화합니다.
-
 
 ## 8. 클라이언트-서버 통신 최적화
 

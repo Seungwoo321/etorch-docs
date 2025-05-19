@@ -6,7 +6,7 @@ E-Torch 프로젝트의 핵심 컴포넌트 설계는 모듈성, 재사용성, �
 
 ## 2. 컴포넌트 계층 구조와 패키지 매핑
 
-E-Torch의 컴포넌트 계층 구조는 역할과 책임에 따라 다음과 같이 구성되며, `architecture.md`에 정의된 모노레포 패키지 구조와 매핑됩니다:
+E-Torch의 컴포넌트 계층 구조는 역할과 책임에 따라 다음과 같이 구성되며, [`architecture.md`](../architecture.md)에 정의된 모노레포 패키지 구조와 매핑됩니다:
 
 ```mermaid
 flowchart TD
@@ -21,7 +21,7 @@ flowchart TD
         P2[packages/dashboard] -.-> C & D
         P3[packages/charts] -.-> C & D
         P4[packages/ui] -.-> E & F
-        P5[packages/core] -.-> "공통 타입 및 인터페이스"
+        P5[packages/core] -.-> A & B & C & D & E & F
     end
 ```
 
@@ -76,6 +76,7 @@ flowchart LR
 - **정적 UI 렌더링**: 상호작용이 필요 없는 정적 UI 요소 렌더링
 
 **주요 서버 컴포넌트**:
+
 - `DashboardPage` (`app/dashboard/[id]/page.tsx`)
 - `DashboardLoader` (`packages/dashboard/server/DashboardLoader.tsx`)
 - `ChartDataLoader` (`packages/charts/server/ChartDataLoader.tsx`)
@@ -91,6 +92,7 @@ flowchart LR
 - **애니메이션**: 모션 및 트랜지션 효과
 
 **주요 클라이언트 컴포넌트**:
+
 - `DashboardGrid` (`packages/dashboard/components/DashboardGrid.tsx`)
 - `ChartComponent` (`packages/charts/components/ChartComponent.tsx`)
 - `ChartEditor` (`packages/charts/editor/ChartEditor.tsx`)
@@ -881,7 +883,7 @@ export function ChartRenderer({ type, ...props }: ChartProps & { type: ChartType
 ### 9.2 데이터 다운샘플링
 
 대량 시계열 데이터를 효율적으로 처리하기 위해 다운샘플링 전략을 사용합니다.
-데이터 다운샘플링 알고리즘에 대한 상세 내용은 `data-flow.md` 문서의 데이터 변환 및 처리 파이프라인 섹션을 참조하십시오.
+데이터 다운샘플링 알고리즘에 대한 상세 내용은 [`data-flow.md`](../data-flow.md) 문서의 데이터 변환 및 처리 파이프라인 섹션을 참조하십시오.
 
 ## 10. 결론
 

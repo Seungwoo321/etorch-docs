@@ -120,7 +120,7 @@ Next.js App Router 환경에서는 서버와 클라이언트 컴포넌트를 명
 - 클라이언트 컴포넌트: 상호작용 UI, 상태 관리, 이벤트 핸들링
 - 하이브리드 패턴: 서버에서 데이터를 페칭하여 클라이언트 컴포넌트에 전달
 
-상세 구현 패턴과 전략은 `core-components.md` 문서를 참조하십시오.
+상세 구현 패턴과 전략은 [`core-components.md`](./components/core-components.md) 문서를 참조하십시오.
 
 ## 4. 모노레포 패키지 구조 설계
 
@@ -281,7 +281,7 @@ flowchart TD
 
 ### 4.3 UI 컴포넌트와 서버/클라이언트 통합 전략 개요
 
-Shadcn/UI는 기본적으로 클라이언트 컴포넌트로 제공되므로, 서버 컴포넌트에서 사용하기 위한 래퍼 패턴을 채택합니다. 상세 구현은 `core-components.md` 문서를 참조하십시오.
+Shadcn/UI는 기본적으로 클라이언트 컴포넌트로 제공되므로, 서버 컴포넌트에서 사용하기 위한 래퍼 패턴을 채택합니다. 상세 구현은 [`core-components.md`](./components/core-components.md#34-ui-컴포넌트-서버-래퍼-패턴) 문서를 참조하십시오.
 
 ## 5. 핵심 패키지 역할
 
@@ -291,19 +291,19 @@ Shadcn/UI는 기본적으로 클라이언트 컴포넌트로 제공되므로, �
 
 ### 5.2 `packages/charts`
 
-`charts` 패키지는 차트 렌더링 및 편집 기능을 제공합니다. 서버/클라이언트 컴포넌트 분리 전략을 적용하여 설계됩니다. 상세 구현은 `core-components.md` 문서를 참조하십시오.
+`charts` 패키지는 차트 렌더링 및 편집 기능을 제공합니다. 서버/클라이언트 컴포넌트 분리 전략을 적용하여 설계됩니다. 상세 구현은 [`core-components.md`](./components/core-components.md#4-차트-컴포넌트-설계) 문서를 참조하십시오.
 
 ### 5.3 `packages/dashboard`
 
-`dashboard` 패키지는 대시보드 그리드 및 관리 기능을 제공합니다. 서버/클라이언트 컴포넌트 경계를 명확히 구분합니다. 상세 구현은 `core-components.md` 문서를 참조하십시오.
+`dashboard` 패키지는 대시보드 그리드 및 관리 기능을 제공합니다. 서버/클라이언트 컴포넌트 경계를 명확히 구분합니다. 상세 구현은 [`core-components.md`](./components/core-components.md#5-대시보드-컴포넌트-설계) 문서를 참조하십시오.
 
 ### 5.4 `packages/state`
 
-`state` 패키지는 상태 관리 로직을 제공합니다. Zustand를 사용한 클라이언트 상태와 Tanstack Query를 사용한 서버 상태를 관리합니다. 상세 구현은 `state-management.md` 문서를 참조하십시오.
+`state` 패키지는 상태 관리 로직을 제공합니다. Zustand를 사용한 클라이언트 상태와 Tanstack Query를 사용한 서버 상태를 관리합니다. 상세 구현은 [`state-management.md`](./state-management.md) 문서를 참조하십시오.
 
 ### 5.5 `packages/data-sources`
 
-`data-sources` 패키지는 다양한 경제 데이터 소스와의 통합 및 데이터 처리 로직을 제공합니다. 상세 구현은 `data-flow.md` 문서를 참조하십시오.
+`data-sources` 패키지는 다양한 경제 데이터 소스와의 통합 및 데이터 처리 로직을 제공합니다. 상세 구현은 [`data-flow.md`](./data-flow.md#63-소스별-데이터-통합-로직) 문서를 참조하십시오.
 
 ### 5.6 `packages/ui`
 
@@ -311,7 +311,7 @@ Shadcn/UI는 기본적으로 클라이언트 컴포넌트로 제공되므로, �
 
 ## 6. 상태 관리 아키텍처 개요
 
-E-Torch는 상태 유형에 따라 다양한 상태 관리 전략을 사용합니다. 상세 구현은 `state-management.md` 문서를 참조하십시오.
+E-Torch는 상태 유형에 따라 다양한 상태 관리 전략을 사용합니다. 상세 구현은 [`state-management.md`](./state-management.md) 문서를 참조하십시오.
 
 ### 6.1 서버 상태와 클라이언트 상태 분리
 
@@ -357,7 +357,7 @@ graph TD
 
 ## 7. 데이터 처리 개요
 
-E-Torch의 데이터 처리 파이프라인은 다음과 같은 단계로 구성됩니다. 상세 구현은 `data-flow.md` 문서를 참조하십시오.
+E-Torch의 데이터 처리 파이프라인은 다음과 같은 단계로 구성됩니다. 상세 구현은 [`data-flow.md`](./data-flow.md) 문서를 참조하십시오.
 
 ```mermaid
 flowchart LR
@@ -387,7 +387,7 @@ flowchart LR
 
 ## 8. 라우팅 및 페이지 구조 개요
 
-E-Torch는 Next.js App Router를 활용한 라우팅 구조를 가집니다. 상세 구현은 `routing.md` 문서를 참조하십시오.
+E-Torch는 Next.js App Router를 활용한 라우팅 구조를 가집니다. 상세 구현은 [`routing.md`](./routing.md) 문서를 참조하십시오.
 
 ```mermaid
 graph TD
@@ -427,7 +427,7 @@ E-Torch는 대량의 경제 데이터를 효율적으로 처리하고 시각화�
 4. **서버 컴포넌트 활용**: 데이터 페칭 및 변환을 서버에서 처리하여 클라이언트 부하 감소
 5. **프로그레시브 로딩**: 낮은 해상도 데이터를 먼저 로드하고 고해상도 데이터를 후속 로딩
 
-각 컴포넌트별 구체적인 최적화 전략은 `core-components.md` 문서를 참조하십시오.
+각 컴포넌트별 구체적인 최적화 전략은 [`core-components.md`](./components/core-components.md) 문서를 참조하십시오.
 
 ## 10. 결론 및 확장성 고려사항
 
@@ -435,9 +435,9 @@ E-Torch 프론트엔드 아키텍처는 모듈성, 확장성, 재사용성, 성�
 
 ### 10.1 향후 확장 가능성
 
-1. **데이터 소스 확장**: 추가 경제 데이터 소스(FRED, World Bank 등) 통합 - `data-flow.md` 문서 참조
-2. **차트 유형 확장**: 더 다양한 시각화 옵션 제공 - `core-components.md` 문서 참조
-3. **협업 기능**: 실시간 대시보드 편집 및 공유 기능 - `routing.md` 문서의 모달 라우팅 참조
+1. **데이터 소스 확장**: 추가 경제 데이터 소스(FRED, World Bank 등) 통합 - [`data-flow.md`](./data-flow.md) 문서 참조
+2. **차트 유형 확장**: 더 다양한 시각화 옵션 제공 - [`core-components.md`](./components/core-components.md) 문서 참조
+3. **협업 기능**: 실시간 대시보드 편집 및 공유 기능 - [`routing.md`](./routing.md) 문서의 모달 라우팅 참조
 4. **머신러닝 통합**: 경제 지표 예측 및 이상 감지 기능
 5. **모바일 최적화**: 다양한 디바이스에 최적화된 대시보드 지원
 

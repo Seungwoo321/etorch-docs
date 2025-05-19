@@ -2,7 +2,7 @@
 
 ## 1. 개요
 
-이 문서는 `design-system.md`에 정의된 디자인 시스템 요소와 `core-components.md`에 정의된 실제 컴포넌트 구현 간의 명확한 매핑 관계를 제공합니다. 이 가이드는 프론트엔드 개발자가 디자인 시스템을 일관되게 구현하는 데 도움이 됩니다.
+이 문서는 [`design-system.md`](../ui-design/design-system.md)에 정의된 디자인 시스템 요소와 [`core-components.md`](../frontend/components/core-components.md)에 정의된 실제 컴포넌트 구현 간의 명확한 매핑 관계를 제공합니다. 이 가이드는 프론트엔드 개발자가 디자인 시스템을 일관되게 구현하는 데 도움이 됩니다.
 
 ## 2. 디자인 계층과 컴포넌트 계층 관계
 

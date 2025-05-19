@@ -434,7 +434,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 
 ## 11. 서버 액션 활용 전략
 
-Next.js 서버 액션을 활용하여 클라이언트-서버 통신을 간소화합니다. 이 섹션에서는 서버 액션의 라우팅 관점에서의 활용에 초점을 맞춥니다. 컴포넌트 통합 관점의 서버 액션 패턴은 `core-components.md` 문서를 참조하십시오.
+Next.js 서버 액션을 활용하여 클라이언트-서버 통신을 간소화합니다. 이 섹션에서는 서버 액션의 라우팅 관점에서의 활용에 초점을 맞춥니다. 컴포넌트 통합 관점의 서버 액션 패턴은 [`core-components.md`](./components/core-components.md) 문서를 참조하십시오.
 
 ### 11.1 서버 액션 워크플로우
 
