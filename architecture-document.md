@@ -53,8 +53,8 @@ graph TD
 | **프레임워크** | React + Next.js | App Router, 서버 컴포넌트 제공 | React 19, Next.js 15 |
 | **UI 프레임워크** | Shadcn/UI + Tailwind CSS | 커스터마이징 용이성, 생산성 향상 | Tailwind CSS 4 |
 | **상태 관리** | Zustand, Tanstack Query | 단순한 API, 성능 최적화, 상태 로직 분리 | Zustand 5, TQ 5 |
-| **차트 라이브러리** | Recharts | React 친화적, 유연한 커스터마이징 | 2.15.3+ |
-| **대시보드 레이아웃** | react-grid-layout | 드래그 앤 드롭, 리사이징 지원 | 1.5.1+ |
+| **차트 라이브러리** | Recharts | React 친화적, 유연한 커스터마이징 | 2.10.1+ |
+| **대시보드 레이아웃** | react-grid-layout | 드래그 앤 드롭, 리사이징 지원 | 1.4.0+ |
 | **타입 검사** | TypeScript | 타입 안정성, 개발 생산성 향상 | 5.5+ |
 | **폼 관리** | React Hook Form + Zod | 성능 최적화, 선언적 유효성 검사 | RHF 7, Zod 3 |
 | **코드 품질 관리** | ESLint | 일관된 코드 스타일, 오류 감지 | ESLint 9 (Standard 규칙) |
@@ -545,86 +545,33 @@ graph TD
 
 E-Torch 프로젝트는 ESLint 9 버전의 Standard 규칙을 사용하여 코드 스타일을 관리합니다:
 
-```jsonc
-// package.json
-{
-  "name": "@e-torch/eslint-config",
-  "version": "0.0.0",
-  "type": "module",
-  "private": true,
-  "exports": {
-    "./base": "./base.mjs",
-    "./next-js": "./next.mjs"
-  },
-  "devDependencies": {
-    "@next/eslint-plugin-next": "^15.3.2",
-    "@seungwoo321/eslint-plugin-standard-js": "^1.0.1",
-    "@seungwoo321/eslint-plugin-standard-jsx": "^1.0.1",
-    "@typescript-eslint/eslint-plugin": "^8.24.1",
-    "@typescript-eslint/parser": "^8.24.1",
-    "eslint": "^9.27.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.32.1"
-  }
-}
-```
-
 ```js
-// eslint-config/base.mjs
-import standardJs from '@seungwoo321/eslint-plugin-standard-js'
-import standardJsx from '@seungwoo321/eslint-plugin-standard-jsx'
-import tseslint from 'typescript-eslint'
-
-export const config = [
-  {
-    ignores: ['apps/*/node_modules/*', 'packages/*/node_modules/*', 'node_modules/*', 'apps/web/app/components/ui/*']
+// .eslintrc.js
+module.exports = {
+  root: true,
+  extends: [
+    'standard',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
+    'plugin:jsx-a11y/recommended'
+  ],
+  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint', 'react', 'react-hooks', 'jsx-a11y'],
+  rules: {
+    // 프로젝트 특화 규칙
+    'react/react-in-jsx-scope': 'off',
+    'react/prop-types': 'off',
+    'react-hooks/exhaustive-deps': 'warn',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/no-explicit-any': 'warn'
   },
-  {
-    files: ['**/*.{js,mjs,cjs,ts,mts,jsx,tsx}'],
-    extends: [
-      ...standardJs.configs.recommended,
-      ...standardJsx.configs.recommended,
-      ...tseslint.configs.recommended,
-      ...tseslint.configs.stylistic,
-    ],
-  }
-]
-
-```
-
-```js
-//next.mjs
-import { config as baseConfig } from './base.mjs'
-import pluginNext from "@next/eslint-plugin-next"
-import pluginReactHooks from "eslint-plugin-react-hooks"
-import tseslint from "typescript-eslint"
-
-export const nextJsConfig = [
-  ...baseConfig,
-  tseslint.configs.recommended,
-  {
-    plugins: {
-      "@next/next": pluginNext,
-    },
-    rules: {
-      ...pluginNext.configs.recommended.rules,
-      ...pluginNext.configs["core-web-vitals"].rules,
-    },
-  },
-  {
-    plugins: {
-      "react-hooks": pluginReactHooks,
-    },
-    settings: { react: { version: "detect" } },
-    rules: {
-      ...pluginReactHooks.configs.recommended.rules,
-      // React scope no longer necessary with new JSX transform.
-      "react/react-in-jsx-scope": "off",
-      "react/prop-types": "off"
+  settings: {
+    react: {
+      version: 'detect'
     }
   }
-]
+}
 ```
 
 ### 10.2 VSCode 설정
@@ -632,61 +579,20 @@ export const nextJsConfig = [
 프로젝트의 일관된 코드 스타일을 위한 VSCode 설정:
 
 ```json
-// extensions.json
-{
-  "recommendations": [
-    "dsznajder.es7-react-js-snippets",
-    "dbaeumer.vscode-eslint"
-  ]
-}
-```
-
-```json
 // .vscode/settings.json
 {
-  "editor.tabSize": 2,
-  "editor.defaultFormatter": null,
   "editor.formatOnSave": false,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "always"
+    "source.fixAll.eslint": "explicit"
   },
-  "eslint.run": "onType",
-  "eslint.format.enable": true,
-  "eslint.lintTask.enable": true,
-  "eslint.useESLintClass": true,
-  "eslint.probe": [
+  "eslint.validate": [
     "javascript",
     "javascriptreact",
     "typescript",
     "typescriptreact"
   ],
-  "eslint.workingDirectories": [
-    { "mode": "auto" }
-  ],
-  "[javascriptreact]": {
-    "editor.defaultFormatter": null
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": null
-  },
-  "editor.formatOnPaste": false,
-  "prettier.singleAttributePerLine": false,
-  "typescript.tsdk": "./node_modules/typescript/lib",
-  "typescript.tsserver.enableTracing": true,
-  "typescript.tsserver.experimental.enableProjectDiagnostics": true,
-  "files.associations": {
-    "*.json": "jsonc"
-  },
-  "reactSnippets.settings.importReactOnTop": false,
-  "javascript.format.insertSpaceBeforeFunctionParenthesis": true,
-  "typescript.format.insertSpaceBeforeFunctionParenthesis": true,
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript", 
-    "typescriptreact"
-  ],
-  "eslint.useFlatConfig": true
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
 }
 ```
 
