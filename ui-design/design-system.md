@@ -447,6 +447,131 @@ export function VisuallyHidden({ children }: { children: React.ReactNode }) {
 }
 ```
 
+#### 7.2.3 포커스 트랩
+
+```tsx
+// packages/ui/src/components/a11y/focus-trap.tsx
+"use client"
+
+import * as React from "react"
+import { useRef, useEffect } from "react"
+
+export function FocusTrap({ 
+  children,
+  active = true
+}: { 
+  children: React.ReactNode; 
+  active?: boolean 
+}) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  
+  useEffect(() => {
+    if (!active) return
+    
+    const container = containerRef.current
+    if (!container) return
+    
+    const focusableElements = container.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+    
+    const firstElement = focusableElements[0] as HTMLElement
+    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return
+      
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement.focus()
+          e.preventDefault()
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement.focus()
+          e.preventDefault()
+        }
+      }
+    }
+    
+    container.addEventListener('keydown', handleKeyDown)
+    return () => container.removeEventListener('keydown', handleKeyDown)
+  }, [active])
+  
+  return <div ref={containerRef}>{children}</div>
+}
+```
+
+#### 7.2.4 키보드 내비게이션 메뉴
+
+```tsx
+// packages/ui/src/components/a11y/keyboard-nav-menu.tsx
+"use client"
+
+import * as React from "react"
+import { useRef, useState, useEffect } from "react"
+
+interface KeyboardNavMenuProps {
+  children: React.ReactNode
+  vertical?: boolean
+}
+
+export function KeyboardNavMenu({ 
+  children, 
+  vertical = true 
+}: KeyboardNavMenuProps) {
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [focusIndex, setFocusIndex] = useState<number>(-1)
+  
+  useEffect(() => {
+    const menu = menuRef.current
+    if (!menu) return
+    
+    const menuItems = Array.from(
+      menu.querySelectorAll('[role="menuitem"]')
+    ) as HTMLElement[]
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key
+      
+      if (
+        (vertical && (key === 'ArrowUp' || key === 'ArrowDown')) ||
+        (!vertical && (key === 'ArrowLeft' || key === 'ArrowRight'))
+      ) {
+        e.preventDefault()
+        
+        const direction = 
+          key === 'ArrowDown' || key === 'ArrowRight' ? 1 : -1
+        
+        let newIndex = focusIndex + direction
+        
+        if (newIndex < 0) {
+          newIndex = menuItems.length - 1
+        } else if (newIndex >= menuItems.length) {
+          newIndex = 0
+        }
+        
+        setFocusIndex(newIndex)
+        menuItems[newIndex]?.focus()
+      }
+    }
+    
+    menu.addEventListener('keydown', handleKeyDown)
+    return () => menu.removeEventListener('keydown', handleKeyDown)
+  }, [vertical, focusIndex])
+  
+  return (
+    <div 
+      ref={menuRef} 
+      role="menu" 
+      className={`outline-none ${vertical ? 'flex-col' : 'flex-row'}`}
+    >
+      {children}
+    </div>
+  )
+}
+```
+
 ## 8. 사용 예시
 
 ### 8.1 간단한 카드 컴포넌트
@@ -457,7 +582,7 @@ export function VisuallyHidden({ children }: { children: React.ReactNode }) {
 
 import * as React from "react"
 
-const Card = React.forwardRef<
+const Card = React.forwardRef
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
@@ -469,7 +594,7 @@ const Card = React.forwardRef<
 ))
 Card.displayName = "Card"
 
-const CardHeader = React.forwardRef<
+const CardHeader = React.forwardRef
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
@@ -481,7 +606,7 @@ const CardHeader = React.forwardRef<
 ))
 CardHeader.displayName = "CardHeader"
 
-const CardTitle = React.forwardRef<
+const CardTitle = React.forwardRef
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
@@ -493,7 +618,7 @@ const CardTitle = React.forwardRef<
 ))
 CardTitle.displayName = "CardTitle"
 
-const CardContent = React.forwardRef<
+const CardContent = React.forwardRef
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
@@ -501,7 +626,7 @@ const CardContent = React.forwardRef<
 ))
 CardContent.displayName = "CardContent"
 
-const CardFooter = React.forwardRef<
+const CardFooter = React.forwardRef
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
@@ -555,6 +680,54 @@ export default function DashboardPage() {
           <p className="text-xs text-muted-foreground">한국은행</p>
         </CardContent>
       </Card>
+    </div>
+  )
+}
+```
+
+### 8.3 접근성 차트 테이블 적용 예시
+
+```tsx
+// packages/charts/src/components/AccessibleChartTable.tsx
+"use client"
+
+import * as React from "react"
+
+export interface AccessibleChartTableProps {
+  data: Array<Record<string, any>>;
+  columns: Array<{
+    key: string;
+    label: string;
+  }>;
+  summary: string;
+}
+
+export function AccessibleChartTable({ 
+  data, 
+  columns, 
+  summary 
+}: AccessibleChartTableProps) {
+  return (
+    <div className="sr-only">
+      <table>
+        <caption>{summary}</caption>
+        <thead>
+          <tr>
+            {columns.map(column => (
+              <th key={column.key} scope="col">{column.label}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((row, i) => (
+            <tr key={i}>
+              {columns.map(column => (
+                <td key={column.key}>{row[column.key]}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
