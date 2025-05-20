@@ -10,7 +10,7 @@ Next.js 15의 App Router 파일 시스템 기반 라우팅을 활용하여 다�
 
 ```mermaid
 flowchart TD
-    A[Next.js App Router 활용] --> B[서버 컴포넌트 우선]
+    A[Next.js 15 App Router 활용] --> B[서버 컴포넌트 우선]
     A --> C[라우트 그룹]
     A --> D[중첩 레이아웃]
     A --> E[동적 라우트]
@@ -118,7 +118,7 @@ app/
 확장 라우팅 구조는 향상된 사용자 경험을 위한 고급 라우팅 패턴을 포함합니다. 이는 기본 기능 구현 후 점진적으로 추가됩니다.
 
 ```
-# 기본 라우팅 구조에 다음과 같은 확장 패턴 추가
+# 기본 라우팅.0 구조에 다음과 같은 확장 패턴 추가
 
 app/
 ├── @modal/               # 인터셉트 라우트 (모달용)
@@ -234,9 +234,9 @@ flowchart TD
 
 ```tsx
 // app/(dashboard)/dashboard/[id]/page.tsx (서버 컴포넌트)
-import { fetchDashboardById } from '@/packages/server-api/dashboard';
+import { fetchDashboardById } from '@/e-torch/server-api/dashboard';
 import { notFound } from 'next/navigation';
-import { DashboardServerWrapper } from '@/packages/dashboard/server';
+import { DashboardServerWrapper } from '@/e-torch/dashboard/server';
 
 interface DashboardPageProps {
   params: { id: string };
@@ -281,9 +281,37 @@ E-Torch의 네비게이션 시스템은 다음과 같은 주요 컴포넌트로 
 라우트 보호는 다층적 접근으로 구현됩니다:
 
 1. **미들웨어 보호**:
-   - 요청 경로 검사
-   - 토큰 유효성 검증
+   - Supabase JWT 토큰 유효성 검증
    - 인증 필요 시 리다이렉션
+
+```tsx
+// middleware.ts
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+
+export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  
+  // 공개 라우트는 통과
+  if (publicRoutes.some(route => pathname.startsWith(route))) {
+    return NextResponse.next();
+  }
+  
+  // Supabase 클라이언트 초기화
+  const res = NextResponse.next();
+  const supabase = createMiddlewareClient({ req: request, res });
+  
+  // 세션 검증
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (!session) {
+    const url = new URL('/login', request.url);
+    url.searchParams.set('redirectTo', pathname);
+    return NextResponse.redirect(url);
+  }
+  
+  return res;
+}
+```
 
 2. **서버 컴포넌트 보호**:
    - 세션 검증
@@ -294,38 +322,6 @@ E-Torch의 네비게이션 시스템은 다음과 같은 주요 컴포넌트로 
    - AuthGuard 컴포넌트
    - 세션 상태 검사
    - 로딩 상태 처리
-
-```tsx
-// middleware.ts
-export function middleware(request: NextRequest) {
-  const pathname = request.nextUrl.pathname;
-  
-  // 공개 라우트는 통과
-  if (publicRoutes.some(route => pathname.startsWith(route))) {
-    return NextResponse.next();
-  }
-  
-  // 토큰 검증
-  const token = request.cookies.get('authToken')?.value;
-  
-  if (!token) {
-    const url = new URL('/login', request.url);
-    url.searchParams.set('redirectTo', pathname);
-    return NextResponse.redirect(url);
-  }
-  
-  // 토큰 유효성 검사
-  try {
-    const decoded = validateToken(token);
-    // 유효하면 통과
-    return NextResponse.next();
-  } catch (error) {
-    // 유효하지 않으면 로그인으로 리디렉션
-    const url = new URL('/login', request.url);
-    return NextResponse.redirect(url);
-  }
-}
-```
 
 ## 9. 클라이언트 측 네비게이션 최적화
 
@@ -390,8 +386,8 @@ app/
 
 ```tsx
 // app/@modal/dashboard/[id]/page.tsx
-import { fetchDashboardById } from '@/packages/server-api/dashboard';
-import { DashboardModalContent } from '@/packages/dashboard/components/dashboard-modal-content';
+import { fetchDashboardById } from '@/e-torch/server-api/dashboard';
+import { DashboardModalContent } from '@/e-torch/dashboard/components/dashboard-modal-content';
 
 export default async function DashboardModal({ params }) {
   const dashboard = await fetchDashboardById(params.id);
@@ -505,8 +501,8 @@ flowchart LR
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { saveDashboard } from '@/packages/server-api/dashboard';
-import { getCurrentUser } from '@/packages/server-api/auth';
+import { saveDashboard } from '@/e-torch/server-api/dashboard';
+import { getCurrentUser } from '@/e-torch/server-api/auth';
 import { redirect } from 'next/navigation';
 
 export async function saveDashboardAction(
@@ -546,41 +542,40 @@ export async function saveDashboardAction(
 ```
 
 ```tsx
-// packages/dashboard/components/save-button.tsx (architecture.md 패키지 구조 반영)
+// packages/dashboard/components/save-button.tsx
 'use client';
 
+import { useActionMutation } from '@/e-torch/state';
 import { saveDashboardAction } from '@/app/actions/dashboard';
-import { useTransition } from 'react';
-import { Button } from '@/packages/ui';
-import { useToast } from '@/packages/ui/hooks';
+import { Button } from '@/e-torch/ui';
+import { queryKeys } from '@/e-torch/state/query-keys';
 
 export function SaveButton({ dashboardId, formData }) {
-  const [isPending, startTransition] = useTransition();
-  const { toast } = useToast();
-  
-  const handleSave = () => {
-    startTransition(async () => {
-      const result = await saveDashboardAction(formData);
-      
-      if (result.success) {
-        toast({
-          title: "저장 완료",
-          description: "대시보드가 성공적으로 저장되었습니다.",
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "저장 실패",
-          description: result.error,
-          variant: "destructive",
-        });
-      }
-    });
-  };
+  const { mutate, isPending } = useActionMutation({
+    action: saveDashboardAction,
+    invalidateQueries: [
+      { queryKey: queryKeys.dashboards.detail(dashboardId) },
+      { queryKey: queryKeys.dashboards.lists() }
+    ],
+    onSuccess: () => {
+      toast({
+        title: "저장 완료",
+        description: "대시보드가 성공적으로 저장되었습니다.",
+        variant: "default",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "저장 실패",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
   
   return (
     <Button 
-      onClick={handleSave}
+      onClick={() => mutate(formData)}
       disabled={isPending}
     >
       {isPending ? '저장 중...' : '저장'}
