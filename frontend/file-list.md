@@ -7,7 +7,7 @@ E-Torch 프로젝트를 위한 모노레포 구조 파일 목록입니다. Turbo
 1. `turbo.json` - Turborepo 설정
 2. `package.json` - 루트 패키지 설정
 3. `pnpm-workspace.yaml` - PNPM 워크스페이스 설정
-4. `.eslintrc.js` - ESLint 설정
+4. `eslint.config.mjs` - ESLint 9 Flat Config 설정
 5. `.gitignore` - Git 무시 파일 설정
 6. `tsconfig.json` - 루트 TypeScript 설정
 7. `README.md` - 프로젝트 설명
@@ -18,8 +18,8 @@ E-Torch 프로젝트를 위한 모노레포 구조 파일 목록입니다. Turbo
 ## eslint-config 패키지
 
 1. `packages/eslint-config/package.json`
-2. `packages/eslint-config/base.mjs` - 기본 ESLint 설정
-3. `packages/eslint-config/next.mjs` - Next.js ESLint 설정
+2. `packages/eslint-config/base.mjs` - Standard JS/JSX 규칙과 TypeScript ESLint 규칙 통합
+3. `packages/eslint-config/next.mjs` - Next.js와 React Hooks 규칙 통합
 
 ## packages/core
 
@@ -48,7 +48,7 @@ E-Torch 프로젝트를 위한 모노레포 구조 파일 목록입니다. Turbo
 2. `packages/ui/tsconfig.json`
 3. `packages/ui/index.ts` - 클라이언트 컴포넌트 엔트리 포인트
 4. `packages/ui/server.ts` - 서버 컴포넌트 엔트리 포인트
-5. `packages/ui/src/styles/globals.css` - Tailwind CSS 4 설정 및 테마 변수
+5. `packages/ui/src/styles/globals.css` - Tailwind CSS 4 설정, OKLCH 색상 체계 및 테마 변수
 6. `packages/ui/src/lib/utils.ts` - UI 유틸리티 함수
 7. `packages/ui/src/components/ui/button.tsx`
 8. `packages/ui/src/components/ui/card.tsx`
@@ -88,6 +88,7 @@ E-Torch 프로젝트를 위한 모노레포 구조 파일 목록입니다. Turbo
 42. `packages/ui/src/hooks/useMounted.ts`
 43. `packages/ui/src/hooks/useInView.ts`
 44. `packages/ui/src/hooks/index.ts`
+45. `packages/ui/src/components/ui/resizable.tsx` - Shadcn/UI 리사이즈 가능한 패널 컴포넌트
 
 ## packages/charts
 
@@ -333,13 +334,17 @@ E-Torch 프로젝트를 위한 모노레포 구조 파일 목록입니다. Turbo
 33. `apps/web/app/api/subscriptions/route.ts` - 구독 API
 34. `apps/web/app/api/users/[id]/route.ts` - 사용자 API
 35. `apps/web/app/api/webhook/route.ts` - Supabase 웹훅
-36. `apps/web/middleware.ts` - Next.js 미들웨어
-37. `apps/web/lib/supabase.ts` - Supabase 클라이언트
+36. `apps/web/app/middleware.ts` - Next.js 미들웨어 (인증 및 권한 검증)
+37. `apps/web/lib/supabase.ts` - Supabase 클라이언트 (V2)
 38. `apps/web/lib/session.ts` - Supabase 세션 관리
 39. `apps/web/components/landing/HeroSection.tsx`
 40. `apps/web/components/landing/FeatureSection.tsx`
 41. `apps/web/components/landing/PricingSection.tsx`
 42. `apps/web/components/landing/TestimonialSection.tsx`
+43. `apps/web/app/@modal/dashboard/[id]/page.tsx` - 대시보드 모달 (인터셉트 라우트)
+44. `apps/web/app/@modal/chart/[id]/page.tsx` - 차트 모달 (인터셉트 라우트)
+45. `apps/web/app/(dashboard)/@dashboard/info/page.tsx` - 대시보드 정보 탭 (병렬 라우트)
+46. `apps/web/app/(dashboard)/@dashboard/share/page.tsx` - 대시보드 공유 탭 (병렬 라우트)
 
 ## Storybook 문서
 
