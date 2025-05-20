@@ -30,6 +30,8 @@ flowchart TD
 6. **UI 컴포넌트**: 데이터 표시 및 사용자 상호작용
 7. **사용자 상호작용**: 필터링, 정렬, 데이터 조작
 
+E-Torch는 React 19와 Next.js 15를 기반으로 하며, 데이터 흐름 관리를 위해 Zustand 5와 TanStack Query 5를 적극 활용합니다.
+
 ### 2.2 아키텍처 계층과 데이터 흐름 통합
 
 E-Torch의 데이터 흐름은 [`architecture.md`](./architecture.md)에 정의된 아키텍처 계층과 통합되어 동작합니다:
@@ -250,17 +252,17 @@ E-Torch는 다양한 데이터 소스(KOSIS, ECOS, OECD)의 데이터를 통합�
 ```typescript
 // 정규화된 데이터 구조
 interface NormalizedTimeSeriesData {
-  source: "KOSIS" | "ECOS" | "OECD";
-  indicatorCode: string;
-  indicatorName: string;
-  period: "D" | "M" | "Q" | "A";
-  unit: string;
+  source: "KOSIS" | "ECOS" | "OECD"
+  indicatorCode: string
+  indicatorName: string
+  period: "D" | "M" | "Q" | "A"
+  unit: string
   data: Array<{
-    date: string; // ISO 형식의 날짜 문자열
-    value: number;
-    formattedDate?: string; // 표시용 날짜 포맷
-    metadata?: Record<string, any>; // 추가 메타데이터
-  }>;
+    date: string // ISO 형식의 날짜 문자열
+    value: number
+    formattedDate?: string // 표시용 날짜 포맷
+    metadata?: Record<string, any> // 추가 메타데이터
+  }>
 }
 ```
 
@@ -278,13 +280,13 @@ enum InterpolationMethod {
 }
 
 // 결측치 처리 함수 - 주요 알고리즘만 표시
-function handleMissingValues(
+const handleMissingValues = (
   data: NormalizedTimeSeriesData,
   method: InterpolationMethod = InterpolationMethod.LINEAR
-): NormalizedTimeSeriesData {
+): NormalizedTimeSeriesData => {
   // 결측치가 없거나 처리 불필요시 원본 반환
   if (method === InterpolationMethod.NONE || data.data.length <= 1) {
-    return data;
+    return data
   }
 
   // 데이터 처리 로직...
@@ -293,7 +295,7 @@ function handleMissingValues(
   // 3. 결측치 위치 확인
   // 4. 선택한 방법으로 결측치 보간
   
-  return processedData;
+  return processedData
 }
 ```
 
@@ -317,34 +319,34 @@ enum AggregationMethod {
 }
 
 // 시계열 동기화 함수 - 주요 개념만 표시
-function synchronizeTimeSeries(
+const synchronizeTimeSeries = (
   seriesArray: NormalizedTimeSeriesData[],
   targetPeriod: "D" | "M" | "Q" | "A",
   method: SynchronizationMethod = SynchronizationMethod.DOWNSAMPLE,
   aggregation: AggregationMethod = AggregationMethod.AVERAGE
-): NormalizedTimeSeriesData[] {
+): NormalizedTimeSeriesData[] => {
   // 주기 우선순위: D > M > Q > A
   
   return seriesArray.map(series => {
     // 이미 타겟 주기와 같으면 변환 불필요
     if (series.period === targetPeriod) {
-      return series;
+      return series
     }
     
     // 업샘플링 (더 세분화된 주기로 변환: A→Q→M→D)
     if (method === SynchronizationMethod.UPSAMPLE) {
-      return upsampleTimeSeries(series, targetPeriod);
+      return upsampleTimeSeries(series, targetPeriod)
     }
     
     // 다운샘플링 (더 넓은 주기로 변환: D→M→Q→A)
-    return downsampleTimeSeries(series, targetPeriod, aggregation);
-  });
+    return downsampleTimeSeries(series, targetPeriod, aggregation)
+  })
 }
 ```
 
 ### 6.4 데이터 다운샘플링 알고리즘
 
-대량의 시계열 데이터를 효율적으로 시각화하기 위해 다음과 같은 데이터 다운샘플링 알고리즘을 적용합니다:
+대량의 시계열 데이터를 효율적으로 처리하기 위해 다운샘플링 전략을 사용합니다:
 
 - **LTTB(Largest-Triangle-Three-Buckets)**: 시각적 특성을 보존하면서 데이터 포인트 수를 줄이는 알고리즘
 - **M4 알고리즘**: 구간별 최대, 최소, 첫 값, 마지막 값을 유지하여 트렌드 보존
@@ -354,51 +356,51 @@ function synchronizeTimeSeries(
 
 ```tsx
 // LTTB(Largest-Triangle-Three-Buckets) 알고리즘
-function downsampleTimeSeries(data: DataPoint[], targetPoints: number): DataPoint[] {
+const downsampleTimeSeries = (data: DataPoint[], targetPoints: number): DataPoint[] => {
   // 데이터가 목표 포인트 수보다 적으면 그대로 반환
   if (data.length <= targetPoints) {
-    return data;
+    return data
   }
   
   // 결과 배열 초기화
-  const sampled: DataPoint[] = [];
+  const sampled: DataPoint[] = []
   
   // 첫 포인트는 항상 유지
-  sampled.push(data[0]);
+  sampled.push(data[0])
   
   // 각 버킷 크기 계산
-  const bucketSize = (data.length - 2) / (targetPoints - 2);
+  const bucketSize = (data.length - 2) / (targetPoints - 2)
   
   // 각 버킷에서 최적의 포인트 선택
   for (let i = 0; i < targetPoints - 2; i++) {
     // 현재 버킷의 시작과 끝 인덱스
-    const startIdx = Math.floor((i) * bucketSize) + 1;
-    const endIdx = Math.floor((i + 1) * bucketSize) + 1;
+    const startIdx = Math.floor((i) * bucketSize) + 1
+    const endIdx = Math.floor((i + 1) * bucketSize) + 1
     
     // 이전 포인트와 다음 버킷의 평균 포인트
-    const prevPoint = sampled[sampled.length - 1];
-    const nextBucketAvg = calculateBucketAverage(data, endIdx, Math.min(endIdx + bucketSize, data.length));
+    const prevPoint = sampled[sampled.length - 1]
+    const nextBucketAvg = calculateBucketAverage(data, endIdx, Math.min(endIdx + bucketSize, data.length))
     
     // 각 포인트의 삼각형 면적 계산하여 최대 면적을 가진 포인트 선택
-    let maxArea = -1;
-    let maxAreaIdx = startIdx;
+    let maxArea = -1
+    let maxAreaIdx = startIdx
     
     for (let j = startIdx; j < endIdx; j++) {
-      const area = calculateTriangleArea(prevPoint, data[j], nextBucketAvg);
+      const area = calculateTriangleArea(prevPoint, data[j], nextBucketAvg)
       if (area > maxArea) {
-        maxArea = area;
-        maxAreaIdx = j;
+        maxArea = area
+        maxAreaIdx = j
       }
     }
     
     // 선택된 포인트 추가
-    sampled.push(data[maxAreaIdx]);
+    sampled.push(data[maxAreaIdx])
   }
   
   // 마지막 포인트는 항상 유지
-  sampled.push(data[data.length - 1]);
+  sampled.push(data[data.length - 1])
   
-  return sampled;
+  return sampled
 }
 ```
 
@@ -438,7 +440,7 @@ const cacheTTLConfig = {
   'FINANCIAL_DAILY': 30 * 60 * 1000, // 30분
   'ECONOMIC_MONTHLY': 3 * 60 * 60 * 1000, // 3시간
   'ECONOMIC_QUARTERLY': 12 * 60 * 60 * 1000 // 12시간
-};
+}
 ```
 
 ### 7.2.2 이벤트 기반 무효화
@@ -455,11 +457,11 @@ export async function updateDashboardAction(dashboardId: string, data: any) {
   // 데이터 업데이트 로직...
   
   // 관련 캐시 무효화
-  revalidatePath(`/dashboard/${dashboardId}`);
-  revalidatePath('/dashboard');
+  revalidatePath(`/dashboard/${dashboardId}`)
+  revalidatePath('/dashboard')
   
   // 맞춤형 태그 기반 무효화
-  revalidateTag(`dashboard-${dashboardId}`);
+  revalidateTag(`dashboard-${dashboardId}`)
 }
 ```
 
@@ -474,16 +476,16 @@ const invalidateDashboardCharts = (dashboardId: string, chartId?: string) => {
     // 특정 차트 데이터만 무효화
     queryClient.invalidateQueries({ 
       queryKey: queryKeys.charts.detail(chartId)
-    });
+    })
   } else {
     // 대시보드의 모든 차트 데이터 무효화
     queryClient.invalidateQueries({ 
       queryKey: queryKeys.charts.byDashboard(dashboardId)
-    });
+    })
   }
   
   // 대시보드 메타데이터는 유지 (차트 데이터만 리페치)
-};
+}
 ```
 
 ### 7.2.4 선제적 리페치
@@ -497,7 +499,7 @@ useQuery({
   queryFn: fetchMarketData,
   staleTime: 60 * 1000, // 1분
   refetchInterval: 45 * 1000, // 45초마다 백그라운드 리페치
-});
+})
 ```
 
 ### 7.2.5 우선순위 기반 무효화
@@ -510,15 +512,15 @@ useQuery({
 
 ```typescript
 // IntersectionObserver를 활용한 가시성 기반 리페치
-const { ref, inView } = useInView();
+const { ref, inView } = useInView()
 useQuery({
   queryKey: ['chart', chartId],
   queryFn: () => fetchChartData(chartId),
   // 화면에 보이는 차트만 자주 리페치
   refetchInterval: inView ? 30000 : false,
-});
+})
 
-return <div ref={ref}>{/* 차트 컴포넌트 */}</div>;
+return <div ref={ref}>{/* 차트 컴포넌트 */}</div>
 ```
 
 이러한 다층적 캐시 무효화 전략을 통해 E-Torch는 데이터의 최신성을 보장하면서도 네트워크 요청과 서버 부하를 최소화합니다.
