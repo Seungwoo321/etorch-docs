@@ -8,7 +8,7 @@ E-Torch는 다양한 출처(KOSIS, ECOS, OECD)의 경제지표 데이터를 통�
 - **모노레포**: Turborepo, pnpm
 - **상태 관리**: Zustand 5, TanStack Query 5
 - **UI 프레임워크**: Shadcn/UI, Tailwind CSS 4
-- **차트 시각화**: Recharts 2.10+
+- **차트 시각화**: Recharts 2.15.3+
 - **폼 관리**: React Hook Form 7, Zod 3
 - **타입 관리**: TypeScript 5.5+
 - **테스트**: Vitest, Testing Library, Playwright
@@ -19,9 +19,10 @@ E-Torch는 다양한 출처(KOSIS, ECOS, OECD)의 경제지표 데이터를 통�
 e-torch/
 ├── apps/                # 애플리케이션
 │   ├── web/            # 웹 애플리케이션
-│   └── docs/           # 문서 사이트
+│   └── storybook/      # 컴포넌트 문서화
 │
 └── packages/            # 공유 패키지
+    ├── eslint-config/  # ESLint 설정
     ├── core/           # 타입, 상수, 인터페이스
     ├── ui/             # UI 컴포넌트
     ├── charts/         # 차트 컴포넌트
@@ -94,6 +95,7 @@ pnpm --filter @e-torch/web build
 - [데이터 흐름](./frontend/data-flow.md): API 연동 및 데이터 처리
 - [라우팅 구조](./frontend/routing.md): 페이지 구조 및 라우팅
 - [상태 관리](./frontend/state-management.md): 상태 관리 전략
+- [파일 목록](./frontend/file-list.md): 구현 파일 목록 및 구조
 
 ## 핵심 패키지 가이드
 
@@ -102,7 +104,7 @@ pnpm --filter @e-torch/web build
 Shadcn/UI 기반의 재사용 가능한 UI 컴포넌트 라이브러리입니다.
 
 ```tsx
-import { Button } from '@e-torch/ui/components';
+import { Button } from '@/e-torch/ui/components';
 ```
 
 ### @e-torch/charts
@@ -110,7 +112,7 @@ import { Button } from '@e-torch/ui/components';
 차트 렌더링 및 편집 기능을 제공합니다.
 
 ```tsx
-import { TimeSeriesChart } from '@e-torch/charts/components';
+import { TimeSeriesChart } from '@/e-torch/charts/components';
 ```
 
 ### @e-torch/dashboard
@@ -118,7 +120,7 @@ import { TimeSeriesChart } from '@e-torch/charts/components';
 대시보드 그리드 및 관리 기능을 제공합니다.
 
 ```tsx
-import { DashboardGrid } from '@e-torch/dashboard/components';
+import { DashboardGrid } from '@/e-torch/dashboard/components';
 ```
 
 ### @e-torch/data-sources
@@ -126,7 +128,7 @@ import { DashboardGrid } from '@e-torch/dashboard/components';
 다양한 경제 데이터 소스와의 통합 및 데이터 처리 로직을 제공합니다.
 
 ```tsx
-import { useIndicatorData } from '@e-torch/data-sources/hooks';
+import { useIndicatorData } from '@/e-torch/data-sources/hooks';
 ```
 
 ## 아키텍처 핵심 원칙
@@ -152,10 +154,12 @@ import { useIndicatorData } from '@e-torch/data-sources/hooks';
 
 ### 주요 개발 계획
 
-- [ ] 2025-05-20 ~ 2025-05-31: 환경 설정 및 인증 시스템
-- [ ] 2025-06-01 ~ 2025-06-17: 데이터 소스 관리 및 차트 컴포넌트
-- [ ] 2025-06-18 ~ 2025-07-06: 대시보드 시스템 및 사용자 관리
-- [ ] 2025-07-07 ~ 2025-07-20: 고급 기능 구현, 최적화 및 배포
+- [x] 기획: 완료
+- [x] 설계: 완료
+- [ ] 백엔드 개발: 모킹 서버 및 데이터 마이그레이션 초기단계 완료, API 기능 확장 및 안정화 진행 중
+- [ ] 프론트엔드 개발: 진행 중
+- [ ] 통합 테스트: 예정
+- [ ] MVP 출시: 2025-06-20 목표
 
 ## 저작권 고지
 
