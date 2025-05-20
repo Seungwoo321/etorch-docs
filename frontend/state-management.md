@@ -1488,7 +1488,7 @@ export class TimeTravelDebugger {
     return this.currentIndex
   }
   
-  getSnapshots(): Array<{ timestamp: number actionName: string }> {
+  getSnapshots(): Array<{ timestamp: number, actionName: string }> {
     return this.snapshots.map(({ timestamp, actionName }) => ({
       timestamp,
       actionName
