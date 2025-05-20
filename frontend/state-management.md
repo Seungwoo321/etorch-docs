@@ -121,18 +121,18 @@ import { immer } from 'zustand/middleware/immer'
 import { type Theme } from '@e-torch/core'
 
 interface AppState {
-  theme: Theme;
-  notifications: Notification[];
-  globalErrors: ErrorRecord[];
-  isLoading: boolean;
+  theme: Theme
+  notifications: Notification[]
+  globalErrors: ErrorRecord[]
+  isLoading: boolean
   
   // 액션
-  setTheme: (theme: Theme) => void;
-  addNotification: (notification: Notification) => void;
-  clearNotification: (id: string) => void;
-  setError: (error: ErrorRecord) => void;
-  clearError: (id: string) => void;
-  setLoading: (isLoading: boolean) => void;
+  setTheme: (theme: Theme) => void
+  addNotification: (notification: Notification) => void
+  clearNotification: (id: string) => void
+  setError: (error: ErrorRecord) => void
+  clearError: (id: string) => void
+  setLoading: (isLoading: boolean) => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -186,25 +186,25 @@ import type { ChartConfig, ChartType, Command } from '@e-torch/core'
 
 // 정규화된 상태 유형
 interface NormalizedState<T> {
-  byId: Record<string, T>;
-  allIds: string[];
+  byId: Record<string, T>
+  allIds: string[]
 }
 
 interface ChartEditorState {
-  charts: NormalizedState<ChartConfig>;
-  activeChartId: string | null;
-  undoStack: Command[];
-  redoStack: Command[];
-  viewMode: 'edit' | 'preview';
+  charts: NormalizedState<ChartConfig>
+  activeChartId: string | null
+  undoStack: Command[]
+  redoStack: Command[]
+  viewMode: 'edit' | 'preview'
   
   // 액션
-  selectChart: (chartId: string | null) => void;
-  updateChartProperty: (chartId: string, path: string, value: any) => void;
-  createChart: (type: ChartType) => string;
-  deleteChart: (id: string) => void;
-  undo: () => void;
-  redo: () => void;
-  setViewMode: (mode: 'edit' | 'preview') => void;
+  selectChart: (chartId: string | null) => void
+  updateChartProperty: (chartId: string, path: string, value: any) => void
+  createChart: (type: ChartType) => string
+  deleteChart: (id: string) => void
+  undo: () => void
+  redo: () => void
+  setViewMode: (mode: 'edit' | 'preview') => void
 }
 
 export const useChartEditorStore = create<ChartEditorState>()(
@@ -337,26 +337,26 @@ import type { Dashboard, DashboardItem, Layout } from '@e-torch/core'
 
 // 정규화된 상태 유형
 interface NormalizedState<T> {
-  byId: Record<string, T>;
-  allIds: string[];
+  byId: Record<string, T>
+  allIds: string[]
 }
 
 interface DashboardState {
-  dashboards: NormalizedState<Dashboard>;
-  items: NormalizedState<DashboardItem>;
-  itemsByDashboard: Record<string, string[]>;
-  activeDashboardId: string | null;
-  layouts: Record<string, Layout[]>;
-  isEditing: boolean;
-  savingStatus: 'idle' | 'saving' | 'success' | 'error';
+  dashboards: NormalizedState<Dashboard>
+  items: NormalizedState<DashboardItem>
+  itemsByDashboard: Record<string, string[]>
+  activeDashboardId: string | null
+  layouts: Record<string, Layout[]>
+  isEditing: boolean
+  savingStatus: 'idle' | 'saving' | 'success' | 'error'
   
   // 액션
-  selectDashboard: (id: string | null) => void;
-  addItem: (dashboardId: string, item: DashboardItem) => void;
-  removeItem: (dashboardId: string, itemId: string) => void;
-  updateLayout: (dashboardId: string, layout: Layout[]) => void;
-  saveDashboard: (dashboardId: string) => Promise<void>;
-  toggleEditMode: () => void;
+  selectDashboard: (id: string | null) => void
+  addItem: (dashboardId: string, item: DashboardItem) => void
+  removeItem: (dashboardId: string, itemId: string) => void
+  updateLayout: (dashboardId: string, layout: Layout[]) => void
+  saveDashboard: (dashboardId: string) => Promise<void>
+  toggleEditMode: () => void
 }
 
 export const useDashboardStore = create<DashboardState>()(
@@ -488,31 +488,31 @@ export const useDashboardStore = create<DashboardState>()(
 ```typescript
 // 정규화 전 (중첩 구조)
 interface DashboardState {
-  dashboards: Dashboard[];
+  dashboards: Dashboard[]
 }
 
 interface Dashboard {
-  id: string;
-  title: string;
-  items: DashboardItem[];
+  id: string
+  title: string
+  items: DashboardItem[]
 }
 
 // 정규화 후 (플랫 구조)
 interface NormalizedDashboardState {
   dashboards: {
-    byId: Record<string, DashboardInfo>;
-    allIds: string[];
-  };
+    byId: Record<string, DashboardInfo>
+    allIds: string[]
+  }
   items: {
-    byId: Record<string, DashboardItem>;
-    allIds: string[];
-  };
-  itemsByDashboard: Record<string, string[]>;
+    byId: Record<string, DashboardItem>
+    allIds: string[]
+  }
+  itemsByDashboard: Record<string, string[]>
 }
 
 interface DashboardInfo {
-  id: string;
-  title: string;
+  id: string
+  title: string
   // items 참조 없음
 }
 ```
@@ -556,18 +556,18 @@ Zustand의 selectors를 활용하여 필요한 상태만 구독합니다:
 
 ```tsx
 // 비효율적인 방식
-const dashboard = useDashboardStore();
+const dashboard = useDashboardStore()
 // dashboard 전체가 변경될 때마다 리렌더링
 
 // 최적화된 방식
 const dashboardTitle = useDashboardStore(state => 
   state.dashboards.byId[state.activeDashboardId]?.title
-);
+)
 const chartCount = useDashboardStore(state => 
   state.itemsByDashboard[state.activeDashboardId]?.filter(
     id => state.items.byId[id].type === 'chart'
   ).length
-);
+)
 // 특정 값이 변경될 때만 리렌더링
 ```
 
@@ -580,22 +580,22 @@ const chartCount = useDashboardStore(state =>
 export function useChartStatistics() {
   const charts = useChartsStore(state => 
     state.charts.allIds.map(id => state.charts.byId[id])
-  );
+  )
   
   // 고비용 계산을 메모이제이션
   const statistics = useMemo(() => {
     return {
       byType: charts.reduce((acc, chart) => {
-        acc[chart.type] = (acc[chart.type] || 0) + 1;
-        return acc;
+        acc[chart.type] = (acc[chart.type] || 0) + 1
+        return acc
       }, {} as Record<string, number>),
       totalDataPoints: charts.reduce((acc, chart) => {
-        return acc + (chart.data?.length || 0);
+        return acc + (chart.data?.length || 0)
       }, 0)
-    };
-  }, [charts]); // charts 변경 시에만 재계산
+    }
+  }, [charts]) // charts 변경 시에만 재계산
   
-  return statistics;
+  return statistics
 }
 ```
 
@@ -609,12 +609,12 @@ export function useChartStatistics() {
 
 import { useOptimistic } from 'react'
 import { saveDashboardAction } from '@/app/actions/dashboard'
-import { useDashboardStore } from '@/packages/state'
+import { useDashboardStore } from '@/e-torch/state'
 
 export function DashboardEditor() {
   const dashboard = useDashboardStore(state => 
     state.dashboards.byId[state.activeDashboardId]
-  );
+  )
   
   const [optimisticDashboard, updateOptimisticDashboard] = useOptimistic(
     dashboard,
@@ -622,19 +622,19 @@ export function DashboardEditor() {
       ...state,
       title: newTitle
     })
-  );
+  )
   
   const updateDashboardTitle = async (formData: FormData) => {
-    const newTitle = formData.get('title') as string;
+    const newTitle = formData.get('title') as string
     
     // 낙관적 UI 업데이트
-    updateOptimisticDashboard(newTitle);
+    updateOptimisticDashboard(newTitle)
     
     // 서버 액션 호출
     await saveDashboardAction({
       id: dashboard.id,
       title: newTitle
-    });
+    })
   }
   
   return (
@@ -648,7 +648,7 @@ export function DashboardEditor() {
         저장
       </button>
     </form>
-  );
+  )
 }
 ```
 
@@ -661,8 +661,8 @@ export function DashboardEditor() {
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { getDashboard } from '@/packages/data-sources'
-import { normalizeData } from '@/packages/utils'
+import { getDashboard } from '@/e-torch/data-sources'
+import { normalizeData } from '@/e-torch/utils'
 
 export function useDashboard(dashboardId: string) {
   return useQuery({
@@ -671,15 +671,15 @@ export function useDashboard(dashboardId: string) {
     staleTime: 5 * 60 * 1000, // 5분
     gcTime: 10 * 60 * 1000, // 10분
     select: (data) => normalizeData(data) // 응답 데이터 변환
-  });
+  })
 }
 
 // packages/state/src/hooks/use-chart-data.ts
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { getChartData } from '@/packages/data-sources'
-import { processChartData } from '@/packages/utils'
+import { getChartData } from '@/e-torch/data-sources'
+import { processChartData } from '@/e-torch/utils'
 
 export function useChartData(chartId: string, timeRange, period) {
   return useQuery({
@@ -689,7 +689,7 @@ export function useChartData(chartId: string, timeRange, period) {
     gcTime: 5 * 60 * 1000, // 5분
     refetchInterval: 5 * 60 * 1000, // 5분마다 자동 리페치
     select: (data) => processChartData(data)
-  });
+  })
 }
 ```
 
@@ -701,10 +701,10 @@ export function useChartData(chartId: string, timeRange, period) {
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { saveDashboardAction } from '@/app/actions/dashboard'
-import type { Dashboard } from '@/packages/core'
+import type { Dashboard } from '@/e-torch/core'
 
 export function useSaveDashboard() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
   
   return useMutation({
     mutationFn: (dashboard: Dashboard) => saveDashboardAction(dashboard),
@@ -713,21 +713,21 @@ export function useSaveDashboard() {
       // 기존 쿼리 취소
       await queryClient.cancelQueries({ 
         queryKey: ['dashboards', newDashboard.id] 
-      });
+      })
       
       // 이전 상태 저장
       const previousDashboard = queryClient.getQueryData<Dashboard>(
         ['dashboards', newDashboard.id]
-      );
+      )
       
       // 낙관적 업데이트
       queryClient.setQueryData(
         ['dashboards', newDashboard.id],
         newDashboard
-      );
+      )
       
       // onError, onSettled에서 사용할 컨텍스트 반환
-      return { previousDashboard };
+      return { previousDashboard }
     },
     
     onError: (err, newDashboard, context) => {
@@ -736,7 +736,7 @@ export function useSaveDashboard() {
         queryClient.setQueryData(
           ['dashboards', newDashboard.id], 
           context.previousDashboard
-        );
+        )
       }
     },
     
@@ -744,9 +744,9 @@ export function useSaveDashboard() {
       // 무조건 서버에서 리페치
       queryClient.invalidateQueries({ 
         queryKey: ['dashboards', variables.id] 
-      });
+      })
     }
-  });
+  })
 }
 ```
 
@@ -771,18 +771,18 @@ export const queryKeys = {
     data: (id: string, params: ChartDataParams) => 
       [...queryKeys.charts.detail(id), 'data', params] as const,
   }
-};
+}
 
 // 사용 예시
 const { data } = useQuery({
   queryKey: queryKeys.dashboards.detail('dash1'),
   queryFn: () => getDashboard('dash1')
-});
+})
 
 // 관련 쿼리 무효화
 queryClient.invalidateQueries({
   queryKey: queryKeys.dashboards.details(),
-});
+})
 ```
 
 ### 7.4 서버 액션과의 통합
@@ -797,17 +797,17 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, useTransition } from 'react'
 
 type ActionMutationOptions<TData, TVariables, TContext> = {
-  action: (variables: TVariables) => Promise<TData>;
-  onMutate?: (variables: TVariables) => Promise<TContext> | TContext;
-  onSuccess?: (data: TData, variables: TVariables, context: TContext) => void;
-  onError?: (error: Error, variables: TVariables, context: TContext) => void;
+  action: (variables: TVariables) => Promise<TData>
+  onMutate?: (variables: TVariables) => Promise<TContext> | TContext
+  onSuccess?: (data: TData, variables: TVariables, context: TContext) => void
+  onError?: (error: Error, variables: TVariables, context: TContext) => void
   onSettled?: (
     data: TData | undefined,
     error: Error | null,
     variables: TVariables,
     context: TContext
-  ) => void;
-  invalidateQueries?: { queryKey: unknown[] }[];
+  ) => void
+  invalidateQueries?: { queryKey: unknown[] }[]
 }
 
 // 서버 액션과 TanStack Query의 통합 훅
@@ -823,9 +823,9 @@ export function useActionMutation
   onSettled,
   invalidateQueries = []
 }: ActionMutationOptions<TData, TVariables, TContext>) {
-  const queryClient = useQueryClient();
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<Error | null>(null);
+  const queryClient = useQueryClient()
+  const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<Error | null>(null)
   
   const { mutate, mutateAsync } = useMutation
     TData,
@@ -837,14 +837,14 @@ export function useActionMutation
       return new Promise<TData>((resolve, reject) => {
         startTransition(async () => {
           try {
-            const result = await action(variables);
-            resolve(result);
+            const result = await action(variables)
+            resolve(result)
           } catch (e) {
-            setError(e as Error);
-            reject(e);
+            setError(e as Error)
+            reject(e)
           }
-        });
-      });
+        })
+      })
     },
     
     onMutate,
@@ -853,38 +853,38 @@ export function useActionMutation
       // 관련 쿼리 무효화
       if (invalidateQueries.length > 0) {
         invalidateQueries.forEach(({ queryKey }) => {
-          queryClient.invalidateQueries({ queryKey });
-        });
+          queryClient.invalidateQueries({ queryKey })
+        })
       }
       
       // 성공 콜백 호출
-      onSuccess?.(data, variables, context);
+      onSuccess?.(data, variables, context)
     },
     
     onError: (error, variables, context) => {
-      setError(error);
-      onError?.(error, variables, context);
+      setError(error)
+      onError?.(error, variables, context)
     },
     
     onSettled: (data, error, variables, context) => {
-      if (error) setError(error);
-      onSettled?.(data, error, variables, context);
+      if (error) setError(error)
+      onSettled?.(data, error, variables, context)
     }
-  });
+  })
   
   return {
     mutate,
     mutateAsync,
     isPending,
     error
-  };
+  }
 }
 
 // 사용 예시
 export function SaveDashboardButton({ dashboardId }: { dashboardId: string }) {
   const dashboard = useDashboardStore(state => 
     state.dashboards.byId[dashboardId]
-  );
+  )
   
   const { mutate, isPending } = useActionMutation({
     action: saveDashboardAction,
@@ -897,16 +897,16 @@ export function SaveDashboardButton({ dashboardId }: { dashboardId: string }) {
         title: "성공",
         description: "대시보드가 저장되었습니다.",
         variant: "default"
-      });
+      })
     },
     onError: (error) => {
       toast({
         title: "오류",
         description: error.message,
         variant: "destructive"
-      });
+      })
     }
-  });
+  })
   
   return (
     <Button 
@@ -915,7 +915,7 @@ export function SaveDashboardButton({ dashboardId }: { dashboardId: string }) {
     >
       {isPending ? "저장 중..." : "저장"}
     </Button>
-  );
+  )
 }
 ```
 
@@ -928,77 +928,77 @@ export function SaveDashboardButton({ dashboardId }: { dashboardId: string }) {
 ```typescript
 // packages/core/src/types/command.ts
 export interface Command {
-  execute: () => void;
-  undo: () => void;
-  redo: () => void;
-  merge?: (command: Command) => boolean; // 유사 커맨드 병합
+  execute: () => void
+  undo: () => void
+  redo: () => void
+  merge?: (command: Command) => boolean // 유사 커맨드 병합
 }
 
 // packages/state/src/services/history-manager.ts
-import type { Command } from '@/packages/core'
+import type { Command } from '@/e-torch/core'
 
 export class HistoryManager {
-  private past: Command[] = [];
-  private future: Command[] = [];
-  private limit: number;
+  private past: Command[] = []
+  private future: Command[] = []
+  private limit: number
   
   constructor(limit = 50) {
-    this.limit = limit;
+    this.limit = limit
   }
   
   execute(command: Command): void {
     // 명령 실행
-    command.execute();
+    command.execute()
     
     // 과거 스택에 추가
-    this.past.push(command);
+    this.past.push(command)
     
     // 제한 개수 유지
     if (this.past.length > this.limit) {
-      this.past.shift();
+      this.past.shift()
     }
     
     // 미래 스택 초기화
-    this.future = [];
+    this.future = []
   }
   
   undo(): void {
-    if (this.past.length === 0) return;
+    if (this.past.length === 0) return
     
     // 마지막 명령 가져오기
-    const command = this.past.pop()!;
+    const command = this.past.pop()!
     
     // 명령 실행 취소
-    command.undo();
+    command.undo()
     
     // 미래 스택에 추가
-    this.future.push(command);
+    this.future.push(command)
   }
   
   redo(): void {
-    if (this.future.length === 0) return;
+    if (this.future.length === 0) return
     
     // 마지막 명령 가져오기
-    const command = this.future.pop()!;
+    const command = this.future.pop()!
     
     // 명령 재실행
-    command.redo();
+    command.redo()
     
     // 과거 스택에 추가
-    this.past.push(command);
+    this.past.push(command)
   }
   
   canUndo(): boolean {
-    return this.past.length > 0;
+    return this.past.length > 0
   }
   
   canRedo(): boolean {
-    return this.future.length > 0;
+    return this.future.length > 0
   }
   
   clear(): void {
-    this.past = [];
-    this.future = [];
+    this.past = []
+    this.future = []
   }
 }
 ```
@@ -1007,8 +1007,8 @@ export class HistoryManager {
 
 ```typescript
 // packages/charts/src/commands/update-chart-property-command.ts
-import type { Command } from '@/packages/core'
-import { useChartEditorStore } from '@/packages/state'
+import type { Command } from '@/e-torch/core'
+import { useChartEditorStore } from '@/e-torch/state'
 
 export class UpdateChartPropertyCommand implements Command {
   constructor(
@@ -1023,7 +1023,7 @@ export class UpdateChartPropertyCommand implements Command {
       this.chartId, 
       this.propertyPath, 
       this.newValue
-    );
+    )
   }
   
   undo() {
@@ -1031,11 +1031,11 @@ export class UpdateChartPropertyCommand implements Command {
       this.chartId, 
       this.propertyPath, 
       this.oldValue
-    );
+    )
   }
   
   redo() {
-    this.execute();
+    this.execute()
   }
   
   // 연속된 동일 속성 변경은 병합 (드래그 중 연속 업데이트 등)
@@ -1043,11 +1043,11 @@ export class UpdateChartPropertyCommand implements Command {
     if (command instanceof UpdateChartPropertyCommand) {
       if (this.chartId === command.chartId && 
           this.propertyPath === command.propertyPath) {
-        this.newValue = command.newValue;
-        return true;
+        this.newValue = command.newValue
+        return true
       }
     }
-    return false;
+    return false
   }
 }
 ```
@@ -1058,7 +1058,7 @@ export class UpdateChartPropertyCommand implements Command {
 
 ```typescript
 // packages/charts/src/commands/transaction-command.ts
-import type { Command } from '@/packages/core'
+import type { Command } from '@/e-torch/core'
 
 export class TransactionCommand implements Command {
   constructor(
@@ -1067,35 +1067,35 @@ export class TransactionCommand implements Command {
   ) {}
   
   execute() {
-    this.commands.forEach(cmd => cmd.execute());
+    this.commands.forEach(cmd => cmd.execute())
   }
   
   undo() {
     // 역순으로 실행
-    [...this.commands].reverse().forEach(cmd => cmd.undo());
+    [...this.commands].reverse().forEach(cmd => cmd.undo())
   }
   
   redo() {
-    this.commands.forEach(cmd => cmd.redo());
+    this.commands.forEach(cmd => cmd.redo())
   }
 }
 
 // 사용 예시
-import { AddChartCommand, PositionChartCommand, StyleChartCommand } from '@/packages/charts/commands'
-import { TransactionCommand } from '@/packages/charts/commands'
-import { HistoryManager } from '@/packages/state/services'
+import { AddChartCommand, PositionChartCommand, StyleChartCommand } from '@/e-torch/charts/commands'
+import { TransactionCommand } from '@/e-torch/charts/commands'
+import { HistoryManager } from '@/e-torch/state/services'
 
-const historyManager = new HistoryManager();
+const historyManager = new HistoryManager()
 
 // 여러 명령을 하나의 트랜잭션으로 묶기
-const chartId = 'chart1';
+const chartId = 'chart1'
 historyManager.execute(
   new TransactionCommand([
     new AddChartCommand(chartId),
     new PositionChartCommand(chartId, { x: 0, y: 0 }),
     new StyleChartCommand(chartId, { color: 'blue' })
   ], "차트 추가 및 구성")
-);
+)
 ```
 
 ## 9. 이벤트 버스 패턴 및 컴포넌트 간 상태 동기화
@@ -1113,60 +1113,60 @@ export type EventType =
   | 'dashboard:widgetAdded'
   | 'dashboard:widgetRemoved'
   | 'chart:dataUpdated'
-  | 'chart:optionsChanged';
+  | 'chart:optionsChanged'
 
 export interface EventPayload<T = any> {
-  type: EventType;
-  payload: T;
+  type: EventType
+  payload: T
 }
 
-type EventCallback<T = any> = (payload: T) => void;
+type EventCallback<T = any> = (payload: T) => void
 
 interface EventBusState {
-  listeners: Map<EventType, Set<EventCallback>>;
+  listeners: Map<EventType, Set<EventCallback>>
   
-  subscribe: <T>(type: EventType, callback: EventCallback<T>) => () => void;
-  publish: <T>(type: EventType, payload: T) => void;
+  subscribe: <T>(type: EventType, callback: EventCallback<T>) => () => void
+  publish: <T>(type: EventType, payload: T) => void
 }
 
 export const useEventBus = create<EventBusState>()((set, get) => ({
   listeners: new Map(),
   
   subscribe: <T>(type: EventType, callback: EventCallback<T>) => {
-    const { listeners } = get();
+    const { listeners } = get()
     
     if (!listeners.has(type)) {
-      listeners.set(type, new Set());
+      listeners.set(type, new Set())
     }
     
-    listeners.get(type)!.add(callback as EventCallback);
+    listeners.get(type)!.add(callback as EventCallback)
     
     // 구독 취소 함수 반환
     return () => {
-      const listeners = get().listeners;
-      const typeListeners = listeners.get(type);
+      const listeners = get().listeners
+      const typeListeners = listeners.get(type)
       
       if (typeListeners) {
-        typeListeners.delete(callback as EventCallback);
+        typeListeners.delete(callback as EventCallback)
         
         if (typeListeners.size === 0) {
-          listeners.delete(type);
+          listeners.delete(type)
         }
       }
-    };
+    }
   },
   
   publish: <T>(type: EventType, payload: T) => {
-    const { listeners } = get();
-    const typeListeners = listeners.get(type);
+    const { listeners } = get()
+    const typeListeners = listeners.get(type)
     
     if (typeListeners) {
       typeListeners.forEach(callback => {
-        callback(payload);
-      });
+        callback(payload)
+      })
     }
   }
-}));
+}))
 
 // 사용 예시
 // 구독
@@ -1174,20 +1174,20 @@ const unsubscribe = useEventBus.getState().subscribe(
   'dashboard:timeRangeChanged', 
   (newTimeRange) => {
     // 시간 범위 변경에 대응하는 로직
-    console.log('Time range changed:', newTimeRange);
+    console.log('Time range changed:', newTimeRange)
   }
-);
+)
 
 // 발행
 useEventBus.getState().publish(
   'dashboard:timeRangeChanged',
   { from: '2023-01-01', to: '2023-12-31' }
-);
+)
 
 // 구독 취소 (컴포넌트 언마운트 시)
 useEffect(() => {
-  return () => unsubscribe();
-}, []);
+  return () => unsubscribe()
+}, [])
 ```
 
 ### 9.2 대시보드-차트 컴포넌트 간 상태 동기화
@@ -1199,10 +1199,10 @@ useEffect(() => {
 import { useEffect } from 'react'
 import { useDashboardStore } from '../stores/dashboard-store'
 import { useEventBus } from '../services/event-bus'
-import type { TimeRange } from '@/packages/core'
+import type { TimeRange } from '@/e-torch/core'
 
 interface UseTimeRangeSyncOptions {
-  respectChartSettings?: boolean;
+  respectChartSettings?: boolean
 }
 
 export function useTimeRangeSync(
@@ -1219,12 +1219,12 @@ export function useTimeRangeSync(
     chartTimeRange: state.items.byId[chartId]?.timeRange,
     setSharedTimeRange: state.setSharedTimeRange,
     updateChartState: state.updateItemProperty
-  }));
+  }))
   
   // 현재 적용된 시간 범위 계산
   const effectiveTimeRange = options.respectChartSettings && chartTimeRange 
     ? chartTimeRange 
-    : sharedTimeRange;
+    : sharedTimeRange
   
   // 시간 범위 변경 이벤트 구독
   useEffect(() => {
@@ -1234,34 +1234,34 @@ export function useTimeRangeSync(
       (newTimeRange: TimeRange) => {
         // 개별 차트 설정이 없거나 무시해야 할 경우에만 업데이트
         if (!options.respectChartSettings || !chartTimeRange) {
-          updateChartState(chartId, 'timeRange', newTimeRange);
+          updateChartState(chartId, 'timeRange', newTimeRange)
         }
       }
-    );
+    )
     
-    return () => unsubscribe();
-  }, [chartId, chartTimeRange, options.respectChartSettings, updateChartState]);
+    return () => unsubscribe()
+  }, [chartId, chartTimeRange, options.respectChartSettings, updateChartState])
   
   // 시간 범위 변경 핸들러
   const handleTimeRangeChange = (newTimeRange: TimeRange) => {
     if (options.respectChartSettings && chartTimeRange) {
       // 차트별 설정이 있는 경우 차트 상태만 업데이트
-      updateChartState(chartId, 'timeRange', newTimeRange);
+      updateChartState(chartId, 'timeRange', newTimeRange)
     } else {
       // 공유 설정 사용 시 전체 대시보드에 적용하고 이벤트 발행
-      setSharedTimeRange(newTimeRange);
+      setSharedTimeRange(newTimeRange)
       useEventBus.getState().publish(
         'dashboard:timeRangeChanged',
         newTimeRange
-      );
+      )
     }
-  };
+  }
   
   return {
     timeRange: effectiveTimeRange,
     isCustomRange: !!chartTimeRange,
     setTimeRange: handleTimeRangeChange
-  };
+  }
 }
 ```
 
@@ -1276,33 +1276,33 @@ import { persist } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
 interface ActionRecord {
-  storeName: string;
-  actionName: string;
-  payload: any;
-  timestamp: number;
+  storeName: string
+  actionName: string
+  payload: any
+  timestamp: number
 }
 
 interface StateSnapshot {
-  storeName: string;
-  state: any;
-  timestamp: number;
+  storeName: string
+  state: any
+  timestamp: number
 }
 
 interface DebugState {
-  enabled: boolean;
-  actionHistory: ActionRecord[];
-  stateSnapshots: Record<string, StateSnapshot>;
+  enabled: boolean
+  actionHistory: ActionRecord[]
+  stateSnapshots: Record<string, StateSnapshot>
   filters: {
-    storeNames: string[];
-    actionTypes: string[];
-  };
+    storeNames: string[]
+    actionTypes: string[]
+  }
   
   // 액션
-  recordAction: (action: Omit<ActionRecord, 'timestamp'>) => void;
-  saveSnapshot: (storeName: string, state: any) => void;
-  clearHistory: () => void;
-  setEnabled: (enabled: boolean) => void;
-  setFilters: (filters: Partial<DebugState['filters']>) => void;
+  recordAction: (action: Omit<ActionRecord, 'timestamp'>) => void
+  saveSnapshot: (storeName: string, state: any) => void
+  clearHistory: () => void
+  setEnabled: (enabled: boolean) => void
+  setFilters: (filters: Partial<DebugState['filters']>) => void
 }
 
 export const useDebugStore = create<DebugState>()(
@@ -1325,47 +1325,47 @@ export const useDebugStore = create<DebugState>()(
       
       // 액션 기록
       recordAction: (action) => {
-        if (!get().enabled) return;
+        if (!get().enabled) return
         
         set(state => {
           state.actionHistory.push({
             ...action,
             timestamp: Date.now()
-          });
+          })
           
           // 최대 100개 항목만 유지
           if (state.actionHistory.length > 100) {
-            state.actionHistory.shift();
+            state.actionHistory.shift()
           }
-        });
+        })
       },
       
       // 상태 스냅샷 저장
       saveSnapshot: (storeName, state) => {
-        if (!get().enabled) return;
+        if (!get().enabled) return
         
         set(prev => {
           prev.stateSnapshots[storeName] = {
             storeName,
             state,
             timestamp: Date.now()
-          };
-        });
+          }
+        })
       },
       
       // 히스토리 초기화
       clearHistory: () => {
         set(state => {
-          state.actionHistory = [];
-          state.stateSnapshots = {};
-        });
+          state.actionHistory = []
+          state.stateSnapshots = {}
+        })
       },
       
       // 디버깅 활성화/비활성화
       setEnabled: (enabled) => {
         set(state => {
-          state.enabled = enabled;
-        });
+          state.enabled = enabled
+        })
       },
       
       // 필터 설정
@@ -1374,8 +1374,8 @@ export const useDebugStore = create<DebugState>()(
           state.filters = {
             ...state.filters,
             ...filters
-          };
-        });
+          }
+        })
       }
     })),
     {
@@ -1398,126 +1398,126 @@ export const useDebugStore = create<DebugState>()(
 import { useDebugStore } from '../stores/debug-store'
 
 interface TimeTravelDebuggerOptions {
-  stores: Record<string, any>; // 스토어 객체 맵
+  stores: Record<string, any> // 스토어 객체 맵
 }
 
 export class TimeTravelDebugger {
   private snapshots: Array<{
-    timestamp: number;
-    state: Record<string, any>; // 모든 스토어 상태 통합
-    actionName: string;
-  }> = [];
+    timestamp: number
+    state: Record<string, any> // 모든 스토어 상태 통합
+    actionName: string
+  }> = []
   
-  private currentIndex: number = -1;
-  private stores: Record<string, any>;
-  private originalStates: Record<string, any> = {};
-  private isRecording: boolean = false;
+  private currentIndex: number = -1
+  private stores: Record<string, any>
+  private originalStates: Record<string, any> = {}
+  private isRecording: boolean = false
   
   constructor(options: TimeTravelDebuggerOptions) {
-    this.stores = options.stores;
+    this.stores = options.stores
     
     // 초기 상태 저장
     Object.entries(this.stores).forEach(([name, store]) => {
-      this.originalStates[name] = store.getState();
-    });
+      this.originalStates[name] = store.getState()
+    })
   }
   
   startRecording(): void {
-    if (this.isRecording) return;
+    if (this.isRecording) return
     
-    this.isRecording = true;
+    this.isRecording = true
     
     // 모든 스토어의 액션 구독
     Object.entries(this.stores).forEach(([name, store]) => {
       store.subscribe((state: any, prevState: any) => {
-        if (!this.isRecording) return;
+        if (!this.isRecording) return
         
         // 액션 감지 로직 필요
-        const actionName = this.detectAction(state, prevState) || 'State Changed';
+        const actionName = this.detectAction(state, prevState) || 'State Changed'
         
         // 모든 스토어의 현재 상태 스냅샷
         const fullState = Object.entries(this.stores).reduce(
           (acc, [storeName, s]) => {
-            acc[storeName] = s.getState();
-            return acc;
+            acc[storeName] = s.getState()
+            return acc
           },
           {} as Record<string, any>
-        );
+        )
         
         // 스냅샷 추가
         this.snapshots.push({
           timestamp: Date.now(),
           state: fullState,
           actionName
-        });
+        })
         
         // 현재 인덱스 업데이트
-        this.currentIndex = this.snapshots.length - 1;
+        this.currentIndex = this.snapshots.length - 1
         
         // 디버그 스토어에 기록
         useDebugStore.getState().recordAction({
           storeName: name,
           actionName,
           payload: state
-        });
-      });
-    });
+        })
+      })
+    })
   }
   
   stopRecording(): void {
-    this.isRecording = false;
+    this.isRecording = false
   }
   
   travelTo(snapshotIndex: number): void {
-    if (snapshotIndex < 0 || snapshotIndex >= this.snapshots.length) return;
+    if (snapshotIndex < 0 || snapshotIndex >= this.snapshots.length) return
     
-    const snapshot = this.snapshots[snapshotIndex];
+    const snapshot = this.snapshots[snapshotIndex]
     
     // 모든 스토어의 상태 복원
     Object.entries(snapshot.state).forEach(([name, state]) => {
       if (this.stores[name]) {
         // 스토어의 setState 메서드 사용
-        this.stores[name].setState(state);
+        this.stores[name].setState(state)
       }
-    });
+    })
     
-    this.currentIndex = snapshotIndex;
+    this.currentIndex = snapshotIndex
   }
   
   getCurrentIndex(): number {
-    return this.currentIndex;
+    return this.currentIndex
   }
   
-  getSnapshots(): Array<{ timestamp: number; actionName: string }> {
+  getSnapshots(): Array<{ timestamp: number actionName: string }> {
     return this.snapshots.map(({ timestamp, actionName }) => ({
       timestamp,
       actionName
-    }));
+    }))
   }
   
   reset(): void {
     // 모든 스토어를 원래 상태로 복원
     Object.entries(this.originalStates).forEach(([name, state]) => {
       if (this.stores[name]) {
-        this.stores[name].setState(state);
+        this.stores[name].setState(state)
       }
-    });
+    })
     
     // 스냅샷 초기화
-    this.snapshots = [];
-    this.currentIndex = -1;
+    this.snapshots = []
+    this.currentIndex = -1
   }
   
   clearHistory(): void {
-    this.snapshots = [];
-    this.currentIndex = -1;
-    useDebugStore.getState().clearHistory();
+    this.snapshots = []
+    this.currentIndex = -1
+    useDebugStore.getState().clearHistory()
   }
   
   // 액션 감지 헬퍼 메서드 (간단한 차이 감지)
   private detectAction(state: any, prevState: any): string | null {
     // 실제 구현에서는 더 정교한 액션 감지 로직 필요
-    return null;
+    return null
   }
 }
 ```
@@ -1531,51 +1531,51 @@ Next.js 15의 서버 액션과 상태 관리 시스템을 통합하는 패턴을
 'use client'
 
 import { useState, useTransition } from 'react'
-import { useToast } from '@/packages/ui/hooks'
+import { useToast } from '@/e-torch/ui/hooks'
 
 interface ServerActionOptions<TData, TVariables> {
-  onSuccess?: (data: TData) => void;
-  onError?: (error: Error) => void;
-  onSettled?: (data: TData | undefined, error: Error | null) => void;
+  onSuccess?: (data: TData) => void
+  onError?: (error: Error) => void
+  onSettled?: (data: TData | undefined, error: Error | null) => void
 }
 
 export function useServerAction<TData, TVariables>(
   action: (variables: TVariables) => Promise<TData>,
   options?: ServerActionOptions<TData, TVariables>
 ) {
-  const [data, setData] = useState<TData | undefined>(undefined);
-  const [error, setError] = useState<Error | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const { toast } = useToast();
+  const [data, setData] = useState<TData | undefined>(undefined)
+  const [error, setError] = useState<Error | null>(null)
+  const [isPending, startTransition] = useTransition()
+  const { toast } = useToast()
   
   const execute = (variables: TVariables) => {
     startTransition(async () => {
       try {
-        const result = await action(variables);
-        setData(result);
-        setError(null);
+        const result = await action(variables)
+        setData(result)
+        setError(null)
         
-        options?.onSuccess?.(result);
-        options?.onSettled?.(result, null);
+        options?.onSuccess?.(result)
+        options?.onSettled?.(result, null)
         
-        return result;
+        return result
       } catch (e) {
-        const err = e as Error;
-        setError(err);
+        const err = e as Error
+        setError(err)
         
         toast({
           title: '오류',
           description: err.message,
           variant: 'destructive',
-        });
+        })
         
-        options?.onError?.(err);
-        options?.onSettled?.(undefined, err);
+        options?.onError?.(err)
+        options?.onSettled?.(undefined, err)
         
-        throw err;
+        throw err
       }
-    });
-  };
+    })
+  }
   
   return {
     execute,
@@ -1583,17 +1583,17 @@ export function useServerAction<TData, TVariables>(
     error,
     isPending,
     reset: () => {
-      setData(undefined);
-      setError(null);
+      setData(undefined)
+      setError(null)
     }
-  };
+  }
 }
 
 // 사용 예시
 export function SaveButton({ dashboardId }: { dashboardId: string }) {
   const dashboard = useDashboardStore(state => 
     state.dashboards.byId[dashboardId]
-  );
+  )
   
   const { execute, isPending } = useServerAction(
     saveDashboardAction,
@@ -1603,10 +1603,10 @@ export function SaveButton({ dashboardId }: { dashboardId: string }) {
           title: '성공',
           description: '대시보드가 저장되었습니다.',
           variant: 'default',
-        });
+        })
       }
     }
-  );
+  )
   
   return (
     <Button
@@ -1616,7 +1616,7 @@ export function SaveButton({ dashboardId }: { dashboardId: string }) {
     >
       {isPending ? '저장 중...' : '저장'}
     </Button>
-  );
+  )
 }
 ```
 
@@ -1642,7 +1642,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
         retry: 1
       }
     }
-  }));
+  }))
   
   return (
     <QueryClientProvider client={queryClient}>
@@ -1651,11 +1651,11 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
         <ReactQueryDevtools initialIsOpen={false} />
       )}
     </QueryClientProvider>
-  );
+  )
 }
 
 // app/layout.tsx
-import { QueryProvider } from '@/packages/state'
+import { QueryProvider } from '@/e-torch/state'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -1666,7 +1666,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </QueryProvider>
       </body>
     </html>
-  );
+  )
 }
 ```
 
