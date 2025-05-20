@@ -106,7 +106,7 @@ flowchart LR
 
 // packages/charts/server/ChartServerWrapper.tsx (서버 컴포넌트)
 import { ChartComponent } from '../components/ChartComponent'
-import { fetchChartData } from '@/packages/data-sources/server'
+import { fetchChartData } from '@/e-torch/data-sources/server'
 
 export async function ChartServerWrapper({ chartId, config }: { chartId: string, config: ChartConfig }) {
   // 서버에서 데이터 페칭
@@ -125,7 +125,7 @@ export async function ChartServerWrapper({ chartId, config }: { chartId: string,
 // packages/charts/components/ChartComponent.tsx (클라이언트 컴포넌트)
 'use client'
 
-import { useChartData } from '@/packages/data-sources/hooks'
+import { useChartData } from '@/e-torch/data-sources/hooks'
 import { ChartRenderer } from './ChartRenderer'
 
 export function ChartComponent({ 
@@ -165,7 +165,7 @@ export function ChartComponent({
 Shadcn/UI 같은 클라이언트 컴포넌트를 서버 컴포넌트에서 사용하기 위한 래퍼 패턴입니다:
 
 ```tsx
-// packages/ui/src/server-components/button.server.tsx
+// packages/ui/src/server/ButtonServer.tsx
 import { Button } from '../components/ui/button'
 
 export interface ButtonServerProps {
@@ -358,6 +358,11 @@ flowchart TD
     class N,O,P,Q,R client
 ```
 
+데이터 흐름은 data-flow.md에 정의된 다층적 아키텍처를 따릅니다:
+
+1. 데이터 소스 → 데이터 페칭 레이어 → 데이터 변환 레이어 → 데이터 캐싱 레이어 → 상태 관리 레이어 → UI 컴포넌트
+2. 각 계층은 자신의 책임 영역을 가지며, 관심사 분리 원칙을 준수합니다.
+
 #### 통합된 데이터 상태 관리 접근법
 
 E-Torch 프로젝트의 차트 컴포넌트와 데이터 상태 관리는 다음과 같은 통합된 접근법을 사용합니다:
@@ -368,12 +373,12 @@ E-Torch 프로젝트의 차트 컴포넌트와 데이터 상태 관리는 다음
    - 페이지 로드 시 필요한 데이터만 선택적으로 페칭
 
 2. **클라이언트 상태 관리**:
-   - `Zustand` 스토어를 사용하여 UI 상태, 에디터 상태 등 관리
+   - `Zustand 5` 스토어를 사용하여 UI 상태, 에디터 상태 등 관리
    - 상태를 기능별로 분리하여 관심사 분리와 유지보수성 향상
    - 불변성과 정규화된 상태 구조를 통한 성능 최적화
 
 3. **서버 상태 관리**:
-   - `TanStack Query`를 사용하여 원격 데이터 캐싱 및 동기화
+   - `TanStack Query 5`를 사용하여 원격 데이터 캐싱 및 동기화
    - 경제지표 유형별 최적화된 캐싱 전략 적용
    - 낙관적 업데이트를 통한 사용자 경험 향상
 
@@ -444,8 +449,8 @@ flowchart TD
 
 ```tsx
 // app/(dashboard)/dashboard/[id]/page.tsx (서버 컴포넌트)
-import { DashboardServerWrapper } from '@/packages/dashboard/server'
-import { fetchDashboardById } from '@/packages/server-api/dashboard'
+import { DashboardServerWrapper } from '@/e-torch/dashboard/server'
+import { fetchDashboardById } from '@/e-torch/server-api/dashboard'
 import { notFound } from 'next/navigation'
 
 interface DashboardPageProps {
@@ -491,7 +496,7 @@ export async function DashboardServerWrapper({
 
 import { DashboardGrid } from './DashboardGrid'
 import { DashboardControls } from './DashboardControls'
-import { useDashboardStore } from '@/packages/state'
+import { useDashboardStore } from '@/e-torch/state'
 import { useEffect } from 'react'
 
 export function DashboardComponent({ 
@@ -556,9 +561,9 @@ flowchart TD
 // packages/data-sources/components/TransformControls.tsx
 'use client'
 
-import { TransformType, TimeSeriesData } from '@/packages/core'
+import { TransformType, TimeSeriesData } from '@/e-torch/core'
 import { useState, useEffect } from 'react'
-import { Select, Tabs, TabsList, TabsTrigger, TabsContent } from '@/packages/ui/components'
+import { Select, Tabs, TabsList, TabsTrigger, TabsContent } from '@/e-torch/ui/components'
 
 export function TransformControls({
   data,
@@ -640,7 +645,7 @@ Next.js 서버 액션을 활용하여 데이터 변경을 처리하는 패턴입
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { saveDashboard } from '@/packages/server-api/dashboard'
+import { saveDashboard } from '@/e-torch/server-api/dashboard'
 
 export async function saveDashboardAction(
   dashboardId: string,
@@ -662,10 +667,10 @@ export async function saveDashboardAction(
 'use client'
 
 import { useTransition } from 'react'
-import { Button } from '@/packages/ui/components'
-import { useDashboardStore } from '@/packages/state'
+import { Button } from '@/e-torch/ui/components'
+import { useDashboardStore } from '@/e-torch/state'
 import { saveDashboardAction } from '@/app/actions/dashboard'
-import { useToast } from '@/packages/ui/hooks'
+import { useToast } from '@/e-torch/ui/hooks'
 
 export function SaveButton({ dashboardId }: { dashboardId: string }) {
   const [isPending, startTransition] = useTransition()
@@ -715,6 +720,9 @@ E-Torch는 WCAG 2.1 AA 수준 준수를 목표로 접근성 컴포넌트를 통�
 
 ```tsx
 // 키보드 사용자를 위한 메인 콘텐츠 바로가기 링크
+// packages/ui/src/components/a11y/SkipLink.tsx
+'use client'
+
 function SkipLink({ targetId }: { targetId: string }) {
   return (
     <a 
@@ -727,6 +735,9 @@ function SkipLink({ targetId }: { targetId: string }) {
 }
 
 // 모달 및 다이얼로그에서 포커스를 가두는 컴포넌트
+// packages/ui/src/components/a11y/FocusTrap.tsx
+'use client'
+
 function FocusTrap({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
   
@@ -752,6 +763,9 @@ function FocusTrap({ children }: { children: React.ReactNode }) {
 
 ```tsx
 // 차트를 위한 접근성 테이블 컴포넌트
+// packages/charts/src/components/AccessibleChartTable.tsx
+'use client'
+
 function AccessibleChartTable({ 
   data, 
   columns, 
@@ -831,16 +845,16 @@ function AccessibleChartPatterns() {
 import dynamic from 'next/dynamic'
 
 // 기본 차트 컴포넌트는 즉시 로드
-import { ChartProps, ChartType } from '@/packages/charts'
-import { ChartSkeleton } from '@/packages/ui/components'
+import { ChartProps, ChartType } from '@/e-torch/charts'
+import { ChartSkeleton } from '@/e-torch/ui/components'
 
 // 차트 유형별 동적 임포트 (필요시 로드)
-const TimeSeriesChart = dynamic(() => import('@/packages/charts/src/components/chart-types/TimeSeriesChart'), {
+const TimeSeriesChart = dynamic(() => import('@/e-torch/charts/src/components/chart-types/TimeSeriesChart'), {
   loading: () => <ChartSkeleton type="timeSeries" />,
   ssr: false // 클라이언트 사이드에서만 렌더링 (Recharts는 SSR 불가)
 })
 
-const BarChart = dynamic(() => import('@/packages/charts/src/components/chart-types/BarChart'), {
+const BarChart = dynamic(() => import('@/e-torch/charts/src/components/chart-types/BarChart'), {
   loading: () => <ChartSkeleton type="bar" />,
   ssr: false
 })
@@ -873,7 +887,7 @@ React 19에서 제공하는 새로운 훅과 최적화 기능을 활용합니다
 'use client'
 
 import { useOptimistic } from 'react'
-import { useDashboardStore } from '@/packages/state'
+import { useDashboardStore } from '@/e-torch/state'
 import { saveDashboardAction } from '@/app/actions/dashboard'
 
 export function TitleEditor({ dashboardId }: { dashboardId: string }) {
