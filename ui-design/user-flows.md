@@ -12,6 +12,9 @@
   - [3.5 데이터 비교 분석 흐름](#35-데이터-비교-분석-흐름)
   - [3.6 대시보드 공유 및 구독 흐름](#36-대시보드-공유-및-구독-흐름)
   - [3.7 구독 및 결제 관리 흐름](#37-구독-및-결제-관리-흐름)
+  - [3.8 대시보드 발견 및 구독 흐름](#38-대시보드-발견-및-구독-흐름)
+  - [3.9 모바일 사용자 경험 흐름](#39-모바일-사용자-경험-흐름)
+  - [3.10 데이터 내보내기 및 공유 흐름](#310-데이터-내보내기-및-공유-흐름)
 - [4. 상태 전이 및 인터랙션 패턴](#4-상태-전이-및-인터랙션-패턴)
 - [5. 오류 처리 및 예외 상황](#5-오류-처리-및-예외-상황)
 - [6. 접근성 고려사항](#6-접근성-고려사항)
@@ -27,6 +30,13 @@
 - 전문가와 일반 사용자 모두를 위한 인터페이스 설계
 - 데이터 시각화 및 인사이트 발견 과정 최적화
 - 공유 및 협업 기능 강화
+
+> 관련 문서:
+>
+> - [product-spec.md](../product-spec.md) - 서비스 기획서
+> - [ui-requirements.md](./ui-requirements.md) - UI 요구사항 명세서
+> - [design-system.md](./design-system.md) - 디자인 시스템 가이드
+> - [architecture.md](../frontend/architecture.md) - 프론트엔드 아키텍처 설계
 
 ## 2. 사용자 페르소나
 
@@ -49,11 +59,35 @@ graph LR
     C --> C4[기본적 경제지표 이해 필요]
 ```
 
+### 2.1 페르소나별 주요 사용자 흐름
+
+#### 전문 투자자 및 경제 전문가 흐름
+
+전문 투자자는 주로 다음과 같은 흐름으로 서비스를 활용합니다:
+
+1. **데이터 통합 분석 흐름**: 여러 데이터 소스를 결합한 복합 차트 생성 (3.3, 3.4, 3.5 섹션 참조)
+2. **세부 차트 커스터마이징 흐름**: 트렌드라인, 기준선 등 고급 분석 도구 활용 (3.3 섹션 참조)
+3. **전문 대시보드 배포 흐름**: 분석 결과를 대시보드로 구성하여 공유 (3.6 섹션 참조)
+4. **데이터 내보내기 흐름**: 분석 자료 및 강의 자료로 활용 (3.10 섹션 참조)
+
+#### 일반 투자자 및 경제 관심층 흐름
+
+일반 투자자는 주로 다음과 같은 흐름으로 서비스를 활용합니다:
+
+1. **템플릿 활용 흐름**: 사전 구성된 대시보드 템플릿 선택 및 커스터마이징
+2. **전문가 대시보드 구독 흐름**: 전문가가 제작한 대시보드 구독 및 활용 (3.6, 3.8 섹션 참조)
+3. **간편 시각화 흐름**: 직관적 UI를 통한 간단한 차트 생성 (3.3 섹션 간소화 버전)
+4. **모바일 경험 흐름**: 모바일 기기에서의 대시보드 조회 및 활용 (3.9 섹션 참조)
+
 각 페르소나의 주요 사용 목적과 행동 패턴을 고려하여 사용자 흐름을 설계합니다.
 
 ## 3. 핵심 사용자 흐름
 
 ### 3.1 온보딩 및 로그인 흐름
+
+> 관련 와이어프레임: [로그인 화면](./wireframes/login-wireframe.svg)  
+> 관련 컴포넌트: AuthCallback, AuthGuard (packages/state/src/providers/auth-provider.tsx)  
+> 구현 단계: 페이즈 1 (기반 구축) - 인증 시스템 (ROADMAP.md 참조)
 
 ```mermaid
 flowchart TD
@@ -87,17 +121,30 @@ flowchart TD
 - 첫 방문 사용자를 위한 간단한 서비스 소개 및 기본 대시보드 제공
 - 재방문 사용자는 이전 세션 상태 복원
 
-**상세 단계:**
+#### 3.1.1 상세 온보딩 경험 흐름
 
-1. 사용자가 랜딩 페이지에서 로그인 버튼 클릭
-2. 로그인 화면에서 원하는 SNS 로그인 방식 선택
-3. 선택한 SNS 인증 페이지에서 로그인 및 권한 승인
-4. 인증 콜백을 통해 E-Torch로 리다이렉션
-5. AuthCallback 컴포넌트에서 인증 토큰 검증 및 사용자 세션 저장
-6. 첫 방문 사용자에게는 간단한 서비스 소개 및 기본 대시보드 설정 제공
-7. 재방문 사용자는 AuthGuard를 통해 인증 상태 검증 후 이전에 사용하던 대시보드로 이동
+```mermaid
+flowchart TD
+    A[첫 로그인 완료] --> B[환영 화면]
+    B --> C[주요 기능 소개]
+    C --> D[사용자 관심 분야 선택]
+    D --> E[추천 템플릿 제안]
+    E --> F{템플릿 선택}
+    F -->|템플릿 선택| G[템플릿 기반 첫 대시보드 생성]
+    F -->|건너뛰기| H[빈 대시보드 생성]
+    G --> I[기능 툴팁 가이드]
+    H --> I
+    I --> J[대시보드 홈]
+```
+
+이 흐름은 새 사용자의 온보딩 경험을 상세히 설명하여 초기 사용자 학습 곡선을 완화합니다. 첫 방문 사용자에게 서비스의 가치를 신속하게 이해시키고, 직관적인 사용 방법을 안내합니다.
 
 ### 3.2 대시보드 관리 흐름
+
+> 관련 와이어프레임: [대시보드 화면](./wireframes/dashboard-wireframe.svg), [대시보드 편집기](./wireframes/dashboard-editor-wireframe.svg)  
+> 관련 UI 요구사항: DL-001~005(대시보드 목록), DV-001~007(대시보드 상세), DE-001~009(대시보드 편집)  
+> 관련 컴포넌트: DashboardComponent, DashboardGrid, GridItem (packages/dashboard/components/)  
+> 구현 단계: 페이즈 2 (핵심 기능) - 대시보드 시스템 (ROADMAP.md 참조)
 
 ```mermaid
 flowchart TD
@@ -150,24 +197,73 @@ flowchart TD
 - PeriodSelector: 데이터 주기 선택 (일간-D, 월간-M, 분기-Q, 연간-A)
 - 위젯 유형: ChartItem, TextItem 등 다양한 컨텐츠 지원
 
-**상세 단계:**
+**서버/클라이언트 컴포넌트 흐름:**
 
-1. 메인 대시보드 페이지에서 새 대시보드 생성 또는 기존 대시보드 선택
-2. 새 대시보드 생성 시:
-   - 타이틀 및 설명 입력 (PanelOptions 활용)
-   - 기본 레이아웃 템플릿 선택 (GridLayout presets 활용)
-   - 첫 차트/위젯 추가 (ChartItem 또는 TextItem)
-3. 대시보드 상세 페이지에서:
-   - 차트/위젯 추가: 모달을 통해 차트 유형과 데이터 소스 선택
-   - 레이아웃 편집: LayoutControls를 통한 정렬, 간격 조정, 위젯 잠금 등 제어
-   - 드래그 앤 드롭: GridItem 컴포넌트의 드래그 및 리사이즈 기능 활용
-   - 시간 범위 변경: TimeRangeControl 컴포넌트를 통한 통합 시간 범위 설정
-   - 주기 변경: PeriodSelector 컴포넌트를 통한 데이터 주기 설정
-   - 대시보드 저장: 변경사항 저장 (자동 저장 또는 명시적 저장)
-   - 대시보드 공유: 링크 생성 또는 권한 설정
-   - 대시보드 내보내기: PNG, PDF 등으로 내보내기 (워터마크 포함)
+```mermaid
+flowchart TD
+    subgraph "서버 컴포넌트"
+        A[DashboardPage] --> B[DashboardServerWrapper]
+        B --> H[DashboardHeader]
+    end
+    
+    subgraph "클라이언트 컴포넌트"
+        B --> C[DashboardComponent]
+        C --> D[DashboardGrid]
+        C --> E[DashboardControls]
+        
+        D --> D1[GridLayout]
+        D1 --> D2[GridItem]
+        D2 --> D3[ChartItem]
+        D2 --> D4[TextItem]
+        
+        E --> E1[TimeRangeControl]
+        E --> E2[RefreshControl]
+        E --> E3[ViewOptions]
+    end
+    
+    style A,B,H fill:#ccffcc,stroke:#333,stroke-width:1px
+    style C,D,E,D1,D2,D3,D4,E1,E2,E3 fill:#ffcccb,stroke:#333,stroke-width:1px
+```
+
+#### 3.2.1 서버 액션 통합 패턴
+
+E-Torch의 대시보드 편집 흐름은 Next.js 서버 액션을 활용하여 클라이언트-서버 통신을 간소화합니다:
+
+```tsx
+// 서버 액션 정의
+'use server'
+export async function saveDashboardAction(formData: FormData) {
+  // 서버 측 유효성 검사 및 데이터 저장
+  // ...
+  revalidatePath(`/dashboard/${dashboardId}`)
+  return { success: true }
+}
+
+// 클라이언트 컴포넌트에서 활용
+export function SaveButton() {
+  const [isPending, startTransition] = useTransition()
+  
+  return (
+    <form action={(formData) => {
+      startTransition(async () => {
+        const result = await saveDashboardAction(formData)
+        // 결과 처리
+      })
+    }}>
+      <button type="submit" disabled={isPending}>
+        {isPending ? '저장 중...' : '저장'}
+      </button>
+    </form>
+  )
+}
+```
 
 ### 3.3 차트 생성 및 편집 흐름
+
+> 관련 와이어프레임: [차트 에디터](./wireframes/improved-chart-editor-wireframe.svg)  
+> 관련 UI 요구사항: PO-001~003(패널 옵션), TO-001~005(툴팁 옵션), CS-001~002(조회 기간/주기 설정)  
+> 관련 컴포넌트: ChartEditor, ChartPreview, OptionsPanel (packages/charts/src/editor/)  
+> 구현 단계: 페이즈 2 (핵심 기능) - 차트 컴포넌트 (ROADMAP.md 참조)
 
 ```mermaid
 flowchart TD
@@ -257,38 +353,29 @@ flowchart TD
 - 데이터 소스 통합 및 데이터 변환 파이프라인
 - 단계별 편집 과정 및 저장 체계
 
-**상세 단계:**
+주요 단계에서 사용되는 UI 컴포넌트:
 
-1. ChartEditor 컴포넌트 진입 (새 차트 생성 또는 기존 차트 편집)
-2. ChartType 선택:
-   - TimeSeries: 시계열 차트 (LineChart, AreaChart, BarChart)
-   - BarChart: 바 차트
-   - ScatterChart: 산점도 차트
-   - RadarChart: 레이더 차트
-   - RadialBarChart: 방사형 바 차트
-3. DataSourcePanel을 통한 데이터 소스 설정:
-   - SourceSelector: 데이터 출처 선택 (KOSIS, ECOS, OECD)
-   - IndicatorSelector: 지표 검색 및 선택
-   - TransformControls: 데이터 변환 설정
-     - 원본값: 가공 없이 원본 데이터 사용
-     - 변화율(전기대비): 직전 기간 대비 변화율
-     - 변화율(전년동기대비): 전년 동일 기간 대비 변화율
-     - 누적값: 시간 경과에 따른 누적값
-4. ChartPreview를 통한 실시간 미리보기
-5. OptionsPanel을 통한 차트 옵션 편집:
-   - PanelOptions: 제목, 설명, 배경 투명도 설정 (PO-001~003)
-   - TooltipOptions: 툴팁 표시 방식, 커서 스타일 설정 (TO-001~005)
-   - LegendOptions: 범례 표시, 레이아웃, 정렬 설정 (LG-001~004)
-   - AxisOptions: X축/Y축 범위, 눈금, 레이블 설정 (XA-001~010, YA-001~011)
-   - StyleOptions: 차트 유형별 스타일 설정
-6. 차트 유형별 특화 옵션:
-   - TimeSeries: Line/Area/Bar 스타일 선택 및 설정 (GS-001~003)
-   - ScatterChart: 포인트 크기/모양, 회귀선 설정 (SC-001~006)
-   - RadarChart: 그리드 모양, 축 선, 영역 채우기 설정 (RC-001~006)
-   - RadialBarChart: 각도, 반지름, 배경 설정 (RB-001~010)
-7. 차트 저장 및 대시보드에 추가
+- 차트 유형 선택: CM-001(차트 유형 선택) UI 컴포넌트 활용
+- 데이터 소스 설정: DM-001~003(데이터 출처/지표 선택) 컴포넌트 활용
+- 시각화 옵션 설정:
+  - 패널 옵션(PO-001~003): 제목, 설명, 배경 설정
+  - 툴팁 옵션(TO-001~005): 툴팁 모드, 너비, 커서 스타일 설정
+  - 레전드 옵션(LG-001~004): 범례 가시성, 레이아웃, 정렬 설정
+
+#### 3.3.1 React 19 최적화 패턴 활용
+
+E-Torch의 차트 생성 및 편집 기능은 React 19의 최신 기능을 활용하여 최적화됩니다:
+
+- **useOptimistic**: 서버 응답 전 낙관적 UI 업데이트로 반응성 향상
+- **useFormStatus**: 폼 상태(저장 중, 오류 등)의 선언적 관리
+- **자동 메모이제이션**: React 19의 자동 메모이제이션으로 성능 최적화
+- **Suspense for Data Fetching**: 데이터 로딩 상태의 선언적 관리
 
 ### 3.4 데이터 소스 조회 및 분석 흐름
+
+> 관련 UI 요구사항: DS-001~010(데이터 소스 관리), CS-001~002(조회 기간/주기 설정)  
+> 관련 컴포넌트: DataQueryBuilder, SourceSelector, IndicatorSelector (packages/data-sources/src/components/)  
+> 구현 단계: 페이즈 2 (핵심 기능) - 데이터 소스 관리 (ROADMAP.md 참조)
 
 ```mermaid
 flowchart TD
@@ -343,37 +430,11 @@ flowchart TD
 - 데이터 변환 및 미리보기 기능
 - 다양한 데이터 활용 옵션
 
-**상세 단계:**
-
-1. DataQueryBuilder 컴포넌트 진입
-2. SourceSelector를 통한 데이터 소스 선택 (DS-001):
-   - KOSIS: 통계청 국가통계포털
-   - ECOS: 한국은행 경제통계시스템
-   - OECD: 경제협력개발기구 데이터
-3. IndicatorSelector를 통한 지표 검색 및 선택 (DS-002~003):
-   - SearchIndicator: 지표명 또는 코드로 검색
-   - IndicatorTree: 카테고리별 계층적 트리뷰
-   - RecentIndicators: 최근 사용한 지표 목록
-4. TimeRangeSelector를 통한 조회 기간 설정 (CS-001):
-   - DateRangePicker: 시작일~종료일 직접 지정
-   - QuickRanges: 최근 1년, 최근 3년 등 빠른 범위 선택
-5. PeriodSelector를 통한 조회 주기 선택 (CS-002):
-   - 일간(D): 일별 데이터 (주로 ECOS 금융 데이터)
-   - 월간(M): 월별 데이터 (KOSIS, ECOS, OECD)
-   - 분기(Q): 분기별 데이터 (GDP 등)
-   - 연간(A): 연간 데이터 (장기 지표)
-6. DataPreview를 통한 조회 결과 미리보기
-7. TransformControls를 통한 데이터 변환 (DS-008):
-   - 원본값: 가공 없이 원본 데이터 사용
-   - 변화율(전기대비): 직전 기간 대비 변화율 계산
-   - 변화율(전년동기대비): 전년 동일 기간 대비 변화율 계산
-   - 누적값: 시간 경과에 따른 누적값 계산
-8. 데이터 활용:
-   - 차트 생성: 변환된 데이터로 차트 생성 (ChartEditor 연동)
-   - CSV/Excel 내보내기: 데이터 로컬 저장
-   - 시리즈 추가: 추가 지표 조회 (AS-001, 최대 5개 시리즈 지원)
-
 ### 3.5 데이터 비교 분석 흐름
+
+> 관련 UI 요구사항: CP-001~006(비교 기능)  
+> 관련 컴포넌트: ComparisonControls, DataTransformer (packages/charts/src/components/)  
+> 구현 단계: 페이즈 2 (핵심 기능) - 차트 컴포넌트 (ROADMAP.md 참조)
 
 ```mermaid
 flowchart TD
@@ -414,24 +475,12 @@ flowchart TD
 - 스타일 커스터마이징으로 시각적 구분 명확화
 - Time Series, Bar Chart 등 주요 차트 유형 지원
 
-**상세 단계:**
-
-1. 차트 비교 옵션 활성화 (CP-001)
-2. ComparisonControls 컴포넌트 표시
-3. 비교 기간 유형 선택 (CP-002):
-   - 전년동기: 선택한 기간과 같은 기간의 전년 데이터 비교
-   - 이전기간: 선택한 기간 직전의 동일한 길이의 기간 데이터 비교
-   - 사용자정의: 직접 비교 기간 지정 (CP-003)
-4. 비교 시각화 방식 선택 (CP-004):
-   - 중첩: 두 데이터 세트를 하나의 차트에 중첩하여 표시
-   - 나란히: 두 데이터 세트를 나란히 배치하여 비교
-   - 차이값: 두 데이터 간의 차이를 계산하여 표시
-5. 시각화 스타일 설정:
-   - 기준기간 스타일 (CP-005): 색상, 선 스타일 등 설정
-   - 비교기간 스타일 (CP-006): 색상, 선 스타일 등 설정
-6. 비교 차트 미리보기 및 적용
-
 ### 3.6 대시보드 공유 및 구독 흐름
+
+> 관련 와이어프레임: [대시보드 탐색](./wireframes/dashboard-explore-wireframe.svg)  
+> 관련 UI 요구사항: DS-001~008(대시보드 공유/탐색)  
+> 관련 컴포넌트: DashboardSharing, ExploreList (packages/dashboard/src/components/, packages/dashboard/src/explore/)  
+> 구현 단계: 페이즈 2 (핵심 기능) - 대시보드 시스템 (ROADMAP.md 참조)
 
 ```mermaid
 flowchart TD
@@ -468,25 +517,12 @@ flowchart TD
 - DashboardCard를 통한 직관적인 목록 표시
 - 구독 및 복제 기능으로 확장성 제공
 
-**상세 단계:**
-
-1. 대시보드 상세 페이지에서 DashboardHeaderControls의 공유 옵션 선택
-2. DashboardSharing 컴포넌트를 통한 공유 설정:
-   - isPublic 상태 확인 및 설정
-   - 공개 설정 시 공유 링크 생성
-   - 링크 복사 및 SNS 공유 옵션
-3. DashboardExplore 페이지에서 공개 대시보드 탐색:
-   - DashboardSearchFilter를 통한 검색 및 필터링
-   - 카테고리, 인기도, 최신순 등 정렬 옵션
-4. DashboardCard를 통한 대시보드 항목 표시:
-   - 타이틀, 설명, 썸네일 이미지, 작성자 정보
-   - 구독자 수, 평점 등 메타데이터
-5. 대시보드 작업:
-   - 미리보기: ThumbnailPreview 컴포넌트를 통한 미리보기
-   - 구독: 구독 추가하여 업데이트 받기 (전문가의 지속적 인사이트)
-   - 복제: 내 대시보드로 복사하여 자유롭게 편집 가능
-
 ### 3.7 구독 및 결제 관리 흐름
+
+> 관련 와이어프레임: [구독 관리](./wireframes/subscription-wireframe.svg)  
+> 관련 UI 요구사항: SM-001~006(구독 관리)  
+> 관련 컴포넌트: SubscriptionManagement, PlanSelector (packages/state/src/services/subscription-service.ts)  
+> 구현 단계: 페이즈 3 (사용자 기능) - 사용자 관리 (ROADMAP.md 참조)
 
 ```mermaid
 flowchart TD
@@ -525,27 +561,94 @@ flowchart TD
 - 토스페이먼츠 결제 연동
 - PaymentHistory를 통한 결제 내역 관리
 
-**상세 단계:**
+#### 3.7.1 구독 전환 및 결제 경험 흐름
 
-1. ProfileSettings 페이지에서 SubscriptionManagement 탭 접근
-2. CurrentPlan 컴포넌트를 통한 현재 구독 상태 확인:
-   - 무료 플랜: 제한된 기능, 유료 플랜 혜택 안내
-   - 유료 플랜: 구독 상세 정보, 다음 결제일, 이용료 표시
-3. 구독 플랜 선택:
-   - 월간 구독 (₩9,900/월): 모든 기능 이용, 월 단위 결제
-   - 연간 구독 (₩94,900/년): 할인된 가격, 연 단위 결제
-4. 결제 프로세스:
-   - 결제 정보 입력 (토스페이먼츠 양식)
-   - 결제 진행 및 확인
-   - 성공/실패 처리
-5. 구독 관리:
-   - 플랜 변경: 월간/연간 플랜 간 전환 또는 업그레이드
-   - 구독 취소: 취소 확인 및 무료 플랜으로 전환
-   - 결제 내역: PaymentHistory 컴포넌트를 통한 과거 결제 내역 조회
+```mermaid
+flowchart TD
+    A[구독 관리 페이지 방문] --> B[플랜 비교 검토]
+    B --> C[플랜 선택]
+    C --> D[토스페이먼츠 결제 페이지]
+    D --> E[결제 정보 입력]
+    E --> F[결제 처리]
+    F -->|성공| G[구독 활성화 확인]
+    F -->|실패| H[오류 안내]
+    G --> I[프리미엄 기능 즉시 접근]
+    H --> J[대체 결제 수단 제안]
+    J --> E
+```
+
+이 흐름은 사용자가 유료 플랜으로 전환하는 과정과 결제 경험을 시각화합니다.
+
+### 3.8 대시보드 발견 및 구독 흐름
+
+> 관련 와이어프레임: [대시보드 탐색](./wireframes/dashboard-explore-wireframe.svg)  
+> 관련 UI 요구사항: DS-004~008(대시보드 탐색/구독)  
+> 관련 컴포넌트: ExploreList, ExploreFilters, ExploreCard (packages/dashboard/src/explore/)  
+> 구현 단계: 페이즈 4 (완성 및 배포) - 고급 기능 및 최적화 (ROADMAP.md 참조)
+
+```mermaid
+flowchart TD
+    A[대시보드 탐색 페이지 방문] --> B[카테고리/인기순 필터링]
+    B --> C[관심 대시보드 발견]
+    C --> D{행동 선택}
+    D -->|미리보기| E[대시보드 상세 보기]
+    D -->|구독| F[구독 추가]
+    D -->|복제| G[내 대시보드로 복제]
+    
+    E --> H[전체 화면으로 분석]
+    F --> I[마이페이지 구독 목록에 추가]
+    G --> J[복제된 대시보드 편집]
+```
+
+이 흐름은 사용자가 다른 사용자의 대시보드를 발견하고 활용하는 과정을 보여줍니다. 특히 일반 투자자 페르소나가 전문가의 인사이트를 활용하는 중요한 경로입니다.
+
+### 3.9 모바일 사용자 경험 흐름
+
+> 관련 UI 요구사항: LN-001(반응형 레이아웃), LN-005(모바일 메뉴)  
+> 관련 컴포넌트: MobileHeader, MobileNav (packages/ui/src/components/layout/)  
+> 구현 단계: 페이즈 2 (핵심 기능) - 대시보드 시스템 (ROADMAP.md 참조)
+
+```mermaid
+flowchart TD
+    A[모바일 접속] --> B[압축된 네비게이션 메뉴]
+    B --> C[대시보드 카드 세로 스크롤]
+    C --> D[대시보드 선택]
+    D --> E[모바일 최적화 대시보드 뷰]
+    E --> F{상호작용 옵션}
+    F -->|확대/축소| G[핀치 줌으로 차트 확대]
+    F -->|상세 보기| H[차트 탭하여 전체화면]
+    F -->|시간 범위 변경| I[날짜 선택 모달]
+```
+
+이 흐름은 모바일 기기에서의 E-Torch 사용 경험을 설명합니다. 반응형 디자인을 통해 작은 화면에서도 효과적으로 대시보드를 탐색하고 조작할 수 있습니다.
+
+### 3.10 데이터 내보내기 및 공유 흐름
+
+> 관련 UI 요구사항: DV-006(대시보드 내보내기), CM-007(차트 내보내기)  
+> 관련 컴포넌트: ChartExport, DashboardExport (packages/charts/src/components/, packages/dashboard/src/components/)  
+> 구현 단계: 페이즈 4 (완성 및 배포) - 고급 기능 및 최적화 (ROADMAP.md 참조)
+
+```mermaid
+flowchart TD
+    A[대시보드/차트 상세 화면] --> B[내보내기 버튼 클릭]
+    B --> C{내보내기 형식 선택}
+    C -->|PNG/이미지| D[이미지로 내보내기]
+    C -->|PDF| E[PDF로 내보내기]
+    C -->|CSV/데이터| F[원본 데이터 내보내기]
+    
+    D --> G[워터마크 포함]
+    E --> G
+    F --> H[데이터 포맷 옵션]
+    
+    G --> I[다운로드 또는 공유]
+    H --> I
+```
+
+이 흐름은 product-spec.md의 "데이터 시각화를 통한 강의자료 및 분석자료 생성" 기능을 구체화합니다. 워터마크가 포함된 내보내기 기능은 브랜드 홍보와 전문성 확산에 기여합니다.
 
 ## 4. 상태 전이 및 인터랙션 패턴
 
-### 데이터 로딩 상태 관리
+### 4.1 데이터 로딩 상태 관리
 
 ```mermaid
 stateDiagram-v2
@@ -570,7 +673,7 @@ stateDiagram-v2
 - 오류 발생 시 재시도 옵션 제공
 - 데이터 캐싱 및 백그라운드 갱신
 
-### 편집 모드 전환 패턴
+### 4.2 편집 모드 전환 패턴
 
 ```mermaid
 stateDiagram-v2
@@ -599,7 +702,7 @@ stateDiagram-v2
 - 취소 시 변경사항 폐기 확인 다이얼로그
 - 저장 중/오류 상태의 명확한 피드백
 
-### 드래그 앤 드롭 인터랙션
+### 4.3 드래그 앤 드롭 인터랙션
 
 ```mermaid
 stateDiagram-v2
@@ -624,9 +727,59 @@ stateDiagram-v2
 - 드롭 후 애니메이션 효과로 자연스러운 전환
 - 레이아웃 변경 사항 자동 저장 또는 명시적 저장 옵션
 
+### 4.4 Zustand와 TanStack Query 통합 패턴
+
+E-Torch는 Zustand 5를 활용한 클라이언트 상태 관리와 TanStack Query 5를 활용한 서버 상태 관리를 통합하는 패턴을 사용합니다:
+
+```mermaid
+flowchart TD
+    subgraph "클라이언트 상태 (Zustand 5)"
+        Z1[DashboardStore] --> Z2[GridLayoutState]
+        Z1 --> Z3[WidgetState]
+        Z1 --> Z4[ChartEditorState]
+    end
+    
+    subgraph "서버 상태 (TanStack Query 5)"
+        T1[useChartData] --> T2[DataCache]
+        T1 --> T3[QueryKeys]
+        T1 --> T4[useMutation]
+    end
+    
+    Z1 -.-> T1
+    T1 -.-> Z1
+```
+
+- **Zustand 스토어**: UI 상태, 에디터 상태, 레이아웃 상태 등 클라이언트 중심 상태 관리
+- **TanStack Query**: 경제지표 데이터, 대시보드 메타데이터 등 서버 데이터 상태 관리
+- **상태 통합**: `useServerState` 및 `useClientState` 훅을 통한 상태 통합
+- **낙관적 업데이트**: React 19의 `useOptimistic` 훅을 활용한 UI 즉시 응답
+
 ## 5. 오류 처리 및 예외 상황
 
-### 오류 발생 시나리오 및 대응
+> 구현 단계: 페이즈 2 (핵심 기능) → 페이즈 4 (고급 기능 및 최적화) (ROADMAP.md 참조)
+
+### 5.1 MVP 단계 오류 처리 흐름
+
+MVP 출시(2025-06-20)에서는 다음 핵심 오류 처리 흐름을 우선적으로 구현합니다:
+
+```mermaid
+flowchart TD
+    A[사용자 행동] --> B{오류 유형}
+    
+    B -->|네트워크 오류| C[오프라인 알림 표시]
+    C --> D[캐시된 데이터 표시]
+    D --> E[재연결 시 자동 복구]
+    
+    B -->|인증 만료| F[재로그인 요청 모달]
+    F --> G[로그인 완료]
+    G --> H[이전 상태로 복귀]
+    
+    B -->|데이터 누락| I[데이터 불완전 표시]
+    I --> J[대체 데이터 소스 제안]
+    J --> K[사용자 데이터 소스 선택]
+```
+
+### 5.2 오류 발생 시나리오 및 대응
 
 | 오류 유형 | 발생 가능 상황 | 대응 방안 | UI 처리 |
 |---------|--------------|---------|---------|
@@ -637,7 +790,7 @@ stateDiagram-v2
 | 데이터 소스 제한 | API 호출 한도 초과, 권한 문제 | 사용량 표시, 대체 소스 제안 | 제한 안내 메시지, 업그레이드 유도 |
 | 데이터 누락 | 지표 데이터 불완전, 갭 존재 | 보간법 적용, 누락 데이터 표시 | 점선 또는 특수 마커로 표시 |
 
-### 예외 처리 전략
+### 5.3 예외 처리 전략
 
 ```mermaid
 flowchart TD
@@ -685,7 +838,7 @@ flowchart TD
 
 ## 6. 접근성 고려사항
 
-### 키보드 내비게이션
+### 6.1 키보드 내비게이션
 
 모든 주요 기능은 키보드만으로 접근 가능해야 합니다:
 
@@ -702,7 +855,7 @@ flowchart TD
 - 포커스 관리: 모달 열기/닫기 시 포커스 위치 관리
 - 키보드 단축키 관리자 구현 및 문서화
 
-### 스크린 리더 지원
+### 6.2 스크린 리더 지원
 
 WCAG 2.1 AA 기준을 충족하기 위한 스크린 리더 지원:
 
@@ -717,7 +870,7 @@ WCAG 2.1 AA 기준을 충족하기 위한 스크린 리더 지원:
   - 주요 트렌드 및 인사이트 텍스트 요약
   - SVG 요소에 대한 적절한 ARIA 속성 설정
 
-### 색상 및 대비
+### 6.3 색상 및 대비
 
 시각적 접근성을 위한 색상 및 대비 고려:
 
@@ -730,7 +883,27 @@ WCAG 2.1 AA 기준을 충족하기 위한 스크린 리더 지원:
   - 대비 높은 테마 옵션 제공
 - 색상 팔레트 최적화: ColorSafe 활용 접근성 검증
 
-### 반응형 디자인
+### 6.4 색상 및 테마 전략
+
+E-Torch는 Tailwind CSS 4의 OKLCH 색상 시스템을 활용하여 더 넓은 색 영역과 인지적으로 균일한 밝기를 제공합니다:
+
+```tsx
+// 색상에 의존하지 않는 상태 표시 컴포넌트 예시
+function StatusIndicator({ 
+  status, 
+  label 
+}: StatusIndicatorProps) {
+  // 테마 변수를 활용한 OKLCH 색상 적용
+  return (
+    <div className={`status-indicator bg-${status} text-${status}-foreground`}>
+      <span className="status-icon" aria-hidden="true" />
+      <span>{label}</span>
+    </div>
+  )
+}
+```
+
+### 6.5 반응형 디자인
 
 다양한 기기 및 화면 크기에 대응:
 
