@@ -243,6 +243,7 @@ E-Torch는 일관된 사용자 경험을 위해 체계적인 디자인 시스템
 - **브랜드 색상**: Primary (#0c1e3e), Secondary (#1a56db), Tertiary (#0284c7)
 - **타이포그래피**: Inter (기본 폰트), JetBrains Mono (모노스페이스 폰트)
 - **컴포넌트 원칙**: 일관성, 재사용성, 접근성, 반응형 디자인
+- **색상 체계**: OKLCH 색상 공간을 활용한 다크/라이트 모드 지원
 
 ### 6.2 접근성 설계
 
@@ -278,6 +279,13 @@ E-Torch는 일관된 사용자 경험을 위해 체계적인 디자인 시스템
 - 데이터 업데이트 히스토리 관리
 - 수동 입력 데이터 검증 절차
 
+### 7.4 데이터 변환 및 처리 파이프라인
+
+- 결측치 처리 알고리즘 (선형 보간법, 이전/이후 값 복제 등)
+- 주기 변환 (일간→월간→분기→연간) 및 동기화
+- LTTB(Largest-Triangle-Three-Buckets) 다운샘플링으로 대량 데이터 최적화
+- 데이터 캐싱 전략으로 성능 최적화
+
 ## 8. 서비스 차별화 전략
 
 ### 8.1 전문가 인사이트 제공
@@ -302,7 +310,7 @@ E-Torch는 일관된 사용자 경험을 위해 체계적인 디자인 시스템
 
 ### 9.1 개발 일정
 
-#### MVP 출시 (6/20 완료)
+#### MVP 출시 (2025-06-20 완료 예정)
 
 - **기획**: 완료
 - **설계**: 완료
@@ -318,13 +326,54 @@ E-Torch는 일관된 사용자 경험을 위해 체계적인 디자인 시스템
 
 ## 10. 기술적 고려사항
 
-프론트엔드 기술 아키텍처, 상태 관리, 데이터 흐름, 라우팅 전략에 대한 상세 내용은 다음 문서를 참조하십시오:
+### 10.1 기술 스택
 
-- 아키텍처 설계: [`architecture.md`](./frontend/architecture.md)
-- 컴포넌트 설계: [`core-components.md`](./frontend/components/core-components.md)
-- 상태 관리: [`state-management.md`](./frontend/state-management.md)
-- 데이터 흐름: [`data-flow.md`](./frontend/data-flow.md)
-- 라우팅 구조: [`routing.md`](./frontend/routing.md)
+- **프레임워크**: React 19, Next.js 15
+- **모노레포**: Turborepo, pnpm
+- **상태 관리**: Zustand 5, TanStack Query 5
+- **UI 프레임워크**: Shadcn/UI, Tailwind CSS 4
+- **차트 시각화**: Recharts 2.15.3+
+- **폼 관리**: React Hook Form 7, Zod 3
+- **타입 관리**: TypeScript 5.5+
+- **테스트**: Vitest, Testing Library, Playwright
+- **인증**: Supabase Auth
+
+### 10.2 아키텍처 설계 원칙
+
+- **모듈성**: 기능별 독립적 패키지화
+- **확장성**: 새 차트 유형, 데이터 소스 쉽게 추가 가능
+- **재사용성**: 공통 컴포넌트 추출
+- **성능**: 대량 데이터 처리 최적화
+- **접근성**: WCAG 표준 준수
+- **서버/클라이언트 분리**: Next.js App Router 아키텍처 활용
+
+### 10.3 패키지 구조
+
+```
+e-torch/
+├── apps/                # 애플리케이션
+│   ├── web/            # 웹 애플리케이션
+│   └── storybook/      # 컴포넌트 문서화
+│
+└── packages/            # 공유 패키지
+    ├── eslint-config/  # ESLint 설정
+    ├── core/           # 타입, 상수, 인터페이스
+    ├── ui/             # UI 컴포넌트
+    ├── charts/         # 차트 컴포넌트
+    ├── dashboard/      # 대시보드 컴포넌트
+    ├── data-sources/   # 데이터 소스 연동
+    ├── state/          # 상태 관리
+    ├── utils/          # 유틸리티 함수
+    └── server-api/     # API 경로 및 서버 액션
+```
+
+### 10.4 성능 최적화 전략
+
+- 서버 컴포넌트를 활용한 초기 로딩 성능 최적화
+- 데이터 다운샘플링을 통한 대량 데이터 처리 최적화
+- 메모이제이션 및 선택적 렌더링으로 UI 반응성 개선
+- 코드 분할 및 지연 로딩으로 초기 번들 크기 최소화
+- 다층적 캐싱 전략으로 네트워크 요청 최소화
 
 ## 11. 마케팅 및 사용자 확보 전략
 
