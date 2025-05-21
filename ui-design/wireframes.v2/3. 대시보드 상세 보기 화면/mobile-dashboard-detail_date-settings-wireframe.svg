@@ -1,0 +1,129 @@
+<svg width="375" height="800" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 어둡게 처리 (바텀시트 상태) -->
+  <rect x="0" y="0" width="375" height="800" fill="black" fill-opacity="0.3"/>
+  
+  <!-- 헤더 -->
+  <rect x="0" y="0" width="375" height="60" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 뒤로가기 버튼 (좌측) -->
+  <rect x="15" y="15" width="30" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="30" y="35" font-family="Arial" font-size="14" text-anchor="middle">←</text>
+  
+  <text x="55" y="35" font-family="Arial" font-size="16">E-Torch</text>
+  
+  <!-- 햄버거 메뉴 아이콘 (우측) -->
+  <rect x="330" y="15" width="30" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="335" y1="22" x2="355" y2="22" stroke="black" stroke-width="1"/>
+  <line x1="335" y1="30" x2="355" y2="30" stroke="black" stroke-width="1"/>
+  <line x1="335" y1="38" x2="355" y2="38" stroke="black" stroke-width="1"/>
+  
+  <!-- 대시보드 헤더 영역 -->
+  <rect x="0" y="60" width="375" height="80" fill="white" stroke="black" stroke-width="1"/>
+  <text x="16" y="85" font-family="Arial" font-size="16">경제 동향 대시보드</text>
+  <text x="16" y="105" font-family="Arial" font-size="11" fill="gray">편집 모드</text>
+  <text x="16" y="120" font-family="Arial" font-size="10" fill="lightgray">최종 수정: 2025-05-21 15:30</text>
+  
+  <!-- 자동 저장 상태 (우측 상단) -->
+  <circle cx="330" cy="85" r="3" fill="green" stroke="none"/>
+  <text x="340" y="88" font-family="Arial" font-size="9">저장됨</text>
+  
+  <!-- 컨트롤 영역 (수정된 버전) -->
+  <rect x="0" y="140" width="375" height="100" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 첫 번째 줄 -->
+  <rect x="16" y="150" width="80" height="36" fill="white" stroke="black" stroke-width="1"/>
+  <text x="56" y="173" font-family="Arial" font-size="12" text-anchor="middle">+ 위젯</text>
+  
+  <!-- 수정된 기간 설정 버튼 (일관성 유지) -->
+  <rect x="106" y="150" width="110" height="36" fill="white" stroke="black" stroke-width="2"/>
+  <text x="161" y="173" font-family="Arial" font-size="12" text-anchor="middle">최근 1년 ▼</text>
+  
+  <rect x="226" y="150" width="50" height="36" fill="white" stroke="black" stroke-width="1"/>
+  <text x="251" y="173" font-family="Arial" font-size="12" text-anchor="middle">↶</text>
+  
+  <rect x="286" y="150" width="50" height="36" fill="white" stroke="black" stroke-width="1"/>
+  <text x="311" y="173" font-family="Arial" font-size="12" text-anchor="middle">↷</text>
+  
+  <!-- 두 번째 줄 (공유 버튼 제거, 설정에 통합) -->
+  <rect x="16" y="196" width="80" height="36" fill="white" stroke="black" stroke-width="1"/>
+  <text x="56" y="219" font-family="Arial" font-size="12" text-anchor="middle">설정</text>
+  
+  <rect x="106" y="196" width="80" height="36" fill="white" stroke="black" stroke-width="1"/>
+  <text x="146" y="219" font-family="Arial" font-size="12" text-anchor="middle">내보내기</text>
+  
+  <rect x="196" y="196" width="70" height="36" fill="white" stroke="black" stroke-width="1"/>
+  <text x="231" y="219" font-family="Arial" font-size="12" text-anchor="middle">취소</text>
+  
+  <rect x="276" y="196" width="70" height="36" fill="white" stroke="black" stroke-width="1"/>
+  <text x="311" y="219" font-family="Arial" font-size="12" text-anchor="middle">저장</text>
+  
+  <!-- 콘텐츠 영역 (어둡게 처리됨) -->
+  <rect x="0" y="240" width="375" height="540" fill="white" stroke="black" stroke-width="1" stroke-dasharray="5,5" opacity="0.7"/>
+  
+  <!-- 스크롤 표시 -->
+  <text x="187" y="260" font-family="Arial" font-size="12" text-anchor="middle" fill="gray" opacity="0.7">위젯 영역 (세로 스크롤)</text>
+  
+  <!-- 위젯들 (어둡게 처리) -->
+  <rect x="16" y="280" width="343" height="140" fill="white" stroke="black" stroke-width="2" opacity="0.7"/>
+  <rect x="16" y="440" width="343" height="140" fill="white" stroke="black" stroke-width="2" opacity="0.7"/>
+  <rect x="16" y="600" width="343" height="80" fill="white" stroke="black" stroke-width="2" opacity="0.7"/>
+  
+  <!-- 바텀시트 모달 -->
+  <rect x="0" y="450" width="375" height="350" fill="white" stroke="black" stroke-width="2"/>
+  
+  <!-- 바텀시트 헤더 -->
+  <rect x="0" y="450" width="375" height="50" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="20" y="480" font-family="Arial" font-size="16">기간 설정</text>
+  
+  <!-- 닫기 버튼 -->
+  <rect x="335" y="460" width="25" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="347" y="477" font-family="Arial" font-size="14" text-anchor="middle">✕</text>
+  
+  <!-- 드래그 핸들 -->
+  <rect x="167" y="455" width="40" height="4" fill="lightgray" stroke="none"/>
+  
+  <!-- 세그먼트 컨트롤 -->
+  <rect x="20" y="515" width="335" height="40" fill="white" stroke="lightgray" stroke-width="1"/>
+  <rect x="25" y="520" width="162" height="30" fill="white" stroke="black" stroke-width="2"/>
+  <text x="106" y="540" font-family="Arial" font-size="13" text-anchor="middle">빠른 선택</text>
+  
+  <rect x="188" y="520" width="162" height="30" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="269" y="540" font-family="Arial" font-size="13" text-anchor="middle">사용자 정의</text>
+  
+  <!-- 빠른 선택 옵션들 -->
+  <rect x="20" y="570" width="335" height="180" fill="white" stroke="none"/>
+  
+  <!-- 옵션 1: 최근 6개월 -->
+  <rect x="30" y="580" width="315" height="44" fill="white" stroke="lightgray" stroke-width="1"/>
+  <circle cx="50" cy="602" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="70" y="607" font-family="Arial" font-size="14">최근 6개월</text>
+  
+  <!-- 옵션 2: 최근 1년 (선택됨) -->
+  <rect x="30" y="634" width="315" height="44" fill="white" stroke="black" stroke-width="2"/>
+  <circle cx="50" cy="656" r="8" fill="black" stroke="black" stroke-width="1"/>
+  <text x="70" y="661" font-family="Arial" font-size="14">최근 1년</text>
+  <text x="320" y="661" font-family="Arial" font-size="14" text-anchor="middle">✓</text>
+  
+  <!-- 옵션 3: 최근 3년 -->
+  <rect x="30" y="688" width="315" height="44" fill="white" stroke="lightgray" stroke-width="1"/>
+  <circle cx="50" cy="710" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="70" y="715" font-family="Arial" font-size="14">최근 3년</text>
+  
+  <!-- 구분선 -->
+  <line x1="30" y1="742" x2="345" y2="742" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 버튼 영역 -->
+  <rect x="0" y="760" width="375" height="40" fill="white" stroke="none"/>
+  
+  <rect x="80" y="770" width="90" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="125" y="790" font-family="Arial" font-size="13" text-anchor="middle">취소</text>
+  
+  <rect x="200" y="770" width="90" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="245" y="790" font-family="Arial" font-size="13" text-anchor="middle">적용</text>
+  
+  <!-- 하단 안전 영역 (모바일 제스처/홈 인디케이터) -->
+  <rect x="0" y="800" width="375" height="0" fill="white" stroke="none"/>
+  
+  <!-- 터치 가이드 힌트 (어둡게 처리) -->
+  <text x="187" y="270" font-family="Arial" font-size="9" text-anchor="middle" fill="lightgray" opacity="0.7">길게 눌러 드래그, 탭하여 편집</text>
+</svg>

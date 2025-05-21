@@ -1,0 +1,108 @@
+<svg width="375" height="800" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 어둡게 처리 -->
+  <rect x="0" y="0" width="375" height="800" fill="black" fill-opacity="0.6"/>
+  
+  <!-- Android Material Design 날짜 선택기 (전체화면 모달) -->
+  <rect x="20" y="100" width="335" height="520" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 모달 상단 바 -->
+  <rect x="20" y="100" width="335" height="60" fill="white" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 닫기 버튼 (X) -->
+  <rect x="30" y="115" width="30" height="30" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="45" y="135" font-family="Arial" font-size="16" text-anchor="middle">✕</text>
+  
+  <!-- 제목 -->
+  <text x="187" y="135" font-family="Arial" font-size="18" text-anchor="middle" font-weight="bold">날짜 선택</text>
+  
+  <!-- 선택된 날짜 표시 영역 -->
+  <rect x="20" y="160" width="335" height="80" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="40" y="185" font-family="Arial" font-size="14" fill="gray">선택된 날짜</text>
+  <text x="40" y="215" font-family="Arial" font-size="24" font-weight="bold">2024년 1월 1일</text>
+  
+  <!-- 캘린더 헤더 (월/년 표시) -->
+  <rect x="20" y="240" width="335" height="50" fill="white" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 이전/다음 월 버튼 -->
+  <rect x="30" y="255" width="30" height="20" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="45" y="268" font-family="Arial" font-size="14" text-anchor="middle">‹</text>
+  
+  <rect x="315" y="255" width="30" height="20" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="330" y="268" font-family="Arial" font-size="14" text-anchor="middle">›</text>
+  
+  <!-- 현재 월/년 표시 -->
+  <text x="187" y="268" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">2024년 1월</text>
+  
+  <!-- 요일 헤더 -->
+  <rect x="20" y="290" width="335" height="30" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="52" y="308" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">일</text>
+  <text x="98" y="308" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">월</text>
+  <text x="144" y="308" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">화</text>
+  <text x="190" y="308" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">수</text>
+  <text x="236" y="308" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">목</text>
+  <text x="282" y="308" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">금</text>
+  <text x="328" y="308" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">토</text>
+  
+  <!-- 캘린더 그리드 -->
+  <rect x="20" y="320" width="335" height="210" fill="white" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 1주차 -->
+  <text x="190" y="340" font-family="Arial" font-size="14" text-anchor="middle">1</text>
+  <text x="236" y="340" font-family="Arial" font-size="14" text-anchor="middle">2</text>
+  <text x="282" y="340" font-family="Arial" font-size="14" text-anchor="middle">3</text>
+  <text x="328" y="340" font-family="Arial" font-size="14" text-anchor="middle">4</text>
+  
+  <!-- 2주차 -->
+  <text x="52" y="370" font-family="Arial" font-size="14" text-anchor="middle">5</text>
+  <text x="98" y="370" font-family="Arial" font-size="14" text-anchor="middle">6</text>
+  <text x="144" y="370" font-family="Arial" font-size="14" text-anchor="middle">7</text>
+  <text x="190" y="370" font-family="Arial" font-size="14" text-anchor="middle">8</text>
+  <text x="236" y="370" font-family="Arial" font-size="14" text-anchor="middle">9</text>
+  <text x="282" y="370" font-family="Arial" font-size="14" text-anchor="middle">10</text>
+  <text x="328" y="370" font-family="Arial" font-size="14" text-anchor="middle">11</text>
+  
+  <!-- 3주차 (1일 선택됨) -->
+  <text x="52" y="400" font-family="Arial" font-size="14" text-anchor="middle">12</text>
+  <text x="98" y="400" font-family="Arial" font-size="14" text-anchor="middle">13</text>
+  <text x="144" y="400" font-family="Arial" font-size="14" text-anchor="middle">14</text>
+  <text x="190" y="400" font-family="Arial" font-size="14" text-anchor="middle">15</text>
+  <text x="236" y="400" font-family="Arial" font-size="14" text-anchor="middle">16</text>
+  <text x="282" y="400" font-family="Arial" font-size="14" text-anchor="middle">17</text>
+  <text x="328" y="400" font-family="Arial" font-size="14" text-anchor="middle">18</text>
+  
+  <!-- 4주차 -->
+  <text x="52" y="430" font-family="Arial" font-size="14" text-anchor="middle">19</text>
+  <text x="98" y="430" font-family="Arial" font-size="14" text-anchor="middle">20</text>
+  <text x="144" y="430" font-family="Arial" font-size="14" text-anchor="middle">21</text>
+  <text x="190" y="430" font-family="Arial" font-size="14" text-anchor="middle">22</text>
+  <text x="236" y="430" font-family="Arial" font-size="14" text-anchor="middle">23</text>
+  <text x="282" y="430" font-family="Arial" font-size="14" text-anchor="middle">24</text>
+  <text x="328" y="430" font-family="Arial" font-size="14" text-anchor="middle">25</text>
+  
+  <!-- 5주차 -->
+  <text x="52" y="460" font-family="Arial" font-size="14" text-anchor="middle">26</text>
+  <text x="98" y="460" font-family="Arial" font-size="14" text-anchor="middle">27</text>
+  <text x="144" y="460" font-family="Arial" font-size="14" text-anchor="middle">28</text>
+  <text x="190" y="460" font-family="Arial" font-size="14" text-anchor="middle">29</text>
+  <text x="236" y="460" font-family="Arial" font-size="14" text-anchor="middle">30</text>
+  <text x="282" y="460" font-family="Arial" font-size="14" text-anchor="middle">31</text>
+  
+  <!-- 선택된 날짜 하이라이트 (1일) -->
+  <circle cx="190" cy="335" r="15" fill="blue" fill-opacity="0.2" stroke="blue" stroke-width="2"/>
+  <text x="190" y="340" font-family="Arial" font-size="14" text-anchor="middle" fill="blue" font-weight="bold">1</text>
+  
+  <!-- 하단 액션 버튼 -->
+  <rect x="20" y="550" width="335" height="60" fill="white" stroke="lightgray" stroke-width="1"/>
+  
+  <rect x="160" y="565" width="80" height="30" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="200" y="585" font-family="Arial" font-size="14" text-anchor="middle" fill="gray">취소</text>
+  
+  <rect x="250" y="565" width="80" height="30" fill="white" stroke="blue" stroke-width="1"/>
+  <text x="290" y="585" font-family="Arial" font-size="14" text-anchor="middle" fill="blue">확인</text>
+  
+  <!-- Android 특성 안내 -->
+  <rect x="20" y="30" width="335" height="60" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="30" y="50" font-family="Arial" font-size="14" font-weight="bold">Android Material Design 특징:</text>
+  <text x="30" y="65" font-family="Arial" font-size="12">• 전체화면 모달 캘린더</text>
+  <text x="30" y="80" font-family="Arial" font-size="12">• 월/년 탐색 + 날짜 그리드 선택</text>
+</svg>

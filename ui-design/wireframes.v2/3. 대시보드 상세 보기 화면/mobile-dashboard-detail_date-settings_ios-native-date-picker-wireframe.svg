@@ -1,0 +1,83 @@
+<svg width="375" height="800" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 어둡게 처리 -->
+  <rect x="0" y="0" width="375" height="800" fill="black" fill-opacity="0.6"/>
+  
+  <!-- 기존 앱 UI (뒤로 밀려남) -->
+  <rect x="0" y="0" width="375" height="800" fill="white" stroke="none" opacity="0.3"/>
+  <text x="187" y="400" font-family="Arial" font-size="14" text-anchor="middle" fill="gray" opacity="0.5">기존 바텀시트 UI (뒤로 숨음)</text>
+  
+  <!-- iOS 네이티브 날짜 선택기 (하단에서 슬라이드업) -->
+  <rect x="0" y="480" width="375" height="320" fill="white" stroke="none"/>
+  
+  <!-- 상단 모서리 라운드 표시 -->
+  <rect x="0" y="480" width="375" height="20" fill="white" stroke="none"/>
+  <ellipse cx="187" cy="480" rx="187" ry="20" fill="white" stroke="none"/>
+  
+  <!-- 드래그 인디케이터 -->
+  <rect x="167" y="490" width="40" height="4" fill="lightgray" stroke="none"/>
+  
+  <!-- 헤더 영역 -->
+  <rect x="0" y="500" width="375" height="60" fill="white" stroke="none"/>
+  
+  <!-- 취소 버튼 -->
+  <rect x="20" y="515" width="60" height="30" fill="white" stroke="none"/>
+  <text x="50" y="535" font-family="Arial" font-size="16" text-anchor="middle" fill="blue">취소</text>
+  
+  <!-- 제목 -->
+  <text x="187" y="535" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">시작 날짜</text>
+  
+  <!-- 완료 버튼 -->
+  <rect x="295" y="515" width="60" height="30" fill="white" stroke="none"/>
+  <text x="325" y="535" font-family="Arial" font-size="16" text-anchor="middle" fill="blue">완료</text>
+  
+  <!-- 구분선 -->
+  <line x1="20" y1="560" x2="355" y2="560" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- iOS 휠 피커 영역 -->
+  <rect x="0" y="570" width="375" height="200" fill="white" stroke="none"/>
+  
+  <!-- 년도 휠 -->
+  <rect x="50" y="580" width="80" height="180" fill="white" stroke="none"/>
+  <text x="90" y="600" font-family="Arial" font-size="14" text-anchor="middle" fill="lightgray">2022</text>
+  <text x="90" y="630" font-family="Arial" font-size="16" text-anchor="middle" fill="gray">2023</text>
+  <text x="90" y="660" font-family="Arial" font-size="20" text-anchor="middle" font-weight="bold">2024</text>
+  <text x="90" y="690" font-family="Arial" font-size="16" text-anchor="middle" fill="gray">2025</text>
+  <text x="90" y="720" font-family="Arial" font-size="14" text-anchor="middle" fill="lightgray">2026</text>
+  
+  <!-- 월 휠 -->
+  <rect x="140" y="580" width="90" height="180" fill="white" stroke="none"/>
+  <text x="185" y="600" font-family="Arial" font-size="14" text-anchor="middle" fill="lightgray">11월</text>
+  <text x="185" y="630" font-family="Arial" font-size="16" text-anchor="middle" fill="gray">12월</text>
+  <text x="185" y="660" font-family="Arial" font-size="20" text-anchor="middle" font-weight="bold">1월</text>
+  <text x="185" y="690" font-family="Arial" font-size="16" text-anchor="middle" fill="gray">2월</text>
+  <text x="185" y="720" font-family="Arial" font-size="14" text-anchor="middle" fill="lightgray">3월</text>
+  
+  <!-- 일 휠 -->
+  <rect x="240" y="580" width="80" height="180" fill="white" stroke="none"/>
+  <text x="280" y="600" font-family="Arial" font-size="14" text-anchor="middle" fill="lightgray">30</text>
+  <text x="280" y="630" font-family="Arial" font-size="16" text-anchor="middle" fill="gray">31</text>
+  <text x="280" y="660" font-family="Arial" font-size="20" text-anchor="middle" font-weight="bold">1</text>
+  <text x="280" y="690" font-family="Arial" font-size="16" text-anchor="middle" fill="gray">2</text>
+  <text x="280" y="720" font-family="Arial" font-size="14" text-anchor="middle" fill="lightgray">3</text>
+  
+  <!-- 선택 영역 하이라이트 (iOS 스타일) -->
+  <rect x="40" y="645" width="285" height="35" fill="none" stroke="none"/>
+  <rect x="40" y="645" width="285" height="35" fill="lightgray" fill-opacity="0.1"/>
+  <line x1="40" y1="645" x2="325" y2="645" stroke="lightgray" stroke-width="1"/>
+  <line x1="40" y1="680" x2="325" y2="680" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 휠 간 구분선 -->
+  <line x1="130" y1="580" x2="130" y2="760" stroke="lightgray" stroke-width="1" stroke-dasharray="1,1"/>
+  <line x1="230" y1="580" x2="230" y2="760" stroke="lightgray" stroke-width="1" stroke-dasharray="1,1"/>
+  
+  <!-- 하단 안전영역 -->
+  <rect x="0" y="770" width="375" height="30" fill="white" stroke="none"/>
+  
+  <!-- iOS 특성 안내 -->
+  <rect x="20" y="50" width="335" height="100" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="30" y="75" font-family="Arial" font-size="14" font-weight="bold">iOS 네이티브 특징:</text>
+  <text x="30" y="95" font-family="Arial" font-size="12">• 하단에서 올라오는 바텀시트</text>
+  <text x="30" y="110" font-family="Arial" font-size="12">• 3개 휠 (년/월/일) 스크롤</text>
+  <text x="30" y="125" font-family="Arial" font-size="12">• 취소/완료 버튼 상단 배치</text>
+  <text x="30" y="140" font-family="Arial" font-size="12">• iOS 14+ 기본 디자인</text>
+</svg>
