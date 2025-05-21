@@ -1,0 +1,95 @@
+<svg width="375" height="1600" xmlns="http://www.w3.org/2000/svg">
+  <!-- 헤더 -->
+  <rect x="0" y="0" width="375" height="60" fill="white" stroke="black" stroke-width="1"/>
+  <text x="15" y="38" font-family="Arial" font-size="18">E-Torch</text>
+  <line x1="100" y1="15" x2="100" y2="45" stroke="black" stroke-width="1"/>
+  <text x="115" y="38" font-family="Arial" font-size="14">구독 관리</text>
+  
+  <!-- 햄버거 메뉴 아이콘 -->
+  <rect x="330" y="20" width="30" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="335" y1="25" x2="355" y2="25" stroke="black" stroke-width="1"/>
+  <line x1="335" y1="30" x2="355" y2="30" stroke="black" stroke-width="1"/>
+  <line x1="335" y1="35" x2="355" y2="35" stroke="black" stroke-width="1"/>
+  
+  <!-- 메뉴 네비게이션 -->
+  <rect x="0" y="60" width="375" height="50" fill="white" stroke="black" stroke-width="1"/>
+  <text x="15" y="90" font-family="Arial" font-size="14">프로필</text>
+  <text x="95" y="90" font-family="Arial" font-size="14">구독</text>
+  <text x="175" y="90" font-family="Arial" font-size="14">알림</text>
+  <text x="255" y="90" font-family="Arial" font-size="14">결제</text>
+  <text x="315" y="90" font-family="Arial" font-size="14">수단</text>
+  <rect x="75" y="70" width="70" height="30" fill="white" stroke="lightgray" stroke-width="1" fill-opacity="0.1"/>
+  
+  <!-- 구독 관리 영역 -->
+  <rect x="0" y="110" width="375" height="1490" fill="white" stroke="black" stroke-width="1"/>
+  <text x="15" y="140" font-family="Arial" font-size="20">구독 관리</text>
+  
+  <!-- 현재 구독 정보 카드 -->
+  <rect x="15" y="160" width="345" height="220" fill="white" stroke="black" stroke-width="1"/>
+  <text x="30" y="185" font-family="Arial" font-size="16">내 구독 정보</text>
+  <line x1="15" y1="200" x2="360" y2="200" stroke="black" stroke-width="1"/>
+  
+  <text x="30" y="230" font-family="Arial" font-size="14">구독 플랜: 프리미엄 (월간)</text>
+  <text x="30" y="260" font-family="Arial" font-size="14">상태: 활성화</text>
+  <text x="30" y="290" font-family="Arial" font-size="14">다음 결제일: 2025-06-18</text>
+  <text x="30" y="320" font-family="Arial" font-size="14">월 이용료: ₩9,900</text>
+  
+  <rect x="120" y="340" width="140" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="190" y="360" font-family="Arial" font-size="14" text-anchor="middle">구독 취소</text>
+  
+  <!-- 구독 플랜 카드 영역 -->
+  <text x="15" y="410" font-family="Arial" font-size="16">구독 플랜 변경</text>
+  <line x1="15" y1="430" x2="360" y2="430" stroke="black" stroke-width="1"/>
+  
+  <!-- 무료 플랜 카드 -->
+  <rect x="15" y="450" width="345" height="300" fill="white" stroke="black" stroke-width="1"/>
+  <text x="30" y="475" font-family="Arial" font-size="16">무료 플랜</text>
+  <line x1="15" y1="490" x2="360" y2="490" stroke="black" stroke-width="1"/>
+  
+  <text x="190" y="520" font-family="Arial" font-size="18" text-anchor="middle">₩0/월</text>
+  <line x1="45" y1="540" x2="315" y2="540" stroke="black" stroke-width="1" stroke-dasharray="5,5"/>
+  
+  <text x="30" y="570" font-family="Arial" font-size="14">• 제한된 경제지표</text>
+  <text x="30" y="600" font-family="Arial" font-size="14">• 최근 1년 데이터만 조회</text>
+  <text x="30" y="630" font-family="Arial" font-size="14">• 기본 차트 옵션</text>
+  <text x="30" y="660" font-family="Arial" font-size="14">• 최대 3개 대시보드</text>
+  
+  <!-- 무료 플랜 카드 버튼 -->
+  <rect x="70" y="690" width="235" height="40" fill="white" stroke="black" stroke-width="1"/>
+  <text x="187" y="715" font-family="Arial" font-size="14" text-anchor="middle">플랜 선택</text>
+  
+  <!-- 월간 구독 카드 -->
+  <rect x="15" y="770" width="345" height="300" fill="white" stroke="black" stroke-width="1"/>
+  <text x="30" y="795" font-family="Arial" font-size="16">월간 구독</text>
+  <line x1="15" y1="810" x2="360" y2="810" stroke="black" stroke-width="1"/>
+  
+  <text x="190" y="840" font-family="Arial" font-size="18" text-anchor="middle">₩9,900/월</text>
+  <line x1="45" y1="860" x2="315" y2="860" stroke="black" stroke-width="1" stroke-dasharray="5,5"/>
+  
+  <text x="30" y="890" font-family="Arial" font-size="14">• 모든 경제지표 무제한 이용</text>
+  <text x="30" y="920" font-family="Arial" font-size="14">• 실시간 데이터 업데이트</text>
+  <text x="30" y="950" font-family="Arial" font-size="14">• 고급 차트 옵션</text>
+  <text x="30" y="980" font-family="Arial" font-size="14">• 무제한 대시보드</text>
+  
+  <!-- 월간 구독 카드 버튼 -->
+  <rect x="70" y="1010" width="235" height="40" fill="white" stroke="black" stroke-width="1"/>
+  <text x="187" y="1035" font-family="Arial" font-size="14" text-anchor="middle">현재 이용 중</text>
+  
+  <!-- 연간 구독 카드 -->
+  <rect x="15" y="1090" width="345" height="320" fill="white" stroke="black" stroke-width="1"/>
+  <text x="30" y="1115" font-family="Arial" font-size="16">연간 구독</text>
+  <line x1="15" y1="1130" x2="360" y2="1130" stroke="black" stroke-width="1"/>
+  
+  <text x="190" y="1160" font-family="Arial" font-size="18" text-anchor="middle">₩94,900/년</text>
+  <text x="190" y="1185" font-family="Arial" font-size="14" text-anchor="middle">월 ₩7,900 (₩2,000 절약)</text>
+  <line x1="45" y1="1205" x2="315" y2="1205" stroke="black" stroke-width="1" stroke-dasharray="5,5"/>
+  
+  <text x="30" y="1235" font-family="Arial" font-size="14">• 모든 경제지표 무제한 이용</text>
+  <text x="30" y="1265" font-family="Arial" font-size="14">• 실시간 데이터 업데이트</text>
+  <text x="30" y="1295" font-family="Arial" font-size="14">• 고급 차트 옵션</text>
+  <text x="30" y="1325" font-family="Arial" font-size="14">• 무제한 대시보드</text>
+  
+  <!-- 연간 구독 카드 버튼 -->
+  <rect x="70" y="1350" width="235" height="40" fill="white" stroke="black" stroke-width="1"/>
+  <text x="187" y="1375" font-family="Arial" font-size="14" text-anchor="middle">플랜 변경</text>
+</svg>

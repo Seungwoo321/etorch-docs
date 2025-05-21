@@ -1,0 +1,159 @@
+<svg width="375" height="1400" xmlns="http://www.w3.org/2000/svg">
+  <!-- 헤더 -->
+  <rect x="0" y="0" width="375" height="60" fill="white" stroke="black" stroke-width="1"/>
+  <text x="16" y="35" font-family="Arial" font-size="18">E-Torch</text>
+  
+  <!-- 햄버거 메뉴 아이콘 -->
+  <rect x="335" y="20" width="24" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="339" y1="24" x2="355" y2="24" stroke="black" stroke-width="1"/>
+  <line x1="339" y1="30" x2="355" y2="30" stroke="black" stroke-width="1"/>
+  <line x1="339" y1="36" x2="355" y2="36" stroke="black" stroke-width="1"/>
+  
+  <!-- 대시보드 제목 및 설명 영역 -->
+  <rect x="0" y="60" width="375" height="70" fill="white" stroke="black" stroke-width="1"/>
+  <text x="16" y="85" font-family="Arial" font-size="18">경제 동향 대시보드</text>
+  <text x="16" y="105" font-family="Arial" font-size="13">주요 경제 지표들의 최신 동향</text>
+  <text x="16" y="120" font-family="Arial" font-size="11">최종 업데이트: 2025-05-20 14:30</text>
+  
+  <!-- 대시보드 제어 도구 (개선된 레이아웃) -->
+  <rect x="0" y="130" width="375" height="120" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 첫 번째 줄: 기간과 주기 (좌측 정렬로 수정) -->
+  <text x="16" y="150" font-family="Arial" font-size="12">기간:</text>
+  <rect x="16" y="155" width="110" height="36" fill="white" stroke="black" stroke-width="1"/>
+  <text x="24" y="177" font-family="Arial" font-size="12">최근 1년</text>
+  
+  <text x="138" y="150" font-family="Arial" font-size="12">주기:</text>
+  <rect x="138" y="155" width="80" height="36" fill="white" stroke="black" stroke-width="1"/>
+  <text x="146" y="177" font-family="Arial" font-size="12">월간(M)</text>
+  
+  <rect x="230" y="155" width="129" height="36" fill="white" stroke="black" stroke-width="1"/>
+  <text x="294" y="177" font-family="Arial" font-size="12" text-anchor="middle">새로고침</text>
+  
+  <!-- 두 번째 줄: 액션 버튼들 (터치 타겟 크기 개선) -->
+  <rect x="16" y="201" width="105" height="36" fill="white" stroke="black" stroke-width="1"/>
+  <text x="68" y="224" font-family="Arial" font-size="13" text-anchor="middle">공유</text>
+  
+  <rect x="135" y="201" width="105" height="36" fill="white" stroke="black" stroke-width="1"/>
+  <text x="187" y="224" font-family="Arial" font-size="13" text-anchor="middle">편집</text>
+  
+  <rect x="254" y="201" width="105" height="36" fill="white" stroke="black" stroke-width="1"/>
+  <text x="306" y="224" font-family="Arial" font-size="13" text-anchor="middle">내보내기</text>
+  
+  <!-- 대시보드 그리드 영역 (y="250"으로 조정하여 제어 도구와 맞닿음) -->
+  <rect x="0" y="250" width="375" height="1150" fill="white" stroke="black" stroke-width="1" stroke-dasharray="3,3"/>
+  
+  <!-- 차트 위젯 1: GDP 성장률 추이 (y="265"로 조정 - 상단 외부여백 15px) -->
+  <rect x="16" y="265" width="343" height="180" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="16" y="265" width="343" height="25" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="24" y="282" font-family="Arial" font-size="13">GDP 성장률 추이</text>
+  <circle cx="348" cy="277" r="6" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="345" y1="274" x2="351" y2="280" stroke="black" stroke-width="1"/>
+  <line x1="345" y1="280" x2="351" y2="274" stroke="black" stroke-width="1"/>
+  
+  <!-- GDP 차트 영역 (내부 여백 원래대로) -->
+  <polyline points="30,390 50,380 70,385 90,375 110,370 130,365 150,370 170,355 190,360 210,350 230,345 250,350 270,335 290,330 310,335 330,320 345,325" fill="none" stroke="black" stroke-width="2"/>
+  <line x1="30" y1="425" x2="345" y2="425" stroke="black" stroke-width="1"/>
+  <line x1="30" y1="310" x2="30" y2="425" stroke="black" stroke-width="1"/>
+  
+  <!-- 차트 위젯 2: 소비자물가 등락률 (y="460"으로 조정) -->
+  <rect x="16" y="460" width="343" height="180" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="16" y="460" width="343" height="25" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="24" y="477" font-family="Arial" font-size="13">소비자물가 등락률</text>
+  <circle cx="348" cy="472" r="6" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="345" y1="469" x2="351" y2="475" stroke="black" stroke-width="1"/>
+  <line x1="345" y1="475" x2="351" y2="469" stroke="black" stroke-width="1"/>
+  
+  <!-- 물가 차트 영역 (내부 여백 원래대로) -->
+  <polyline points="30,560 50,565 70,570 90,575 110,570 130,565 150,560 170,565 190,570 210,560 230,555 250,560 270,555 290,550 310,555 330,545 345,550" fill="none" stroke="black" stroke-width="2"/>
+  <line x1="30" y1="620" x2="345" y2="620" stroke="black" stroke-width="1"/>
+  <line x1="30" y1="505" x2="30" y2="620" stroke="black" stroke-width="1"/>
+  
+  <!-- 차트 위젯 3: 기준금리 추이 (y="655"로 조정) -->
+  <rect x="16" y="655" width="343" height="160" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="16" y="655" width="343" height="25" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="24" y="672" font-family="Arial" font-size="13">기준금리 추이</text>
+  <circle cx="348" cy="667" r="6" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="345" y1="664" x2="351" y2="670" stroke="black" stroke-width="1"/>
+  <line x1="345" y1="670" x2="351" y2="664" stroke="black" stroke-width="1"/>
+  
+  <!-- 금리 차트 영역 (내부 여백 원래대로) -->
+  <polyline points="30,760 60,760 90,760 120,760 150,745 180,745 210,745 240,745 270,730 300,730 330,730 345,730" fill="none" stroke="black" stroke-width="2"/>
+  <line x1="30" y1="795" x2="345" y2="795" stroke="black" stroke-width="1"/>
+  <line x1="30" y1="700" x2="30" y2="795" stroke="black" stroke-width="1"/>
+  
+  <!-- 차트 위젯 4: 주요 경제지표 요약 (y="830"으로 조정) -->
+  <rect x="16" y="830" width="343" height="160" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="16" y="830" width="343" height="25" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="24" y="847" font-family="Arial" font-size="13">주요 경제지표 요약</text>
+  <circle cx="348" cy="842" r="6" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="345" y1="839" x2="351" y2="845" stroke="black" stroke-width="1"/>
+  <line x1="345" y1="845" x2="351" y2="839" stroke="black" stroke-width="1"/>
+  
+  <!-- 요약 테이블 (내부 여백 원래대로) -->
+  <line x1="16" y1="870" x2="359" y2="870" stroke="black" stroke-width="1"/>
+  <line x1="16" y1="890" x2="359" y2="890" stroke="black" stroke-width="1"/>
+  <line x1="16" y1="910" x2="359" y2="910" stroke="black" stroke-width="1"/>
+  <line x1="16" y1="930" x2="359" y2="930" stroke="black" stroke-width="1"/>
+  <line x1="16" y1="950" x2="359" y2="950" stroke="black" stroke-width="1"/>
+  <line x1="16" y1="970" x2="359" y2="970" stroke="black" stroke-width="1"/>
+  <line x1="200" y1="870" x2="200" y2="970" stroke="black" stroke-width="1"/>
+  <line x1="280" y1="870" x2="280" y2="970" stroke="black" stroke-width="1"/>
+  
+  <text x="24" y="885" font-family="Arial" font-size="11">GDP 성장률</text>
+  <text x="24" y="905" font-family="Arial" font-size="11">소비자물가 등락률</text>
+  <text x="24" y="925" font-family="Arial" font-size="11">기준금리</text>
+  <text x="24" y="945" font-family="Arial" font-size="11">KOSPI 지수</text>
+  <text x="24" y="965" font-family="Arial" font-size="11">원/달러 환율</text>
+  
+  <text x="208" y="885" font-family="Arial" font-size="11">2.6%</text>
+  <text x="208" y="905" font-family="Arial" font-size="11">3.2%</text>
+  <text x="208" y="925" font-family="Arial" font-size="11">3.5%</text>
+  <text x="208" y="945" font-family="Arial" font-size="11">2,847.52</text>
+  <text x="208" y="965" font-family="Arial" font-size="11">1,315.40</text>
+  
+  <text x="288" y="885" font-family="Arial" font-size="10">전년대비</text>
+  <text x="288" y="905" font-family="Arial" font-size="10">전년동월비</text>
+  <text x="288" y="925" font-family="Arial" font-size="10">현재수준</text>
+  <text x="288" y="945" font-family="Arial" font-size="10">전일대비</text>
+  <text x="288" y="965" font-family="Arial" font-size="10">전일대비</text>
+  
+  <!-- 차트 위젯 5: 환율 동향 (y="1005"로 조정) -->
+  <rect x="16" y="1005" width="343" height="160" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="16" y="1005" width="343" height="25" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="24" y="1022" font-family="Arial" font-size="13">원/달러 환율 동향</text>
+  <circle cx="348" cy="1017" r="6" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="345" y1="1014" x2="351" y2="1020" stroke="black" stroke-width="1"/>
+  <line x1="345" y1="1020" x2="351" y2="1014" stroke="black" stroke-width="1"/>
+  
+  <!-- 환율 차트 영역 (내부 여백 원래대로) -->
+  <polyline points="30,1100 60,1105 90,1102 120,1107 150,1110 180,1105 210,1102 240,1100 270,1097 300,1095 330,1092 345,1090" fill="none" stroke="black" stroke-width="2"/>
+  <line x1="30" y1="1145" x2="345" y2="1145" stroke="black" stroke-width="1"/>
+  <line x1="30" y1="1050" x2="30" y2="1145" stroke="black" stroke-width="1"/>
+  
+  <!-- 텍스트 위젯: 시장 분석 (y="1180"으로 조정) -->
+  <rect x="16" y="1180" width="343" height="140" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="16" y="1180" width="343" height="25" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="24" y="1197" font-family="Arial" font-size="13">시장 분석 요약</text>
+  <circle cx="348" cy="1192" r="6" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="345" y1="1189" x2="351" y2="1195" stroke="black" stroke-width="1"/>
+  <line x1="345" y1="1195" x2="351" y2="1189" stroke="black" stroke-width="1"/>
+  
+  <!-- 텍스트 콘텐츠 영역 (내부 여백 원래대로) -->
+  <line x1="24" y1="1220" x2="351" y2="1220" stroke="lightgray" stroke-width="1"/>
+  <line x1="24" y1="1235" x2="351" y2="1235" stroke="lightgray" stroke-width="1"/>
+  <line x1="24" y1="1250" x2="351" y2="1250" stroke="lightgray" stroke-width="1"/>
+  <line x1="24" y1="1265" x2="351" y2="1265" stroke="lightgray" stroke-width="1"/>
+  <line x1="24" y1="1280" x2="351" y2="1280" stroke="lightgray" stroke-width="1"/>
+  <line x1="24" y1="1295" x2="351" y2="1295" stroke="lightgray" stroke-width="1"/>
+  
+  <text x="24" y="1215" font-family="Arial" font-size="11">• 경제성장률 안정세 유지</text>
+  <text x="24" y="1230" font-family="Arial" font-size="11">• 물가상승률 목표 수준 근접</text>
+  <text x="24" y="1245" font-family="Arial" font-size="11">• 기준금리 동결 전망</text>
+  <text x="24" y="1260" font-family="Arial" font-size="11">• 주식시장 상승세 지속</text>
+  <text x="24" y="1275" font-family="Arial" font-size="11">• 환율 안정화 기조 유지</text>
+  <text x="24" y="1290" font-family="Arial" font-size="11">• 글로벌 리스크 모니터링 필요</text>
+  
+  <!-- 하단 여백 -->
+  <rect x="0" y="1325" width="375" height="75" fill="white" stroke="none"/>
+</svg>

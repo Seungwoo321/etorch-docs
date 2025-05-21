@@ -1,0 +1,35 @@
+<svg width="1440" height="900" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 -->
+  <rect x="0" y="0" width="1440" height="900" fill="white" stroke="none"/>
+  
+  <!-- 로고와 브랜드 영역 -->
+  <text x="720" y="160" font-family="Arial" font-size="48" text-anchor="middle" fill="black">E-Torch</text>
+  <text x="720" y="210" font-family="Arial" font-size="20" text-anchor="middle" fill="black">경제지표 대시보드 서비스</text>
+  
+  <!-- 로그인 카드 -->
+  <rect x="470" y="260" width="500" height="500" fill="white" stroke="black" stroke-width="1"/>
+  <text x="720" y="320" font-family="Arial" font-size="28" text-anchor="middle" fill="black">로그인</text>
+  <text x="720" y="370" font-family="Arial" font-size="16" text-anchor="middle" fill="black">SNS 계정으로 간편하게 로그인하세요</text>
+  
+  <!-- Google 로그인 버튼 -->
+  <rect x="520" y="420" width="400" height="60" fill="white" stroke="black" stroke-width="1"/>
+  <circle cx="550" cy="450" r="15" fill="white" stroke="black" stroke-width="1"/>
+  <text x="580" y="455" font-family="Arial" font-size="16" fill="black">Google로 로그인</text>
+  
+  <!-- Naver 로그인 버튼 -->
+  <rect x="520" y="500" width="400" height="60" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="535" y="515" width="30" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="580" y="535" font-family="Arial" font-size="16" fill="black">네이버로 로그인</text>
+  
+  <!-- Kakao 로그인 버튼 -->
+  <rect x="520" y="580" width="400" height="60" fill="white" stroke="black" stroke-width="1"/>
+  <circle cx="550" cy="610" r="15" fill="white" stroke="black" stroke-width="1"/>
+  <text x="580" y="615" font-family="Arial" font-size="16" fill="black">카카오로 로그인</text>
+  
+  <!-- 안내 텍스트 -->
+  <text x="720" y="670" font-family="Arial" font-size="12" text-anchor="middle" fill="black">* 자체 회원가입 없이 SNS 계정만으로 서비스를 이용할 수 있습니다.</text>
+  <text x="720" y="690" font-family="Arial" font-size="12" text-anchor="middle" fill="black">* 최소한의 정보만 수집하여 개인정보 보호에 만전을 기합니다.</text>
+  
+  <!-- 푸터 -->
+  <text x="720" y="840" font-family="Arial" font-size="14" text-anchor="middle" fill="black">© 2025 E-Torch. All rights reserved.</text>
+</svg>

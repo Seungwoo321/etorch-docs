@@ -1,0 +1,280 @@
+<svg width="1440" height="900" xmlns="http://www.w3.org/2000/svg">
+  <!-- 헤더 -->
+  <rect x="0" y="0" width="1440" height="60" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 햄버거 메뉴 아이콘 (좌측 사이드바 토글) -->
+  <rect x="15" y="15" width="35" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="20" y1="22" x2="45" y2="22" stroke="black" stroke-width="2"/>
+  <line x1="20" y1="30" x2="45" y2="30" stroke="black" stroke-width="2"/>
+  <line x1="20" y1="38" x2="45" y2="38" stroke="black" stroke-width="2"/>
+  
+  <text x="70" y="35" font-family="Arial" font-size="20">E-Torch</text>
+  <line x1="150" y1="15" x2="150" y2="45" stroke="black" stroke-width="1"/>
+  
+  <!-- 브레드크럼 영역 -->
+  <text x="170" y="35" font-family="Arial" font-size="14">대시보드 > 편집 > 경제 동향 대시보드</text>
+  
+  <!-- 사용자 프로필 영역 (우측) -->
+  <rect x="1320" y="15" width="100" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <circle cx="1335" cy="30" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1355" y="35" font-family="Arial" font-size="12">사용자명</text>
+  
+  <!-- 네비게이션 사이드바 -->
+  <rect x="0" y="60" width="200" height="840" fill="white" stroke="black" stroke-width="1"/>
+  <text x="20" y="90" font-family="Arial" font-size="14">내 대시보드</text>
+  <text x="20" y="120" font-family="Arial" font-size="14">대시보드 탐색</text>
+  <text x="20" y="150" font-family="Arial" font-size="14">설정</text>
+  <line x1="10" y1="170" x2="190" y2="170" stroke="lightgray" stroke-width="1"/>
+  <text x="20" y="860" font-family="Arial" font-size="14">사용자 프로필</text>
+  
+  <!-- 페이지 헤더 영역 -->
+  <rect x="200" y="60" width="1050" height="80" fill="white" stroke="black" stroke-width="1"/>
+  <text x="220" y="90" font-family="Arial" font-size="18">경제 동향 대시보드</text>
+  <text x="220" y="110" font-family="Arial" font-size="12" fill="gray">편집 모드 | 최근 1년 데이터</text>
+  <text x="220" y="125" font-family="Arial" font-size="10" fill="lightgray">최종 수정: 2025-05-21 15:30 | 자동 저장됨</text>
+  
+  <!-- 개선된 컨트롤 영역 - 모든 요소 30px 높이로 통일 -->
+  <rect x="200" y="140" width="1050" height="50" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 그룹 1: 콘텐츠 추가 -->
+  <rect x="220" y="150" width="100" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="270" y="170" font-family="Arial" font-size="12" text-anchor="middle">+ 위젯 추가</text>
+  
+  <line x1="340" y1="152" x2="340" y2="178" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 그룹 2: 글로벌 설정 (기간) -->
+  <text x="355" y="170" font-family="Arial" font-size="12">기간:</text>
+  <rect x="390" y="150" width="120" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="450" y="170" font-family="Arial" font-size="11" text-anchor="middle">최근 1년 ▼</text>
+  
+  <line x1="530" y1="152" x2="530" y2="178" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 그룹 3: 편집 액션 (되돌리기/다시하기) -->
+  <rect x="550" y="150" width="30" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="565" y="170" font-family="Arial" font-size="12" text-anchor="middle">↶</text>
+  
+  <rect x="590" y="150" width="30" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="605" y="170" font-family="Arial" font-size="12" text-anchor="middle">↷</text>
+  
+  <line x1="640" y1="152" x2="640" y2="178" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 그룹 4: 상태 정보 -->
+  <rect x="660" y="150" width="130" height="30" fill="white" stroke="lightgray" stroke-width="1"/>
+  <circle cx="675" cy="165" r="4" fill="green" stroke="none"/>
+  <text x="685" y="170" font-family="Arial" font-size="11">자동 저장됨 (방금 전)</text>
+  
+  <line x1="810" y1="152" x2="810" y2="178" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 그룹 5: 대시보드 메타 설정 -->
+  <rect x="830" y="150" width="110" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="885" y="170" font-family="Arial" font-size="12" text-anchor="middle">대시보드 설정</text>
+  
+  <line x1="960" y1="152" x2="960" y2="178" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 그룹 6: 완료 액션 (우측 정렬) -->
+  <rect x="1090" y="150" width="70" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1125" y="170" font-family="Arial" font-size="12" text-anchor="middle">취소</text>
+  
+  <rect x="1170" y="150" width="70" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1205" y="170" font-family="Arial" font-size="12" text-anchor="middle">저장</text>
+  
+  <!-- 메인 편집 영역 (그리드 레이아웃) -->
+  <rect x="200" y="190" width="1050" height="710" fill="white" stroke="black" stroke-width="1" stroke-dasharray="5,5"/>
+  
+  <!-- 그리드 가이드라인 (12열 그리드) -->
+  <!-- 세로 가이드라인 -->
+  <line x1="288" y1="190" x2="288" y2="900" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <line x1="375" y1="190" x2="375" y2="900" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <line x1="463" y1="190" x2="463" y2="900" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <line x1="550" y1="190" x2="550" y2="900" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <line x1="638" y1="190" x2="638" y2="900" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <line x1="725" y1="190" x2="725" y2="900" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <line x1="813" y1="190" x2="813" y2="900" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <line x1="900" y1="190" x2="900" y2="900" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <line x1="988" y1="190" x2="988" y2="900" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <line x1="1075" y1="190" x2="1075" y2="900" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <line x1="1163" y1="190" x2="1163" y2="900" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  
+  <!-- 가로 가이드라인 -->
+  <line x1="200" y1="310" x2="1250" y2="310" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <line x1="200" y1="430" x2="1250" y2="430" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <line x1="200" y1="550" x2="1250" y2="550" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <line x1="200" y1="670" x2="1250" y2="670" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <line x1="200" y1="790" x2="1250" y2="790" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  
+  <!-- 위젯 1: GDP 성장률 차트 (6열 x 2행) -->
+  <rect x="220" y="210" width="495" height="230" fill="white" stroke="black" stroke-width="2"/>
+  <rect x="220" y="210" width="495" height="30" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="230" y="230" font-family="Arial" font-size="14">GDP 성장률 추이</text>
+  
+  <!-- 위젯 컨트롤 아이콘들 -->
+  <circle cx="691" cy="225" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="688" y="229" font-family="Arial" font-size="10">⚙</text>
+  
+  <circle cx="676" cy="225" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="673" y="229" font-family="Arial" font-size="10">↗</text>
+  
+  <circle cx="661" cy="225" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="658" y="229" font-family="Arial" font-size="10">✕</text>
+  
+  <!-- 차트 영역 -->
+  <rect x="230" y="250" width="475" height="180" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <polyline points="240,390 265,370 290,380 315,360 340,350 365,340 390,350 415,320 440,330 465,310 490,300 515,310 540,290" fill="none" stroke="black" stroke-width="2"/>
+  <line x1="240" y1="410" x2="695" y2="410" stroke="black" stroke-width="1"/>
+  <line x1="240" y1="270" x2="240" y2="410" stroke="black" stroke-width="1"/>
+  
+  <!-- 리사이즈 핸들 -->
+  <rect x="706" y="431" width="9" height="9" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 위젯 2: 소비자물가 차트 (6열 x 2행) -->
+  <rect x="735" y="210" width="495" height="230" fill="white" stroke="black" stroke-width="2"/>
+  <rect x="735" y="210" width="495" height="30" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="745" y="230" font-family="Arial" font-size="14">소비자물가 등락률</text>
+  
+  <!-- 위젯 컨트롤 아이콘들 -->
+  <circle cx="1206" cy="225" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1203" y="229" font-family="Arial" font-size="10">⚙</text>
+  
+  <circle cx="1191" cy="225" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1188" y="229" font-family="Arial" font-size="10">↗</text>
+  
+  <circle cx="1176" cy="225" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1173" y="229" font-family="Arial" font-size="10">✕</text>
+  
+  <!-- 차트 영역 -->
+  <rect x="745" y="250" width="475" height="180" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <polyline points="755,360 780,370 805,380 830,390 855,370 880,360 905,350 930,360 955,370 980,350 1005,340 1030,350 1055,340" fill="none" stroke="black" stroke-width="2"/>
+  <line x1="755" y1="410" x2="1210" y2="410" stroke="black" stroke-width="1"/>
+  <line x1="755" y1="270" x2="755" y2="410" stroke="black" stroke-width="1"/>
+  
+  <!-- 리사이즈 핸들 -->
+  <rect x="1221" y="431" width="9" height="9" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 위젯 3: 기준금리 차트 (8열 x 2행) -->
+  <rect x="220" y="460" width="660" height="230" fill="white" stroke="black" stroke-width="2"/>
+  <rect x="220" y="460" width="660" height="30" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="230" y="480" font-family="Arial" font-size="14">기준금리 추이</text>
+  
+  <!-- 위젯 컨트롤 아이콘들 -->
+  <circle cx="856" cy="475" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="853" y="479" font-family="Arial" font-size="10">⚙</text>
+  
+  <circle cx="841" cy="475" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="838" y="479" font-family="Arial" font-size="10">↗</text>
+  
+  <circle cx="826" cy="475" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="823" y="479" font-family="Arial" font-size="10">✕</text>
+  
+  <!-- 차트 영역 -->
+  <rect x="230" y="500" width="640" height="180" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <polyline points="240,620 275,620 310,620 345,620 380,600 415,600 450,600 485,600 520,580 555,580 590,580 625,580 660,580" fill="none" stroke="black" stroke-width="3"/>
+  <line x1="240" y1="660" x2="860" y2="660" stroke="black" stroke-width="1"/>
+  <line x1="240" y1="520" x2="240" y2="660" stroke="black" stroke-width="1"/>
+  
+  <!-- 리사이즈 핸들 -->
+  <rect x="871" y="681" width="9" height="9" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 위젯 4: 텍스트 위젯 (4열 x 2행) -->
+  <rect x="900" y="460" width="330" height="230" fill="white" stroke="black" stroke-width="2"/>
+  <rect x="900" y="460" width="330" height="30" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="910" y="480" font-family="Arial" font-size="14">주요 경제지표 요약</text>
+  
+  <!-- 위젯 컨트롤 아이콘들 -->
+  <circle cx="1206" cy="475" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1203" y="479" font-family="Arial" font-size="10">⚙</text>
+  
+  <circle cx="1191" cy="475" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1188" y="479" font-family="Arial" font-size="10">↗</text>
+  
+  <circle cx="1176" cy="475" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1173" y="479" font-family="Arial" font-size="10">✕</text>
+  
+  <!-- 테이블 영역 -->
+  <rect x="910" y="500" width="310" height="180" fill="white" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 테이블 헤더 -->
+  <line x1="910" y1="530" x2="1220" y2="530" stroke="black" stroke-width="1"/>
+  <line x1="1065" y1="500" x2="1065" y2="680" stroke="lightgray" stroke-width="1"/>
+  
+  <text x="920" y="520" font-family="Arial" font-size="12">지표명</text>
+  <text x="1075" y="520" font-family="Arial" font-size="12">현재값</text>
+  
+  <!-- 테이블 데이터 -->
+  <line x1="910" y1="555" x2="1220" y2="555" stroke="lightgray" stroke-width="1"/>
+  <line x1="910" y1="580" x2="1220" y2="580" stroke="lightgray" stroke-width="1"/>
+  <line x1="910" y1="605" x2="1220" y2="605" stroke="lightgray" stroke-width="1"/>
+  <line x1="910" y1="630" x2="1220" y2="630" stroke="lightgray" stroke-width="1"/>
+  
+  <text x="920" y="545" font-family="Arial" font-size="12">GDP 성장률</text>
+  <text x="1075" y="545" font-family="Arial" font-size="12">2.6%</text>
+  
+  <text x="920" y="570" font-family="Arial" font-size="12">소비자물가</text>
+  <text x="1075" y="570" font-family="Arial" font-size="12">3.2%</text>
+  
+  <text x="920" y="595" font-family="Arial" font-size="12">기준금리</text>
+  <text x="1075" y="595" font-family="Arial" font-size="12">3.5%</text>
+  
+  <text x="920" y="620" font-family="Arial" font-size="12">환율(USD)</text>
+  <text x="1075" y="620" font-family="Arial" font-size="12">1,320원</text>
+  
+  <!-- 리사이즈 핸들 -->
+  <rect x="1221" y="681" width="9" height="9" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 새 위젯 추가 영역 표시 -->
+  <rect x="220" y="710" width="1010" height="170" fill="white" stroke="lightgray" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="725" y="790" font-family="Arial" font-size="16" text-anchor="middle" fill="gray">+ 새 위젯 추가 영역</text>
+  <text x="725" y="810" font-family="Arial" font-size="12" text-anchor="middle" fill="lightgray">위젯을 드래그하거나 '+' 버튼을 클릭하여 추가하세요</text>
+  
+  <!-- 우측 속성 패널 -->
+  <rect x="1250" y="60" width="190" height="840" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 속성 패널 헤더 -->
+  <rect x="1250" y="60" width="190" height="40" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="1270" y="85" font-family="Arial" font-size="16">위젯 속성</text>
+  
+  <!-- 선택된 위젯 정보 -->
+  <rect x="1270" y="120" width="150" height="30" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="1280" y="140" font-family="Arial" font-size="14">선택: GDP 성장률 차트</text>
+  
+  <!-- 위젯 정보 -->
+  <text x="1270" y="175" font-family="Arial" font-size="14">위젯 정보</text>
+  
+  <text x="1270" y="200" font-family="Arial" font-size="12">타입</text>
+  <rect x="1270" y="210" width="150" height="20" fill="lightgray" stroke="black" stroke-width="1"/>
+  <text x="1280" y="222" font-family="Arial" font-size="10">차트 위젯</text>
+  
+  <text x="1270" y="245" font-family="Arial" font-size="12">차트 유형</text>
+  <rect x="1270" y="255" width="150" height="20" fill="lightgray" stroke="black" stroke-width="1"/>
+  <text x="1280" y="267" font-family="Arial" font-size="10">시계열 차트</text>
+  
+  <!-- 레이아웃 속성 -->
+  <line x1="1270" y1="290" x2="1420" y2="290" stroke="lightgray" stroke-width="1"/>
+  <text x="1270" y="310" font-family="Arial" font-size="14">레이아웃</text>
+  
+  <text x="1270" y="335" font-family="Arial" font-size="12">위치 X</text>
+  <rect x="1270" y="345" width="70" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1280" y="357" font-family="Arial" font-size="10">0</text>
+  
+  <text x="1350" y="335" font-family="Arial" font-size="12">Y</text>
+  <rect x="1350" y="345" width="70" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1360" y="357" font-family="Arial" font-size="10">0</text>
+  
+  <text x="1270" y="380" font-family="Arial" font-size="12">크기 W</text>
+  <rect x="1270" y="390" width="70" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1280" y="402" font-family="Arial" font-size="10">6</text>
+  
+  <text x="1350" y="380" font-family="Arial" font-size="12">H</text>
+  <rect x="1350" y="390" width="70" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1360" y="402" font-family="Arial" font-size="10">2</text>
+  
+  <!-- 상세 편집 -->
+  <line x1="1270" y1="430" x2="1420" y2="430" stroke="lightgray" stroke-width="1"/>
+  <text x="1270" y="450" font-family="Arial" font-size="14">상세 편집</text>
+  
+  <rect x="1270" y="470" width="150" height="35" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1345" y="492" font-family="Arial" font-size="12" text-anchor="middle">위젯 편집</text>
+  
+  <!-- 위젯 삭제 -->
+  <rect x="1270" y="520" width="150" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1345" y="540" font-family="Arial" font-size="12" text-anchor="middle">위젯 삭제</text>
+</svg>

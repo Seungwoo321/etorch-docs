@@ -1,0 +1,41 @@
+<svg width="1024" height="800" xmlns="http://www.w3.org/2000/svg">
+  <!-- 헤더 -->
+  <rect x="0" y="0" width="1024" height="60" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 햄버거 메뉴 아이콘 (좌측 사이드바 토글) -->
+  <rect x="15" y="15" width="35" height="30" fill="white" stroke="black" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="32" y="35" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">☰</text>
+  
+  <text x="70" y="35" font-family="Arial" font-size="20">E-Torch</text>
+  <line x1="150" y1="15" x2="150" y2="45" stroke="black" stroke-width="1"/>
+  
+  <!-- 브레드크럼 영역 -->
+  <rect x="170" y="15" width="550" height="30" fill="white" stroke="black" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="445" y="35" font-family="Arial" font-size="14" text-anchor="middle" fill="gray">브레드크럼 영역</text>
+  
+  <!-- 사용자 프로필 영역 -->
+  <rect x="740" y="15" width="260" height="30" fill="white" stroke="black" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="870" y="35" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">사용자 프로필</text>
+  
+  <!-- 페이지 헤더 영역 -->
+  <rect x="0" y="60" width="1024" height="80" fill="white" stroke="black" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="512" y="100" font-family="Arial" font-size="16" text-anchor="middle" fill="gray">헤더 영역</text>
+  <text x="512" y="120" font-family="Arial" font-size="12" text-anchor="middle" fill="lightgray">제목, 설명, 메타데이터</text>
+  
+  <!-- 제어 도구 영역 -->
+  <rect x="0" y="140" width="1024" height="60" fill="white" stroke="black" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="512" y="170" font-family="Arial" font-size="16" text-anchor="middle" fill="gray">컨트롤 영역</text>
+  <text x="512" y="190" font-family="Arial" font-size="12" text-anchor="middle" fill="lightgray">기간, 주기, 새로고침, 공유/편집/내보내기</text>
+  
+  <!-- 콘텐츠 영역 (2열 그리드) -->
+  <rect x="0" y="200" width="1024" height="600" fill="white" stroke="black" stroke-width="1" stroke-dasharray="5,5"/>
+  <text x="512" y="490" font-family="Arial" font-size="18" text-anchor="middle" fill="gray">콘텐츠 영역</text>
+  <text x="512" y="515" font-family="Arial" font-size="14" text-anchor="middle" fill="lightgray">1024px × 600px</text>
+  
+  <!-- 좌측 열 구분선 -->
+  <line x1="512" y1="200" x2="512" y2="800" stroke="lightgray" stroke-width="1" stroke-dasharray="3,3"/>
+  
+  <!-- 접힌 사이드바 표시 (좌측 보조선) -->
+  <line x1="5" y1="60" x2="5" y2="800" stroke="gray" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="12" y="400" font-family="Arial" font-size="10" fill="gray" transform="rotate(-90 12 400)">사이드바 (접힘)</text>
+</svg>
