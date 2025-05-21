@@ -1,0 +1,65 @@
+<svg width="375" height="800" xmlns="http://www.w3.org/2000/svg">
+  <!-- 전체 배경 -->
+  <rect x="0" y="0" width="375" height="800" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 상단 배경 영역 -->
+  <rect x="0" y="0" width="375" height="120" fill="white" stroke="none"/>
+  
+  <!-- 간소화된 배경 차트 (상단) -->
+  <polyline points="20,30 80,20 140,40 200,15 260,35 320,10 355,25" fill="none" stroke="lightgray" stroke-width="1" stroke-dasharray="3,3"/>
+  <polyline points="20,60 80,70 140,50 200,65 260,45 320,60 355,40" fill="none" stroke="lightgray" stroke-width="1" stroke-dasharray="3,3"/>
+  <polyline points="20,90 80,80 140,100 200,75 260,95 320,85 355,95" fill="none" stroke="lightgray" stroke-width="1" stroke-dasharray="3,3"/>
+  
+  <!-- 로그인 폼 영역 -->
+  <rect x="30" y="140" width="315" height="520" fill="white" stroke="none"/>
+  
+  <!-- E-Torch 로고 -->
+  <text x="187" y="200" font-family="Arial" font-size="28" font-weight="bold" text-anchor="middle" fill="black">E-Torch</text>
+  
+  <!-- 서비스 비전 -->
+  <text x="187" y="230" font-family="Arial" font-size="14" text-anchor="middle" fill="gray">경제에 횃불을 더해 길을 밝혀준다</text>
+  
+  <!-- 서비스 설명 -->
+  <text x="187" y="255" font-family="Arial" font-size="12" text-anchor="middle" fill="lightgray">복잡한 경제 데이터를 누구나 쉽게</text>
+  <text x="187" y="270" font-family="Arial" font-size="12" text-anchor="middle" fill="lightgray">이해하고 활용할 수 있도록 시각화</text>
+  
+  <!-- 로그인 안내 -->
+  <text x="187" y="310" font-family="Arial" font-size="14" text-anchor="middle" fill="black">SNS 계정으로 시작하기</text>
+  
+  <!-- Google 로그인 버튼 (터치 최적화) -->
+  <rect x="50" y="340" width="275" height="56" fill="white" stroke="black" stroke-width="2"/>
+  <circle cx="80" cy="368" r="14" fill="white" stroke="black" stroke-width="1"/>
+  <text x="80" y="373" font-family="Arial" font-size="14" text-anchor="middle" fill="black">G</text>
+  <text x="187" y="373" font-family="Arial" font-size="16" text-anchor="middle" fill="black">Google 계정으로 로그인</text>
+  
+  <!-- 네이버 로그인 버튼 -->
+  <rect x="50" y="410" width="275" height="56" fill="white" stroke="black" stroke-width="2"/>
+  <circle cx="80" cy="438" r="14" fill="white" stroke="black" stroke-width="1"/>
+  <text x="80" y="443" font-family="Arial" font-size="14" text-anchor="middle" fill="black">N</text>
+  <text x="187" y="443" font-family="Arial" font-size="16" text-anchor="middle" fill="black">네이버 로그인</text>
+  
+  <!-- 카카오 로그인 버튼 -->
+  <rect x="50" y="480" width="275" height="56" fill="white" stroke="black" stroke-width="2"/>
+  <circle cx="80" cy="508" r="14" fill="white" stroke="black" stroke-width="1"/>
+  <text x="80" y="513" font-family="Arial" font-size="14" text-anchor="middle" fill="black">K</text>
+  <text x="187" y="513" font-family="Arial" font-size="16" text-anchor="middle" fill="black">카카오 로그인</text>
+  
+  <!-- 하단 링크 영역 -->
+  <line x1="70" y1="580" x2="305" y2="580" stroke="lightgray" stroke-width="1"/>
+  
+  <text x="147" y="610" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">개인정보처리방침</text>
+  <text x="187" y="610" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">|</text>
+  <text x="227" y="610" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">이용약관</text>
+  
+  <!-- 하단 배경 영역 -->
+  <rect x="0" y="680" width="375" height="100" fill="white" stroke="none"/>
+  
+  <!-- 간소화된 배경 차트 (하단) -->
+  <polyline points="20,700 80,720 140,690 200,710 260,680 320,700 355,680" fill="none" stroke="lightgray" stroke-width="1" stroke-dasharray="3,3"/>
+  <polyline points="20,740 80,730 140,750 200,720 260,740 320,720 355,740" fill="none" stroke="lightgray" stroke-width="1" stroke-dasharray="3,3"/>
+  <polyline points="20,770 80,760 140,780 200,750 260,770 320,750 355,770" fill="none" stroke="lightgray" stroke-width="1" stroke-dasharray="3,3"/>
+  
+  <!-- 하단 안전 영역 (모바일 제스처/홈 인디케이터) -->
+  <rect x="0" y="780" width="375" height="20" fill="white" stroke="black" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="187" y="793" font-family="Arial" font-size="10" text-anchor="middle" fill="lightgray">안전 영역</text>
+</svg>

@@ -1,0 +1,62 @@
+<svg width="1024" height="800" xmlns="http://www.w3.org/2000/svg">
+  <!-- 전체 배경 -->
+  <rect x="0" y="0" width="1024" height="800" fill="white" stroke="none"/>
+  
+  <!-- 배경 차트 영역 (상단) -->
+  <rect x="0" y="0" width="1024" height="200" fill="white" stroke="black" stroke-width="1" stroke-dasharray="5,5"/>
+  <text x="512" y="90" font-family="Arial" font-size="16" text-anchor="middle" fill="gray">배경 이미지 영역</text>
+  <text x="512" y="110" font-family="Arial" font-size="12" text-anchor="middle" fill="lightgray">경제 차트/그래프 배경</text>
+  
+  <!-- 차트 모양 표시 (상단 배경) -->
+  <polyline points="50,50 150,30 250,70 350,20 450,60 550,10 650,50 750,5 850,40 950,15" fill="none" stroke="lightgray" stroke-width="2" stroke-dasharray="3,3"/>
+  <polyline points="50,120 150,140 250,90 350,130 450,80 550,120 650,70 750,110 850,60 950,100" fill="none" stroke="lightgray" stroke-width="2" stroke-dasharray="3,3"/>
+  <polyline points="50,160 150,140 250,180 350,120 450,160 550,100 650,140 750,80 850,120 950,60" fill="none" stroke="lightgray" stroke-width="2" stroke-dasharray="3,3"/>
+  
+  <!-- 로그인 폼 중앙 정렬 컨테이너 -->
+  <rect x="312" y="220" width="400" height="480" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- E-Torch 로고 -->
+  <text x="512" y="280" font-family="Arial" font-size="32" font-weight="bold" text-anchor="middle" fill="black">E-Torch</text>
+  
+  <!-- 서비스 비전 -->
+  <text x="512" y="315" font-family="Arial" font-size="16" text-anchor="middle" fill="gray">경제에 횃불을 더해 길을 밝혀준다</text>
+  
+  <!-- 서비스 설명 -->
+  <text x="512" y="340" font-family="Arial" font-size="14" text-anchor="middle" fill="lightgray">복잡한 경제 데이터를 누구나 쉽게</text>
+  <text x="512" y="358" font-family="Arial" font-size="14" text-anchor="middle" fill="lightgray">이해하고 활용할 수 있도록 시각화</text>
+  
+  <!-- 로그인 안내 -->
+  <text x="512" y="395" font-family="Arial" font-size="14" text-anchor="middle" fill="black">SNS 계정으로 시작하기</text>
+  
+  <!-- Google 로그인 버튼 -->
+  <rect x="332" y="420" width="360" height="50" fill="white" stroke="black" stroke-width="2"/>
+  <circle cx="362" cy="445" r="12" fill="white" stroke="black" stroke-width="1"/>
+  <text x="362" y="449" font-family="Arial" font-size="12" text-anchor="middle" fill="black">G</text>
+  <text x="512" y="450" font-family="Arial" font-size="16" text-anchor="middle" fill="black">Google 계정으로 로그인</text>
+  
+  <!-- 네이버 로그인 버튼 -->
+  <rect x="332" y="490" width="360" height="50" fill="white" stroke="black" stroke-width="2"/>
+  <circle cx="362" cy="515" r="12" fill="white" stroke="black" stroke-width="1"/>
+  <text x="362" y="519" font-family="Arial" font-size="12" text-anchor="middle" fill="black">N</text>
+  <text x="512" y="520" font-family="Arial" font-size="16" text-anchor="middle" fill="black">네이버 로그인</text>
+  
+  <!-- 카카오 로그인 버튼 -->
+  <rect x="332" y="560" width="360" height="50" fill="white" stroke="black" stroke-width="2"/>
+  <circle cx="362" cy="585" r="12" fill="white" stroke="black" stroke-width="1"/>
+  <text x="362" y="589" font-family="Arial" font-size="12" text-anchor="middle" fill="black">K</text>
+  <text x="512" y="590" font-family="Arial" font-size="16" text-anchor="middle" fill="black">카카오 로그인</text>
+  
+  <!-- 하단 링크 영역 -->
+  <line x1="352" y1="640" x2="672" y2="640" stroke="lightgray" stroke-width="1"/>
+  
+  <text x="462" y="670" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">개인정보처리방침</text>
+  <text x="512" y="670" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">|</text>
+  <text x="562" y="670" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">이용약관</text>
+  
+  <!-- 배경 차트 영역 (하단) -->
+  <rect x="0" y="720" width="1024" height="80" fill="white" stroke="black" stroke-width="1" stroke-dasharray="5,5"/>
+  
+  <!-- 차트 모양 표시 (하단 배경) -->
+  <polyline points="50,740 150,760 250,730 350,770 450,720 550,760 650,710 750,750 850,700 950,740" fill="none" stroke="lightgray" stroke-width="2" stroke-dasharray="3,3"/>
+  <polyline points="50,780 150,770 250,790 350,760 450,780 550,750 650,770 750,740 850,760 950,730" fill="none" stroke="lightgray" stroke-width="2" stroke-dasharray="3,3"/>
+</svg>

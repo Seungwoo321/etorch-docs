@@ -1,0 +1,61 @@
+<svg width="1440" height="900" xmlns="http://www.w3.org/2000/svg">
+  <!-- 전체 배경 -->
+  <rect x="0" y="0" width="1440" height="900" fill="white" stroke="none"/>
+  
+  <!-- 좌측 로그인 폼 영역 -->
+  <rect x="0" y="0" width="720" height="900" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 우측 배경 이미지 영역 -->
+  <rect x="720" y="0" width="720" height="900" fill="white" stroke="black" stroke-width="1" stroke-dasharray="5,5"/>
+  <text x="1080" y="440" font-family="Arial" font-size="18" text-anchor="middle" fill="gray">배경 이미지 영역</text>
+  <text x="1080" y="460" font-family="Arial" font-size="14" text-anchor="middle" fill="lightgray">경제 차트/그래프 배경</text>
+  
+  <!-- 차트 모양 표시 (배경 영역 내부) -->
+  <polyline points="750,250 800,230 850,270 900,200 950,240 1000,180 1050,220 1100,160 1150,200 1200,140 1250,180 1300,120 1350,160 1400,100" fill="none" stroke="lightgray" stroke-width="2" stroke-dasharray="3,3"/>
+  <polyline points="750,350 800,380 850,320 900,360 950,300 1000,340 1050,280 1100,320 1150,260 1200,300 1250,240 1300,280 1350,220 1400,260" fill="none" stroke="lightgray" stroke-width="2" stroke-dasharray="3,3"/>
+  <polyline points="750,450 800,420 850,460 900,400 950,440 1000,380 1050,420 1100,360 1150,400 1200,340 1250,380 1300,320 1350,360 1400,300" fill="none" stroke="lightgray" stroke-width="2" stroke-dasharray="3,3"/>
+  
+  <!-- 로그인 폼 중앙 정렬 컨테이너 -->
+  <rect x="160" y="200" width="400" height="500" fill="white" stroke="none"/>
+  
+  <!-- E-Torch 로고 -->
+  <text x="360" y="280" font-family="Arial" font-size="32" font-weight="bold" text-anchor="middle" fill="black">E-Torch</text>
+  
+  <!-- 서비스 비전 -->
+  <text x="360" y="315" font-family="Arial" font-size="16" text-anchor="middle" fill="gray">경제에 횃불을 더해 길을 밝혀준다</text>
+  
+  <!-- 서비스 설명 -->
+  <text x="360" y="340" font-family="Arial" font-size="14" text-anchor="middle" fill="lightgray">복잡한 경제 데이터를 누구나 쉽게</text>
+  <text x="360" y="358" font-family="Arial" font-size="14" text-anchor="middle" fill="lightgray">이해하고 활용할 수 있도록 시각화</text>
+  
+  <!-- 로그인 안내 -->
+  <text x="360" y="395" font-family="Arial" font-size="14" text-anchor="middle" fill="black">SNS 계정으로 시작하기</text>
+  
+  <!-- Google 로그인 버튼 -->
+  <rect x="200" y="420" width="320" height="50" fill="white" stroke="black" stroke-width="2"/>
+  <circle cx="230" cy="445" r="12" fill="white" stroke="black" stroke-width="1"/>
+  <text x="230" y="449" font-family="Arial" font-size="12" text-anchor="middle" fill="black">G</text>
+  <text x="360" y="450" font-family="Arial" font-size="16" text-anchor="middle" fill="black">Google 계정으로 로그인</text>
+  
+  <!-- 네이버 로그인 버튼 -->
+  <rect x="200" y="490" width="320" height="50" fill="white" stroke="black" stroke-width="2"/>
+  <circle cx="230" cy="515" r="12" fill="white" stroke="black" stroke-width="1"/>
+  <text x="230" y="519" font-family="Arial" font-size="12" text-anchor="middle" fill="black">N</text>
+  <text x="360" y="520" font-family="Arial" font-size="16" text-anchor="middle" fill="black">네이버 로그인</text>
+  
+  <!-- 카카오 로그인 버튼 -->
+  <rect x="200" y="560" width="320" height="50" fill="white" stroke="black" stroke-width="2"/>
+  <circle cx="230" cy="585" r="12" fill="white" stroke="black" stroke-width="1"/>
+  <text x="230" y="589" font-family="Arial" font-size="12" text-anchor="middle" fill="black">K</text>
+  <text x="360" y="590" font-family="Arial" font-size="16" text-anchor="middle" fill="black">카카오 로그인</text>
+  
+  <!-- 하단 링크 영역 -->
+  <line x1="200" y1="650" x2="520" y2="650" stroke="lightgray" stroke-width="1"/>
+  
+  <text x="310" y="680" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">개인정보처리방침</text>
+  <text x="360" y="680" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">|</text>
+  <text x="410" y="680" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">이용약관</text>
+  
+  <!-- 구분선 (좌측/우측 영역) -->
+  <line x1="720" y1="0" x2="720" y2="900" stroke="black" stroke-width="1"/>
+</svg>
