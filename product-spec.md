@@ -138,16 +138,17 @@
 
 ### 4.3 차트 에디터 화면
 
-- **상단 제어**: 차트 제목, 기간, 주기 설정
-- **미리보기 영역**: 현재 설정의 차트 미리보기
-- **옵션 패널**: 패널, 툴팁, 범례, 축, 스타일 등 옵션
-- **데이터 소스 패널**: 데이터 출처, 지표, 변환 설정
+- **상단 제어**: 위젯 유형 선택, 위젯 제목, 기간, 주기 설정
+- **미리보기 영역**: 현재 설정의 위젯 미리보기
+- **옵션 패널**: 선택된 위젯 유형에 따른 동적 옵션 (패널, 툴팁, 범례, 축, 스타일, 텍스트 등)
+- **데이터 소스 패널**: 데이터 출처, 지표, 변환 설정 (차트형 위젯, 데이터 기반 텍스트 표시 유형만 해당)
 
 ### 4.4 대시보드 편집 화면
 
-- **편집 툴바**: 위젯 추가, 배열, 이동, 저장 버튼
+- **편집 툴바**: 위젯 추가(차트형/텍스트형), 배열, 이동, 저장 버튼
+- **위젯 추가 드롭다운**: 새 위젯 생성, 내 위젯에서 추가, 기존 위젯 복사
 - **그리드 에디터**: 드래그 앤 드롭으로 위젯 배치 및 크기 조절
-- **위젯 속성 패널**: 선택한 위젯의 속성 편집
+- **위젯 속성 패널**: 선택한 위젯의 속성 보기
 
 ## 5. 사용자 흐름
 
@@ -190,7 +191,8 @@ flowchart TD
     H --> D
     
     D --> I{작업 선택}
-    I -->|차트 추가| J[차트 추가 모달]
+    J -->|위젯 추가| J[위젯 추가 모달]
+    J --> Q[위젯 선택]
     I -->|레이아웃 편집| K[레이아웃 편집 모드]
     I -->|시간범위 변경| L[TimeRangeControl]
     I -->|주기 변경| M[PeriodSelector]
@@ -199,17 +201,19 @@ flowchart TD
     I -->|내보내기| P[내보내기 옵션]
 ```
 
-### 5.3 차트 생성 및 편집 흐름
+### 5.3 위젯 생성 및 편집 흐름
 
-```mermaid
+```
 flowchart TD
-    A[ChartEditor 진입] --> B{ChartType 선택}
+    A[WidgetEditor 진입] --> B{위젯 유형 선택}
     B -->|TimeSeries| TS[시계열 차트]
     B -->|BarChart| BC[바 차트]
     B -->|ScatterChart| SC[산점도 차트]
     B -->|RadarChart| RC[레이더 차트]
     B -->|RadialBarChart| RB[방사형 바 차트]
-    
+    B -->|Text-사용자정의| TX1[텍스트 위젯 (사용자 정의)]
+    B -->|Text-데이터기반| TX2[텍스트 위젯 (데이터 기반)]
+
     TS --> C[DataSourcePanel]
     BC --> C
     SC --> C
@@ -226,12 +230,38 @@ flowchart TD
     F3 --> G
     
     G --> H[TransformControls]
-    H --> J[ChartPreview]
+    H --> I[ChartPreview]
     
-    J --> K{OptionsPanel 편집}
-    K --> M[변경사항 적용]
-    M --> S[차트 저장]
-    S --> T[DashboardGrid에 추가]
+    TX1 --> K[CustomContent 편집]
+    TX2 --> L[DataSource 설정]
+    L --> M[DataOperation 선택]
+    M --> N[TextPreview]
+    K --> N
+    
+    I --> O{차트 OptionsPanel 편집}
+    O -->|PanelOptions| P1[타이틀/설명 설정]
+    O -->|TooltipOptions| P2[툴팁 설정]
+    O -->|LegendOptions| P3[범례 설정]
+    O -->|AxisOptions| P4[X/Y축 설정]
+    O -->|StyleOptions| P5[스타일 설정]
+    
+    N --> Q{텍스트 OptionsPanel 편집}
+    Q -->|PanelOptions| R1[타이틀/설명 설정]
+    Q -->|TextOptions| R2[폰트/정렬/색상 설정]
+    Q -->|FormatOptions| R3[숫자 포맷/조건부 서식]
+    
+    P1 --> S[변경사항 적용]
+    P2 --> S
+    P3 --> S
+    P4 --> S
+    P5 --> S
+    R1 --> S
+    R2 --> S
+    R3 --> S
+    
+    S --> T[위젯 저장]
+    T --> U[DashboardGrid에 추가]
+
 ```
 
 ## 6. UI/UX 설계
@@ -350,6 +380,7 @@ E-Torch는 일관된 사용자 경험을 위해 체계적인 디자인 시스템
 ### 10.3 패키지 구조
 
 ```
+
 e-torch/
 ├── apps/                # 애플리케이션
 │   ├── web/            # 웹 애플리케이션
@@ -359,12 +390,14 @@ e-torch/
     ├── eslint-config/  # ESLint 설정
     ├── core/           # 타입, 상수, 인터페이스
     ├── ui/             # UI 컴포넌트
-    ├── charts/         # 차트 컴포넌트
+    ├── widgets/        # 위젯 컴포넌트 (차트형/텍스트형 통합)
+    ├── charts/         # 차트 전용 렌더링 엔진
     ├── dashboard/      # 대시보드 컴포넌트
     ├── data-sources/   # 데이터 소스 연동
     ├── state/          # 상태 관리
     ├── utils/          # 유틸리티 함수
     └── server-api/     # API 경로 및 서버 액션
+
 ```
 
 ### 10.4 성능 최적화 전략
