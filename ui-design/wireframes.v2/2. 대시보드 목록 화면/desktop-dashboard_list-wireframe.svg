@@ -1,0 +1,246 @@
+<svg width="1440" height="900" xmlns="http://www.w3.org/2000/svg">
+  <!-- 헤더 -->
+  <rect x="0" y="0" width="1440" height="60" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 햄버거 메뉴 아이콘 (좌측 사이드바 토글) -->
+  <rect x="15" y="15" width="35" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="20" y1="22" x2="45" y2="22" stroke="black" stroke-width="2"/>
+  <line x1="20" y1="30" x2="45" y2="30" stroke="black" stroke-width="2"/>
+  <line x1="20" y1="38" x2="45" y2="38" stroke="black" stroke-width="2"/>
+  
+  <text x="70" y="35" font-family="Arial" font-size="20">E-Torch</text>
+  <line x1="150" y1="15" x2="150" y2="45" stroke="black" stroke-width="1"/>
+  
+  <!-- 브레드크럼 영역 -->
+  <text x="170" y="35" font-family="Arial" font-size="14">대시보드</text>
+  
+  <!-- 사용자 프로필 영역 (우측) -->
+  <rect x="1320" y="15" width="100" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <circle cx="1335" cy="30" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1355" y="35" font-family="Arial" font-size="12">사용자명</text>
+  
+  <!-- 네비게이션 사이드바 -->
+  <rect x="0" y="60" width="200" height="840" fill="white" stroke="black" stroke-width="1"/>
+  <text x="20" y="90" font-family="Arial" font-size="14" font-weight="bold">내 대시보드</text>
+  <text x="20" y="120" font-family="Arial" font-size="14">대시보드 탐색</text>
+  <text x="20" y="150" font-family="Arial" font-size="14">설정</text>
+  <line x1="10" y1="170" x2="190" y2="170" stroke="lightgray" stroke-width="1"/>
+  <text x="20" y="860" font-family="Arial" font-size="14">사용자 프로필</text>
+  
+  <!-- 페이지 헤더 영역 -->
+  <rect x="200" y="60" width="1240" height="80" fill="white" stroke="black" stroke-width="1"/>
+  <text x="220" y="90" font-family="Arial" font-size="24">내 대시보드</text>
+  <text x="220" y="110" font-family="Arial" font-size="14" fill="gray">나만의 경제지표 대시보드를 만들고 관리하세요</text>
+  <text x="220" y="125" font-family="Arial" font-size="12" fill="lightgray">총 8개의 대시보드 | 최근 활동: 2025-05-21 15:30</text>
+  
+  <!-- 컨트롤 영역 -->
+  <rect x="200" y="140" width="1240" height="50" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 검색 영역 -->
+  <text x="220" y="167" font-family="Arial" font-size="12">검색:</text>
+  <rect x="265" y="150" width="200" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="275" y="170" font-family="Arial" font-size="11" fill="lightgray">대시보드 제목 또는 설명 검색</text>
+  
+  <line x1="485" y1="150" x2="485" y2="180" stroke="black" stroke-width="1"/>
+  
+  <!-- 정렬 옵션 -->
+  <text x="505" y="167" font-family="Arial" font-size="12">정렬:</text>
+  <rect x="540" y="150" width="120" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="600" y="170" font-family="Arial" font-size="11" text-anchor="middle">최근 수정순 ▼</text>
+  
+  <line x1="680" y1="150" x2="680" y2="180" stroke="black" stroke-width="1"/>
+  
+  <!-- 필터 옵션 -->
+  <text x="700" y="167" font-family="Arial" font-size="12">필터:</text>
+  <rect x="740" y="150" width="100" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="790" y="170" font-family="Arial" font-size="11" text-anchor="middle">전체 ▼</text>
+  
+  <!-- 새 대시보드 생성 버튼 (우측 정렬) -->
+  <rect x="1250" y="150" width="120" height="30" fill="white" stroke="black" stroke-width="2"/>
+  <text x="1310" y="170" font-family="Arial" font-size="12" text-anchor="middle">+ 새 대시보드</text>
+  
+  <!-- 뷰 옵션 (그리드/리스트) -->
+  <rect x="1180" y="150" width="30" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1195" y="170" font-family="Arial" font-size="12" text-anchor="middle">⊞</text>
+  
+  <rect x="1220" y="150" width="30" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1235" y="170" font-family="Arial" font-size="12" text-anchor="middle">☰</text>
+  
+  <!-- 메인 콘텐츠 영역 (대시보드 카드 그리드) -->
+  <rect x="200" y="190" width="1240" height="710" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 대시보드 카드 1 (좌측 상단) -->
+  <rect x="220" y="210" width="280" height="200" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 카드 썸네일 영역 -->
+  <rect x="230" y="220" width="260" height="120" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <text x="360" y="285" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">차트 미리보기</text>
+  
+  <!-- 카드 정보 영역 -->
+  <text x="230" y="360" font-family="Arial" font-size="14" font-weight="bold">경제 동향 대시보드</text>
+  <text x="230" y="375" font-family="Arial" font-size="11" fill="gray">주요 경제지표의 최근 동향 파악</text>
+  <text x="230" y="390" font-family="Arial" font-size="10" fill="lightgray">최근 수정: 2025-05-21 15:30</text>
+  
+  <!-- 카드 액션 버튼들 -->
+  <rect x="440" y="350" width="25" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="452" y="362" font-family="Arial" font-size="10" text-anchor="middle">⋮</text>
+  
+  <rect x="470" y="350" width="25" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="482" y="362" font-family="Arial" font-size="10" text-anchor="middle">↗</text>
+  
+  <!-- 대시보드 카드 2 (중앙 상단) -->
+  <rect x="520" y="210" width="280" height="200" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 카드 썸네일 영역 -->
+  <rect x="530" y="220" width="260" height="120" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <text x="660" y="285" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">차트 미리보기</text>
+  
+  <!-- 카드 정보 영역 -->
+  <text x="530" y="360" font-family="Arial" font-size="14" font-weight="bold">금융시장 분석</text>
+  <text x="530" y="375" font-family="Arial" font-size="11" fill="gray">주식, 채권, 환율 통합 분석</text>
+  <text x="530" y="390" font-family="Arial" font-size="10" fill="lightgray">최근 수정: 2025-05-20 09:15</text>
+  
+  <!-- 카드 액션 버튼들 -->
+  <rect x="740" y="350" width="25" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="752" y="362" font-family="Arial" font-size="10" text-anchor="middle">⋮</text>
+  
+  <rect x="770" y="350" width="25" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="782" y="362" font-family="Arial" font-size="10" text-anchor="middle">↗</text>
+  
+  <!-- 대시보드 카드 3 (우측 상단) -->
+  <rect x="820" y="210" width="280" height="200" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 카드 썸네일 영역 -->
+  <rect x="830" y="220" width="260" height="120" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <text x="960" y="285" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">차트 미리보기</text>
+  
+  <!-- 카드 정보 영역 -->
+  <text x="830" y="360" font-family="Arial" font-size="14" font-weight="bold">부동산 시장 동향</text>
+  <text x="830" y="375" font-family="Arial" font-size="11" fill="gray">주택가격, 전세가율 등 부동산 지표</text>
+  <text x="830" y="390" font-family="Arial" font-size="10" fill="lightgray">최근 수정: 2025-05-19 14:22</text>
+  
+  <!-- 카드 액션 버튼들 -->
+  <rect x="1040" y="350" width="25" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1052" y="362" font-family="Arial" font-size="10" text-anchor="middle">⋮</text>
+  
+  <rect x="1070" y="350" width="25" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1082" y="362" font-family="Arial" font-size="10" text-anchor="middle">↗</text>
+  
+  <!-- 대시보드 카드 4 (맨 우측 상단) -->
+  <rect x="1120" y="210" width="280" height="200" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 카드 썸네일 영역 -->
+  <rect x="1130" y="220" width="260" height="120" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <text x="1260" y="285" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">차트 미리보기</text>
+  
+  <!-- 카드 정보 영역 -->
+  <text x="1130" y="360" font-family="Arial" font-size="14" font-weight="bold">물가 안정성 분석</text>
+  <text x="1130" y="375" font-family="Arial" font-size="11" fill="gray">CPI, PPI 등 물가 관련 지표</text>
+  <text x="1130" y="390" font-family="Arial" font-size="10" fill="lightgray">최근 수정: 2025-05-18 11:45</text>
+  
+  <!-- 카드 액션 버튼들 -->
+  <rect x="1340" y="350" width="25" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1352" y="362" font-family="Arial" font-size="10" text-anchor="middle">⋮</text>
+  
+  <rect x="1370" y="350" width="25" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1382" y="362" font-family="Arial" font-size="10" text-anchor="middle">↗</text>
+  
+  <!-- 두 번째 줄 대시보드 카드들 -->
+  
+  <!-- 대시보드 카드 5 (좌측 하단) -->
+  <rect x="220" y="430" width="280" height="200" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 카드 썸네일 영역 -->
+  <rect x="230" y="440" width="260" height="120" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <text x="360" y="505" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">차트 미리보기</text>
+  
+  <!-- 카드 정보 영역 -->
+  <text x="230" y="580" font-family="Arial" font-size="14" font-weight="bold">고용 시장 분석</text>
+  <text x="230" y="595" font-family="Arial" font-size="11" fill="gray">실업률, 고용률 등 노동시장 지표</text>
+  <text x="230" y="610" font-family="Arial" font-size="10" fill="lightgray">최근 수정: 2025-05-17 16:20</text>
+  
+  <!-- 카드 액션 버튼들 -->
+  <rect x="440" y="570" width="25" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="452" y="582" font-family="Arial" font-size="10" text-anchor="middle">⋮</text>
+  
+  <rect x="470" y="570" width="25" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="482" y="582" font-family="Arial" font-size="10" text-anchor="middle">↗</text>
+  
+  <!-- 대시보드 카드 6 (중앙 하단) -->
+  <rect x="520" y="430" width="280" height="200" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 카드 썸네일 영역 -->
+  <rect x="530" y="440" width="260" height="120" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <text x="660" y="505" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">차트 미리보기</text>
+  
+  <!-- 카드 정보 영역 -->
+  <text x="530" y="580" font-family="Arial" font-size="14" font-weight="bold">무역 수지 현황</text>
+  <text x="530" y="595" font-family="Arial" font-size="11" fill="gray">수출입, 무역수지 등 대외거래</text>
+  <text x="530" y="610" font-family="Arial" font-size="10" fill="lightgray">최근 수정: 2025-05-16 13:10</text>
+  
+  <!-- 카드 액션 버튼들 -->
+  <rect x="740" y="570" width="25" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="752" y="582" font-family="Arial" font-size="10" text-anchor="middle">⋮</text>
+  
+  <rect x="770" y="570" width="25" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="782" y="582" font-family="Arial" font-size="10" text-anchor="middle">↗</text>
+  
+  <!-- 대시보드 카드 7 (우측 하단) -->
+  <rect x="820" y="430" width="280" height="200" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 카드 썸네일 영역 -->
+  <rect x="830" y="440" width="260" height="120" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <text x="960" y="505" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">차트 미리보기</text>
+  
+  <!-- 카드 정보 영역 -->
+  <text x="830" y="580" font-family="Arial" font-size="14" font-weight="bold">통화정책 추이</text>
+  <text x="830" y="595" font-family="Arial" font-size="11" fill="gray">기준금리, 통화량 등 통화정책</text>
+  <text x="830" y="610" font-family="Arial" font-size="10" fill="lightgray">최근 수정: 2025-05-15 10:30</text>
+  
+  <!-- 카드 액션 버튼들 -->
+  <rect x="1040" y="570" width="25" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1052" y="582" font-family="Arial" font-size="10" text-anchor="middle">⋮</text>
+  
+  <rect x="1070" y="570" width="25" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1082" y="582" font-family="Arial" font-size="10" text-anchor="middle">↗</text>
+  
+  <!-- 대시보드 카드 8 (맨 우측 하단) -->
+  <rect x="1120" y="430" width="280" height="200" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 카드 썸네일 영역 -->
+  <rect x="1130" y="440" width="260" height="120" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  <text x="1260" y="505" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">차트 미리보기</text>
+  
+  <!-- 카드 정보 영역 -->
+  <text x="1130" y="580" font-family="Arial" font-size="14" font-weight="bold">국제 경제 비교</text>
+  <text x="1130" y="595" font-family="Arial" font-size="11" fill="gray">주요국 경제지표 국제 비교</text>
+  <text x="1130" y="610" font-family="Arial" font-size="10" fill="lightgray">최근 수정: 2025-05-14 14:55</text>
+  
+  <!-- 카드 액션 버튼들 -->
+  <rect x="1340" y="570" width="25" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1352" y="582" font-family="Arial" font-size="10" text-anchor="middle">⋮</text>
+  
+  <rect x="1370" y="570" width="25" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1382" y="582" font-family="Arial" font-size="10" text-anchor="middle">↗</text>
+  
+  <!-- 페이지네이션 또는 더 보기 영역 -->
+  <rect x="220" y="650" width="1180" height="60" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="810" y="685" font-family="Arial" font-size="14" text-anchor="middle" fill="gray">더 많은 대시보드 보기</text>
+  
+  <!-- 통계 정보 (하단) -->
+  <rect x="220" y="720" width="1180" height="40" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="230" y="745" font-family="Arial" font-size="12" fill="gray">총 8개 대시보드 | 이번 주 업데이트: 5개 | 평균 조회수: 234</text>
+  
+  <!-- 빠른 액션 버튼들 (우측 하단) -->
+  <text x="1200" y="745" font-family="Arial" font-size="12" fill="gray">빠른 작업:</text>
+  <rect x="1270" y="730" width="60" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1300" y="745" font-family="Arial" font-size="11" text-anchor="middle">템플릿</text>
+  
+  <rect x="1340" y="730" width="60" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="1370" y="745" font-family="Arial" font-size="11" text-anchor="middle">가져오기</text>
+  
+  <!-- 빈 상태 표시 (대시보드가 없는 경우를 위한 숨겨진 영역) -->
+  <!-- <rect x="220" y="300" width="1180" height="300" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="5,5" style="display:none"/> -->
+  <!-- <text x="810" y="440" font-family="Arial" font-size="18" text-anchor="middle" fill="gray">아직 생성된 대시보드가 없습니다</text> -->
+  <!-- <text x="810" y="465" font-family="Arial" font-size="14" text-anchor="middle" fill="lightgray">첫 번째 대시보드를 만들어보세요!</text> -->
+</svg>
