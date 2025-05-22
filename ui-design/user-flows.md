@@ -159,7 +159,7 @@ flowchart TD
     H --> D
     
     D --> I{작업 선택}
-    I -->|차트 추가| J[차트 추가 모달]
+    I -->|위젯 추가| J[위젯 추가 모달]
     I -->|레이아웃 편집| K[레이아웃 편집 모드]
     I -->|시간범위 변경| L[TimeRangeControl 컴포넌트]
     I -->|주기 변경| M[PeriodSelector 컴포넌트]
@@ -167,9 +167,9 @@ flowchart TD
     I -->|공유| O[DashboardHeaderControls - 공유]
     I -->|내보내기| P[DashboardHeaderControls - 내보내기]
     
-    J --> Q[ChartType 선택]
+    J --> Q[WidgetType 선택]
     Q --> R[DataSourcePanel 구성]
-    R --> S[차트 추가 완료]
+    R --> S[위젯 추가 완료]
     S --> D
     
     K --> T1[GridLayout 편집 모드 활성화]
@@ -195,7 +195,7 @@ flowchart TD
 - DashboardControls 컴포넌트를 통한 통합 제어
 - TimeRangeControl: 시간 범위 선택 (최근 1년, 최근 3년, 커스텀 범위 등)
 - PeriodSelector: 데이터 주기 선택 (일간-D, 월간-M, 분기-Q, 연간-A)
-- 위젯 유형: ChartItem, TextItem 등 다양한 컨텐츠 지원
+- 위젯 유형: ChartWidget, TextWidget 등 다양한 컨텐츠 지원
 
 **서버/클라이언트 컴포넌트 흐름:**
 
@@ -262,7 +262,7 @@ export function SaveButton() {
 
 > 관련 와이어프레임: [차트 에디터](./wireframes/improved-chart-editor-wireframe.svg)  
 > 관련 UI 요구사항: PO-001~003(패널 옵션), TO-001~005(툴팁 옵션), CS-001~002(조회 기간/주기 설정)  
-> 관련 컴포넌트: ChartEditor, ChartPreview, OptionsPanel (packages/charts/src/editor/)  
+> 관련 컴포넌트: WidgetEditor, WidgetPreview, OptionsPanel (packages/widgets/src/editor/)
 > 구현 단계: 페이즈 2 (핵심 기능) - 차트 컴포넌트 (ROADMAP.md 참조)
 
 ```mermaid
@@ -273,12 +273,21 @@ flowchart TD
     B -->|ScatterChart| SC[산점도 차트]
     B -->|RadarChart| RC[레이더 차트]
     B -->|RadialBarChart| RB[방사형 바 차트]
+    B -->|Text-사용자정의| TX1[텍스트 위젯 (사용자 정의)]
+    B -->|Text-데이터기반| TX2[텍스트 위젯 (데이터 기반)]
     
     TS --> C[DataSourcePanel]
     BC --> C
     SC --> C
     RC --> C
     RB --> C
+    TX2 --> C
+
+    TX1 --> K[CustomContent 편집]
+    TX2 --> L[DataSource 설정]
+    L --> M[DataOperation 선택]
+    M --> N[TextPreview]
+    K --> N
     
     C --> D[DataQueryBuilder]
     D --> E[SourceSelector]
@@ -301,12 +310,17 @@ flowchart TD
     I3 --> J
     I4 --> J
     
-    J --> K{OptionsPanel 편집}
+    J --> K{차트 OptionsPanel 편집}
     K -->|PanelOptions| L1[타이틀/설명 설정]
     K -->|TooltipOptions| L2[툴팁 설정]
     K -->|LegendOptions| L3[범례 설정]
     K -->|AxisOptions| L4[X/Y축 설정]
     K -->|StyleOptions| L5[스타일 설정]
+
+    TK2 --> TK3{텍스트 OptionsPanel 편집}
+    TK3 -->|PanelOptions| TL1[타이틀/설명 설정]
+    TK3 -->|TextOptions| TL2[폰트/정렬/색상 설정]
+    TK3 -->|FormatOptions| TL3[숫자 포맷/조건부 서식]
     
     L1 --> M[변경사항 적용]
     L2 --> M
@@ -347,9 +361,10 @@ flowchart TD
 
 **핵심 특징:**
 
-- 다양한 차트 유형별 전용 컴포넌트 제공
-- 차트 유형별 특화된 옵션 패널 (UI 요구사항 명세 기반)
-- 실시간 차트 미리보기 및 인터랙티브 편집
+- 7가지 위젯 유형 지원 (차트형 5개 + 텍스트형 2개)
+- 위젯 유형별 특화된 옵션 패널 (UI 요구사항 명세 기반)
+- 실시간 위젯 미리보기 및 인터랙티브 편집
+- 조건부 데이터 소스 패널 (차트형 + Text-데이터기반만 표시)
 - 데이터 소스 통합 및 데이터 변환 파이프라인
 - 단계별 편집 과정 및 저장 체계
 
@@ -375,7 +390,8 @@ E-Torch의 차트 생성 및 편집 기능은 React 19의 최신 기능을 활�
 
 > 관련 UI 요구사항: DS-001~010(데이터 소스 관리), CS-001~002(조회 기간/주기 설정)  
 > 관련 컴포넌트: DataQueryBuilder, SourceSelector, IndicatorSelector (packages/data-sources/src/components/)  
-> 구현 단계: 페이즈 2 (핵심 기능) - 데이터 소스 관리 (ROADMAP.md 참조)
+> 적용 위젯: 차트형 위젯 전체, Text-데이터기반 위젯  
+> 구현 단계: 페이즈 2 (핵심 기능) - 데이터 소스 관리 (ROADMAP.md 참조)  
 
 ```mermaid
 flowchart TD
@@ -435,7 +451,8 @@ flowchart TD
 ### 3.5 데이터 비교 분석 흐름
 
 > 관련 UI 요구사항: CP-001~006(비교 기능)  
-> 관련 컴포넌트: ComparisonControls, DataTransformer (packages/charts/src/components/)  
+> 관련 컴포넌트: ComparisonControls, DataTransformer (packages/widgets/src/components/)  
+> 적용 위젯: TimeSeries, BarChart  
 > 구현 단계: 페이즈 2 (핵심 기능) - 차트 컴포넌트 (ROADMAP.md 참조)
 
 ```mermaid
@@ -698,8 +715,9 @@ stateDiagram-v2
 **핵심 패턴:**
 
 - 뷰 모드와 편집 모드의 명확한 UI 구분
-- Zustand 상태를 활용한 편집 상태 관리
-- 유효성 검사 단계를 통한 데이터 무결성 보장
+- Zustand 상태를 활용한 위젯 편집 상태 관리
+- 위젯 유형별 유효성 검사를 통한 데이터 무결성 보장
+- 차트형/텍스트형 위젯의 차별화된 검증 로직
 - 자동 저장 (임시 저장) 기능 제공
 - 취소 시 변경사항 폐기 확인 다이얼로그
 - 저장 중/오류 상태의 명확한 피드백
