@@ -1,0 +1,149 @@
+<svg width="375" height="800" xmlns="http://www.w3.org/2000/svg">
+  <!-- 헤더 -->
+  <rect x="0" y="0" width="375" height="60" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 뒤로가기 버튼 (좌측) -->
+  <rect x="15" y="15" width="30" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="30" y="35" font-family="Arial" font-size="14" text-anchor="middle">←</text>
+  
+  <text x="55" y="35" font-family="Arial" font-size="16">E-Torch</text>
+  
+  <!-- 메뉴 아이콘 (우측) -->
+  <rect x="330" y="15" width="30" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="345" y="35" font-family="Arial" font-size="12" text-anchor="middle">⋮</text>
+  
+  <!-- 대시보드 헤더 영역 -->
+  <rect x="0" y="60" width="375" height="80" fill="white" stroke="black" stroke-width="1"/>
+  <text x="16" y="85" font-family="Arial" font-size="16">경제 동향 대시보드</text>
+  <text x="16" y="105" font-family="Arial" font-size="11" fill="gray">주요 경제지표의 최근 동향 파악</text>
+  <text x="16" y="120" font-family="Arial" font-size="10" fill="lightgray">최종 업데이트: 2025-05-21 15:30</text>
+  
+  <!-- 작성자 정보 (우측 상단) -->
+  <text x="359" y="120" font-family="Arial" font-size="10" text-anchor="end" fill="lightgray">작성자: 경제전문가</text>
+  
+  <!-- 컨트롤 영역 (방안 4: 미니멀) -->
+  <rect x="0" y="140" width="375" height="60" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 단일 줄: 핵심만 -->
+  <text x="16" y="175" font-family="Arial" font-size="12">조회 기간:</text>
+  <rect x="85" y="155" width="120" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="145" y="175" font-family="Arial" font-size="12" text-anchor="middle">최근 1년 ▼</text>
+  
+  <!-- 상태 정보 (우측) -->
+  <circle cx="265" cy="170" r="3" fill="green" stroke="none"/>
+  <text x="275" y="173" font-family="Arial" font-size="9">5분 전</text>
+  
+  <!-- 자동 새로고침 상태 -->
+  <text x="275" y="185" font-family="Arial" font-size="8" fill="gray">자동새로고침: ON</text>
+  
+  <!-- 콘텐츠 영역 (세로 스크롤) -->
+  <rect x="0" y="200" width="375" height="580" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 스크롤 가능 영역 표시 -->
+  <text x="187" y="220" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">위젯 영역 (세로 스크롤)</text>
+  
+  <!-- 위젯 1: GDP 성장률 차트 -->
+  <rect x="16" y="240" width="343" height="140" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="16" y="240" width="343" height="30" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="26" y="260" font-family="Arial" font-size="13">GDP 성장률 추이</text>
+  
+  <!-- 위젯 액션 아이콘들 (터치 최적화) -->
+  <circle cx="335" cy="255" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="332" y="259" font-family="Arial" font-size="9">↗</text>
+  
+  <circle cx="318" cy="255" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="315" y="259" font-family="Arial" font-size="9">⤢</text>
+  
+  <!-- 실제 차트 콘텐츠 -->
+  <rect x="26" y="280" width="323" height="90" fill="white" stroke="lightgray" stroke-width="1"/>
+  <polyline points="36,345 70,335 104,340 138,330 172,325 206,320 240,325 274,310 308,315 339,305" fill="none" stroke="black" stroke-width="2"/>
+  <line x1="36" y1="360" x2="339" y2="360" stroke="black" stroke-width="1"/>
+  <line x1="36" y1="290" x2="36" y2="360" stroke="black" stroke-width="1"/>
+  
+  <!-- 축 레이블 -->
+  <text x="50" y="375" font-family="Arial" font-size="9">2023</text>
+  <text x="190" y="375" font-family="Arial" font-size="9">2024</text>
+  <text x="320" y="375" font-family="Arial" font-size="9">2025</text>
+  <text x="30" y="295" font-family="Arial" font-size="9">4%</text>
+  <text x="30" y="325" font-family="Arial" font-size="9">2%</text>
+  <text x="30" y="355" font-family="Arial" font-size="9">0%</text>
+  
+  <!-- 위젯 2: 소비자물가 차트 -->
+  <rect x="16" y="400" width="343" height="140" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="16" y="400" width="343" height="30" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="26" y="420" font-family="Arial" font-size="13">소비자물가 등락률</text>
+  
+  <!-- 위젯 액션 아이콘들 -->
+  <circle cx="335" cy="415" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="332" y="419" font-family="Arial" font-size="9">↗</text>
+  
+  <circle cx="318" cy="415" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="315" y="419" font-family="Arial" font-size="9">⤢</text>
+  
+  <!-- 실제 차트 콘텐츠 -->
+  <rect x="26" y="440" width="323" height="90" fill="white" stroke="lightgray" stroke-width="1"/>
+  <polyline points="36,495 70,505 104,500 138,510 172,490 206,485 240,480 274,490 308,495 339,485" fill="none" stroke="black" stroke-width="2"/>
+  <line x1="36" y1="520" x2="339" y2="520" stroke="black" stroke-width="1"/>
+  <line x1="36" y1="450" x2="36" y2="520" stroke="black" stroke-width="1"/>
+  
+  <!-- 축 레이블 -->
+  <text x="50" y="535" font-family="Arial" font-size="9">2023</text>
+  <text x="190" y="535" font-family="Arial" font-size="9">2024</text>
+  <text x="320" y="535" font-family="Arial" font-size="9">2025</text>
+  <text x="30" y="455" font-family="Arial" font-size="9">5%</text>
+  <text x="30" y="485" font-family="Arial" font-size="9">3%</text>
+  <text x="30" y="515" font-family="Arial" font-size="9">1%</text>
+  
+  <!-- 위젯 3: 주요 경제지표 현황 카드 -->
+  <rect x="16" y="560" width="343" height="120" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="16" y="560" width="343" height="30" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="26" y="580" font-family="Arial" font-size="13">주요 경제지표 현황</text>
+  
+  <!-- 위젯 액션 아이콘들 -->
+  <circle cx="335" cy="575" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="332" y="579" font-family="Arial" font-size="9">↗</text>
+  
+  <circle cx="318" cy="575" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="315" y="579" font-family="Arial" font-size="9">⤢</text>
+  
+  <!-- 주요 지표 카드 형태 -->
+  <rect x="26" y="600" width="323" height="70" fill="white" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 2x2 그리드 레이아웃 -->
+  <line x1="187" y1="600" x2="187" y2="670" stroke="lightgray" stroke-width="1"/>
+  <line x1="26" y1="635" x2="349" y2="635" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 기준금리 -->
+  <text x="106" y="618" font-family="Arial" font-size="10" text-anchor="middle">기준금리</text>
+  <text x="106" y="632" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">3.5%</text>
+  
+  <!-- 환율 -->
+  <text x="268" y="618" font-family="Arial" font-size="10" text-anchor="middle">환율(USD)</text>
+  <text x="268" y="632" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">1,320원</text>
+  
+  <!-- 실업률 -->
+  <text x="106" y="653" font-family="Arial" font-size="10" text-anchor="middle">실업률</text>
+  <text x="106" y="667" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">2.8%</text>
+  
+  <!-- GDP -->
+  <text x="268" y="653" font-family="Arial" font-size="10" text-anchor="middle">GDP 성장률</text>
+  <text x="268" y="667" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">2.6%</text>
+  
+  <!-- 플로팅 액션 버튼 (우측 하단) -->
+  <circle cx="320" cy="720" r="28" fill="white" stroke="black" stroke-width="2"/>
+  <text x="320" y="727" font-family="Arial" font-size="20" text-anchor="middle">✏️</text>
+  
+  <!-- 플로팅 버튼 그림자 효과 -->
+  <circle cx="322" cy="722" r="28" fill="lightgray" fill-opacity="0.3" stroke="none"/>
+  
+  <!-- 보조 플로팅 버튼들 (편집 버튼 주변) -->
+  <circle cx="280" cy="680" r="18" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="280" y="687" font-family="Arial" font-size="14" text-anchor="middle">📤</text>
+  
+  <circle cx="320" cy="660" r="18" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="320" y="667" font-family="Arial" font-size="14" text-anchor="middle">↻</text>
+  
+  <!-- 하단 안전 영역 (모바일 제스처/홈 인디케이터) -->
+  <rect x="0" y="780" width="375" height="20" fill="white" stroke="black" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="187" y="793" font-family="Arial" font-size="10" text-anchor="middle" fill="lightgray">안전 영역</text>
+</svg>
