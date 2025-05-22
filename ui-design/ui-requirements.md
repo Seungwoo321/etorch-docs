@@ -326,7 +326,7 @@
 | CP-005 | 기준기간 스타일 | 기준기간 시각화 스타일 | 복합 | { color: "#1f77b4", lineStyle: "solid" } | 색상, 선 스타일 등 | Time Series |
 | CP-006 | 비교기간 스타일 | 비교기간 시각화 스타일 | 복합 | { color: "#ff7f0e", lineStyle: "dashed" } | 색상, 선 스타일 등 | Time Series |
 
-### 3.4 차트 컴포넌트별 활성화 옵션 영역
+### 3.4 위젯 유형별 활성화 옵션 영역
 
 #### 3.4.1 Time Series
 
