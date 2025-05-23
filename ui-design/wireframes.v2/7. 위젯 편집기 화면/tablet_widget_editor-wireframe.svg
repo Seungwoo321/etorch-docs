@@ -1,0 +1,272 @@
+<svg width="1024" height="800" xmlns="http://www.w3.org/2000/svg">
+  <!-- 헤더 -->
+  <rect x="0" y="0" width="1024" height="60" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 햄버거 메뉴 아이콘 (좌측 사이드바 토글) -->
+  <rect x="15" y="15" width="35" height="30" fill="white" stroke="black" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="32" y="35" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">☰</text>
+  
+  <text x="70" y="35" font-family="Arial" font-size="18">E-Torch</text>
+  <line x1="150" y1="15" x2="150" y2="45" stroke="black" stroke-width="1"/>
+  
+  <!-- 브레드크럼 영역 -->
+  <text x="170" y="35" font-family="Arial" font-size="12" fill="gray">대시보드 > 편집 > 위젯 편집기</text>
+  
+  <!-- 사용자 프로필 영역 (우측) -->
+  <rect x="900" y="15" width="100" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <circle cx="915" cy="30" r="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="935" y="35" font-family="Arial" font-size="11">사용자명</text>
+  
+  <!-- 페이지 헤더 -->
+  <rect x="0" y="60" width="1024" height="60" fill="white" stroke="black" stroke-width="1"/>
+  <text x="20" y="95" font-family="Arial" font-size="16">위젯 생성</text>
+  
+  <!-- 저장/취소 버튼 (헤더 우측) -->
+  <rect x="850" y="75" width="70" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="885" y="93" font-family="Arial" font-size="11" text-anchor="middle">취소</text>
+  
+  <rect x="930" y="75" width="70" height="30" fill="white" stroke="black" stroke-width="2"/>
+  <text x="965" y="93" font-family="Arial" font-size="11" text-anchor="middle">저장</text>
+  
+  <!-- 글로벌 컨트롤 영역 -->
+  <rect x="0" y="120" width="1024" height="50" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 기간 설정 -->
+  <text x="20" y="150" font-family="Arial" font-size="11">조회 기간:</text>
+  <rect x="85" y="135" width="100" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="135" y="152" font-family="Arial" font-size="11" text-anchor="middle">최근 1년 ▼</text>
+  
+  <line x1="205" y1="135" x2="205" y2="165" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 주기 설정 -->
+  <text x="225" y="150" font-family="Arial" font-size="11">조회 주기:</text>
+  <rect x="285" y="135" width="70" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="320" y="152" font-family="Arial" font-size="11" text-anchor="middle">월간 ▼</text>
+  
+  <line x1="375" y1="135" x2="375" y2="165" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 위젯 유형 선택 -->
+  <rect x="395" y="135" width="600" height="30" fill="white" stroke="black" stroke-width="2"/>
+  <text x="695" y="152" font-family="Arial" font-size="11" text-anchor="middle">시계열 차트 ▼</text>
+  
+  <!-- 메인 콘텐츠 영역 -->
+  <rect x="0" y="170" width="1024" height="630" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 좌측 영역 (차트 미리보기 + 데이터 소스) -->
+  <rect x="20" y="190" width="650" height="590" fill="white" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 위젯 카드 미리보기 영역 (상단) -->
+  <rect x="30" y="190" width="630" height="280" fill="white" stroke="black" stroke-width="2"/>
+  
+  <!-- 위젯 카드 헤더 -->
+  <rect x="30" y="190" width="630" height="35" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="40" y="210" font-family="Arial" font-size="13" font-weight="bold">경제지표 종합 분석</text>
+  <text x="40" y="220" font-family="Arial" font-size="11" fill="gray">동행지수와 기준금리의 복합 추이 분석</text>
+  
+  <!-- 위젯 컨트롤 아이콘들 -->
+  <circle cx="630" cy="207" r="7" fill="white" stroke="black" stroke-width="1"/>
+  <text x="627" y="211" font-family="Arial" font-size="9">⚙</text>
+  
+  <circle cx="615" cy="207" r="7" fill="white" stroke="black" stroke-width="1"/>
+  <text x="612" y="211" font-family="Arial" font-size="9">↗</text>
+  
+  <!-- 실제 차트 콘텐츠 영역 -->
+  <rect x="40" y="235" width="610" height="225" fill="white" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 차트 축 -->
+  <line x1="60" y1="430" x2="620" y2="430" stroke="black" stroke-width="1"/>
+  <line x1="60" y1="255" x2="60" y2="430" stroke="black" stroke-width="1"/>
+  
+  <!-- 시리즈 1: 동행지수 (선형) -->
+  <polyline points="60,400 150,380 240,390 330,370 420,350 510,360 580,340 620,350" fill="none" stroke="black" stroke-width="2"/>
+  
+  <!-- 시리즈 2: 기준금리 (막대) -->
+  <rect x="80" y="410" width="15" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="170" y="415" width="15" height="15" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="260" y="412" width="15" height="18" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="350" y="418" width="15" height="12" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="440" y="420" width="15" height="10" fill="white" stroke="black" stroke-width="1"/>
+  <rect x="530" y="418" width="15" height="12" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- 범례 표시 -->
+  <rect x="70" y="265" width="150" height="30" fill="white" stroke="lightgray" stroke-width="1"/>
+  <line x1="80" y1="275" x2="95" y2="275" stroke="black" stroke-width="2"/>
+  <text x="105" y="278" font-family="Arial" font-size="10">동행종합지수</text>
+  <rect x="80" y="285" width="10" height="8" fill="white" stroke="black" stroke-width="1"/>
+  <text x="105" y="291" font-family="Arial" font-size="10">기준금리</text>
+  
+  <!-- 수평 리사이즈 핸들 -->
+  <rect x="20" y="475" width="650" height="8" fill="lightgray" stroke="black" stroke-width="1"/>
+  <rect x="320" y="477" width="40" height="4" fill="gray" stroke="none"/>
+  <text x="340" y="482" font-family="Arial" font-size="8" text-anchor="middle" fill="gray">⟷</text>
+  
+  <!-- 데이터 설정 영역 (하단) -->
+  <rect x="30" y="490" width="630" height="280" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
+  
+  <!-- 데이터 설정 탭 헤더 -->
+  <rect x="40" y="500" width="610" height="30" fill="white" stroke="lightgray" stroke-width="1"/>
+  <rect x="50" y="505" width="80" height="20" fill="white" stroke="black" stroke-width="2"/>
+  <text x="90" y="518" font-family="Arial" font-size="11" text-anchor="middle">데이터 설정</text>
+  
+  <rect x="140" y="505" width="90" height="20" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="185" y="518" font-family="Arial" font-size="11" text-anchor="middle" fill="gray">데이터 미리보기</text>
+  
+  <!-- 시리즈 1: 동행종합지수 -->
+  <rect x="50" y="545" width="600" height="100" fill="white" stroke="black" stroke-width="1"/>
+  <text x="68" y="563" font-family="Arial" font-size="10" fill="gray">시리즈 1 (series-1)</text>
+  
+  <!-- 첫 번째 줄 -->
+  <text x="68" y="585" font-family="Arial" font-size="12">출처</text>
+  <rect x="110" y="572" width="80" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="150" y="590" font-family="Arial" font-size="11" text-anchor="middle">KOSIS ▼</text>
+  
+  <text x="200" y="585" font-family="Arial" font-size="12">지표</text>
+  <rect x="230" y="572" width="140" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="300" y="590" font-family="Arial" font-size="11" text-anchor="middle">동행종합지수 ▼</text>
+  
+  <text x="380" y="585" font-family="Arial" font-size="12">변환</text>
+  <rect x="415" y="572" width="80" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="455" y="590" font-family="Arial" font-size="10" text-anchor="middle">원본값 ▼</text>
+  
+  <rect x="505" y="572" width="30" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="520" y="590" font-family="Arial" font-size="14" text-anchor="middle">✕</text>
+  
+  <!-- 두 번째 줄 -->
+  <text x="68" y="625" font-family="Arial" font-size="12">시리즈명</text>
+  <rect x="130" y="612" width="120" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="190" y="630" font-family="Arial" font-size="11" text-anchor="middle">동행종합지수</text>
+  
+  <text x="260" y="625" font-family="Arial" font-size="12">Y축</text>
+  <rect x="290" y="612" width="70" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="325" y="630" font-family="Arial" font-size="10" text-anchor="middle">주축 ▼</text>
+  
+  <!-- 시리즈 2: 기준금리 -->
+  <rect x="50" y="655" width="600" height="100" fill="white" stroke="black" stroke-width="1"/>
+  <text x="68" y="673" font-family="Arial" font-size="10" fill="gray">시리즈 2 (series-2)</text>
+  
+  <!-- 첫 번째 줄 -->
+  <text x="68" y="695" font-family="Arial" font-size="12">출처</text>
+  <rect x="110" y="682" width="80" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="150" y="700" font-family="Arial" font-size="11" text-anchor="middle">ECOS ▼</text>
+  
+  <text x="200" y="695" font-family="Arial" font-size="12">지표</text>
+  <rect x="230" y="682" width="140" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="300" y="700" font-family="Arial" font-size="11" text-anchor="middle">기준금리 ▼</text>
+  
+  <text x="380" y="695" font-family="Arial" font-size="12">변환</text>
+  <rect x="415" y="682" width="80" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="455" y="700" font-family="Arial" font-size="10" text-anchor="middle">원본값 ▼</text>
+  
+  <rect x="505" y="682" width="30" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="520" y="700" font-family="Arial" font-size="14" text-anchor="middle">✕</text>
+  
+  <!-- 두 번째 줄 -->
+  <text x="68" y="735" font-family="Arial" font-size="12">시리즈명</text>
+  <rect x="130" y="722" width="120" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="190" y="740" font-family="Arial" font-size="11" text-anchor="middle">기준금리</text>
+  
+  <text x="260" y="735" font-family="Arial" font-size="12">Y축</text>
+  <rect x="290" y="722" width="70" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <text x="325" y="740" font-family="Arial" font-size="10" text-anchor="middle">보조축 ▼</text>
+  
+  <!-- Add Query 버튼 -->
+  <rect x="50" y="765" width="600" height="35" fill="white" stroke="black" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="350" y="787" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">+ 시리즈 추가 (최대 3개 더)</text>
+  
+  <!-- 수직 리사이즈 핸들 -->
+  <rect x="675" y="180" width="6" height="600" fill="lightgray" stroke="black" stroke-width="1"/>
+  <rect x="677" y="475" width="2" height="30" fill="gray" stroke="none"/>
+  <text x="678" y="493" font-family="Arial" font-size="7" text-anchor="middle" fill="gray" transform="rotate(-90 678 493)">⟷</text>
+  
+  <!-- 우측 옵션 패널 -->
+  <rect x="690" y="180" width="314" height="600" fill="white" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- Panel Options (접힌) -->
+  <rect x="700" y="200" width="294" height="32" fill="white" stroke="black" stroke-width="1"/>
+  <text x="710" y="220" font-family="Arial" font-size="12" font-weight="bold">패널 옵션 ▶</text>
+  
+  <!-- Tooltip (접힌) -->
+  <rect x="700" y="240" width="294" height="32" fill="white" stroke="black" stroke-width="1"/>
+  <text x="710" y="260" font-family="Arial" font-size="12" font-weight="bold">툴팁 옵션 ▶</text>
+  
+  <!-- Legend (접힌) -->
+  <rect x="700" y="280" width="294" height="32" fill="white" stroke="black" stroke-width="1"/>
+  <text x="710" y="300" font-family="Arial" font-size="12" font-weight="bold">범례 옵션 ▶</text>
+  
+  <!-- X-Axis (접힌) -->
+  <rect x="700" y="320" width="294" height="32" fill="white" stroke="black" stroke-width="1"/>
+  <text x="710" y="340" font-family="Arial" font-size="12" font-weight="bold">X축 옵션 ▶</text>
+  
+  <!-- Y-Axis (접힌) -->
+  <rect x="700" y="360" width="294" height="32" fill="white" stroke="black" stroke-width="1"/>
+  <text x="710" y="380" font-family="Arial" font-size="12" font-weight="bold">Y축 옵션 ▶</text>
+  
+  <!-- Y-Axis (Secondary) (접힌) -->
+  <rect x="700" y="400" width="294" height="32" fill="white" stroke="black" stroke-width="1"/>
+  <text x="710" y="420" font-family="Arial" font-size="12" font-weight="bold">Y축 (보조) ▶</text>
+  
+  <!-- Graph Styles (확장됨) -->
+  <rect x="700" y="440" width="294" height="32" fill="white" stroke="black" stroke-width="2"/>
+  <text x="710" y="460" font-family="Arial" font-size="12" font-weight="bold">그래프 스타일 ▼</text>
+  
+  <!-- 그래프 스타일 상세 옵션 (완전판 - 3x2 배치) -->
+  <rect x="710" y="480" width="274" height="280" fill="white" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 시리즈별 스타일 -->
+  <text x="720" y="495" font-family="Arial" font-size="12" font-weight="bold">시리즈별 스타일</text>
+  <line x1="720" y1="500" x2="974" y2="500" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- 시리즈 1 스타일 - 3x2 배치 (6개 옵션) -->
+  <rect x="720" y="510" width="264" height="120" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="730" y="527" font-family="Arial" font-size="11" font-weight="bold">series-1 (동행종합지수)</text>
+  
+  <!-- 첫 번째 줄: 스타일, 색상, 선 두께 -->
+  <text x="730" y="547" font-family="Arial" font-size="10">스타일:</text>
+  <rect x="765" y="537" width="55" height="22" fill="white" stroke="black" stroke-width="1"/>
+  <text x="792" y="551" font-family="Arial" font-size="9" text-anchor="middle">Line ▼</text>
+  
+  <text x="825" y="547" font-family="Arial" font-size="10">색상:</text>
+  <rect x="855" y="537" width="22" height="22" fill="white" stroke="black" stroke-width="1"/>
+  
+  <text x="885" y="547" font-family="Arial" font-size="10">선 두께:</text>
+  <rect x="930" y="537" width="40" height="22" fill="white" stroke="black" stroke-width="1"/>
+  <text x="950" y="551" font-family="Arial" font-size="9" text-anchor="middle">2px</text>
+  
+  <!-- 두 번째 줄: 선 스타일, 투명도, [빈 공간] -->
+  <text x="730" y="575" font-family="Arial" font-size="10">선 스타일:</text>
+  <rect x="775" y="565" width="55" height="22" fill="white" stroke="black" stroke-width="1"/>
+  <text x="802" y="579" font-family="Arial" font-size="9" text-anchor="middle">실선 ▼</text>
+  
+  <text x="840" y="575" font-family="Arial" font-size="10">투명도:</text>
+  <rect x="880" y="565" width="45" height="22" fill="white" stroke="black" stroke-width="1"/>
+  <text x="902" y="579" font-family="Arial" font-size="9" text-anchor="middle">100%</text>
+  
+  <!-- 시리즈 2 스타일 - 3x2 배치 (6개 옵션) -->
+  <rect x="720" y="640" width="264" height="120" fill="white" stroke="lightgray" stroke-width="1"/>
+  <text x="730" y="657" font-family="Arial" font-size="11" font-weight="bold">series-2 (기준금리)</text>
+  
+  <!-- 첫 번째 줄: 스타일, 색상, 바 너비 -->
+  <text x="730" y="677" font-family="Arial" font-size="10">스타일:</text>
+  <rect x="765" y="667" width="55" height="22" fill="white" stroke="black" stroke-width="2"/>
+  <text x="792" y="681" font-family="Arial" font-size="9" text-anchor="middle">Bar ▼</text>
+  
+  <text x="825" y="677" font-family="Arial" font-size="10">색상:</text>
+  <rect x="855" y="667" width="22" height="22" fill="white" stroke="black" stroke-width="1"/>
+  
+  <text x="885" y="677" font-family="Arial" font-size="10">바 너비:</text>
+  <rect x="930" y="667" width="40" height="22" fill="white" stroke="black" stroke-width="1"/>
+  <text x="950" y="681" font-family="Arial" font-size="9" text-anchor="middle">15px</text>
+  
+  <!-- 두 번째 줄: 모서리, 투명도, [빈 공간] -->
+  <text x="730" y="705" font-family="Arial" font-size="10">모서리:</text>
+  <rect x="765" y="695" width="55" height="22" fill="white" stroke="black" stroke-width="1"/>
+  <text x="792" y="709" font-family="Arial" font-size="9" text-anchor="middle">사각 ▼</text>
+  
+  <text x="830" y="705" font-family="Arial" font-size="10">투명도:</text>
+  <rect x="870" y="695" width="45" height="22" fill="white" stroke="black" stroke-width="1"/>
+  <text x="892" y="709" font-family="Arial" font-size="9" text-anchor="middle">90%</text>
+  
+  <!-- 접힌 사이드바 표시 (좌측 보조선) -->
+  <line x1="5" y1="60" x2="5" y2="800" stroke="gray" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="12" y="400" font-family="Arial" font-size="9" fill="gray" transform="rotate(-90 12 400)">사이드바 (접힘)</text>
+</svg>
