@@ -160,7 +160,7 @@
 |---------|--------|------|-----------|--------|----------|-------------------|
 | TO-001 | Tooltip Mode | 툴팁 표시 방식 | 선택 | default | default, active, hidden | Time Series, Bar Chart, Pie Chart, Scatter Chart, Radar Chart, Radial Bar Chart |
 | TO-002 | Max Width | 툴팁의 최대 너비 | 숫자 | 160 | 60-500px | Time Series, Bar Chart, Pie Chart, Scatter Chart, Radar Chart, Radial Bar Chart |
-| TO-003 | Cursor Style | 커서 스타일 설정 | 선택 | solid | solid, dash | Time Series |
+| TO-003 | Cursor Style | 커서 스타일 설정 | 선택 | solid | solid, dash | Time Series, Bar Chart, Scatter Chart |
 | TO-004 | Dash Pattern | dash 선택 시 대시 패턴 | 문자열 | "2,2" | 형식: "숫자,숫자" | Time Series |
 | TO-005 | Cursor Width | 커서의 두께 | 숫자 | 2 | 1-10px | Time Series |
 

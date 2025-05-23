@@ -1,0 +1,44 @@
+<svg width="380" height="315" xmlns="http://www.w3.org/2000/svg">
+  <!-- Tooltip Options (확장됨) -->
+  <rect x="0" y="0" width="380" height="30" fill="white" stroke="black" stroke-width="2"/>
+  <text x="10" y="20" font-family="Arial" font-size="14" font-weight="bold">툴팁 옵션 ▼</text>
+  
+  <!-- Tooltip Options 상세 내용 -->
+  <rect x="10" y="40" width="360" height="265" fill="white" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- TO-001: Tooltip Mode -->
+  <text x="20" y="60" font-family="Arial" font-size="12" font-weight="bold">툴팁 모드</text>
+  <rect x="20" y="70" width="120" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="80" y="87" font-family="Arial" font-size="11" text-anchor="middle">default ▼</text>
+  <text x="150" y="87" font-family="Arial" font-size="10" fill="gray">default / active / hidden</text>
+  
+  <!-- TO-002: Max Width -->
+  <text x="20" y="115" font-family="Arial" font-size="12" font-weight="bold">최대 너비</text>
+  <rect x="20" y="125" width="80" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="60" y="142" font-family="Arial" font-size="11" text-anchor="middle">160</text>
+  <text x="105" y="142" font-family="Arial" font-size="10" fill="gray">px (60-500)</text>
+  
+  <!-- 구분선 -->
+  <line x1="20" y1="165" x2="350" y2="165" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- Time Series 전용 옵션 헤더 -->
+  <text x="20" y="185" font-family="Arial" font-size="12" font-weight="bold" fill="gray">Time Series 전용 커서 옵션</text>
+  
+  <!-- TO-003: Cursor Style -->
+  <text x="20" y="210" font-family="Arial" font-size="12">커서 스타일</text>
+  <rect x="20" y="220" width="100" height="25" fill="white" stroke="black" stroke-width="2"/>
+  <text x="70" y="237" font-family="Arial" font-size="11" text-anchor="middle">solid ▼</text>
+  <text x="130" y="237" font-family="Arial" font-size="10" fill="gray">solid / dash</text>
+  
+  <!-- TO-004: Dash Pattern (조건부 활성화) -->
+  <text x="200" y="210" font-family="Arial" font-size="12">대시 패턴</text>
+  <text x="270" y="210" font-family="Arial" font-size="9" fill="lightgray">(dash 선택 시)</text>
+  <rect x="200" y="220" width="80" height="25" fill="white" stroke="lightgray" stroke-width="1" opacity="0.5"/>
+  <text x="240" y="237" font-family="Arial" font-size="11" text-anchor="middle" fill="lightgray">2,2</text>
+  
+  <!-- TO-005: Cursor Width -->
+  <text x="20" y="265" font-family="Arial" font-size="12">커서 두께</text>
+  <rect x="20" y="275" width="80" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="60" y="292" font-family="Arial" font-size="11" text-anchor="middle">2</text>
+  <text x="105" y="292" font-family="Arial" font-size="10" fill="gray">px (1-10)</text>
+</svg>
