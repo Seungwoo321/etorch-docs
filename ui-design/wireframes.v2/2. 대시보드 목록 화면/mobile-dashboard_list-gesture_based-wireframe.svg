@@ -64,7 +64,7 @@
   
   <!-- 썸네일 (좌측, 더 확대) -->
   <rect x="26" y="275" width="120" height="85" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
-  <text x="86" y="322" font-family="Arial" font-size="10" text-anchor="middle" fill="gray">차트 미리보기</text>
+  <text x="86" y="322" font-family="Arial" font-size="10" text-anchor="middle" fill="gray">위젯 미리보기</text>
   
   <!-- 정보 영역 (우측, 더 넓게) -->
   <text x="156" y="290" font-family="Arial" font-size="16" font-weight="bold">경제 동향 대시보드</text>
@@ -81,7 +81,7 @@
   
   <!-- 썸네일 (좌측, 더 확대) -->
   <rect x="26" y="395" width="120" height="85" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
-  <text x="86" y="442" font-family="Arial" font-size="10" text-anchor="middle" fill="gray">차트 미리보기</text>
+  <text x="86" y="442" font-family="Arial" font-size="10" text-anchor="middle" fill="gray">위젯 미리보기</text>
   
   <!-- 정보 영역 (우측, 더 넓게) -->
   <text x="156" y="410" font-family="Arial" font-size="16" font-weight="bold">금융시장 분석</text>
@@ -98,7 +98,7 @@
   
   <!-- 썸네일 (좌측, 더 확대) -->
   <rect x="26" y="515" width="120" height="85" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
-  <text x="86" y="562" font-family="Arial" font-size="10" text-anchor="middle" fill="gray">차트 미리보기</text>
+  <text x="86" y="562" font-family="Arial" font-size="10" text-anchor="middle" fill="gray">위젯 미리보기</text>
   
   <!-- 정보 영역 (우측, 더 넓게) -->
   <text x="156" y="530" font-family="Arial" font-size="16" font-weight="bold">부동산 시장 동향</text>
@@ -115,7 +115,7 @@
   
   <!-- 썸네일 (좌측, 더 확대) -->
   <rect x="26" y="635" width="120" height="85" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
-  <text x="86" y="682" font-family="Arial" font-size="10" text-anchor="middle" fill="gray">차트 미리보기</text>
+  <text x="86" y="682" font-family="Arial" font-size="10" text-anchor="middle" fill="gray">위젯 미리보기</text>
   
   <!-- 정보 영역 (우측, 더 넓게) -->
   <text x="156" y="650" font-family="Arial" font-size="16" font-weight="bold">물가 안정성 분석</text>

@@ -66,7 +66,7 @@
   
   <!-- 카드 썸네일 영역 -->
   <rect x="30" y="210" width="300" height="100" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
-  <text x="180" y="265" font-family="Arial" font-size="11" text-anchor="middle" fill="gray">차트 미리보기</text>
+  <text x="180" y="265" font-family="Arial" font-size="11" text-anchor="middle" fill="gray">위젯 미리보기</text>
   
   <!-- 카드 정보 영역 -->
   <text x="30" y="330" font-family="Arial" font-size="13" font-weight="bold">경제 동향 대시보드</text>
@@ -85,7 +85,7 @@
   
   <!-- 카드 썸네일 영역 -->
   <rect x="370" y="210" width="300" height="100" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
-  <text x="520" y="265" font-family="Arial" font-size="11" text-anchor="middle" fill="gray">차트 미리보기</text>
+  <text x="520" y="265" font-family="Arial" font-size="11" text-anchor="middle" fill="gray">위젯 미리보기</text>
   
   <!-- 카드 정보 영역 -->
   <text x="370" y="330" font-family="Arial" font-size="13" font-weight="bold">금융시장 분석</text>
@@ -104,7 +104,7 @@
   
   <!-- 카드 썸네일 영역 -->
   <rect x="710" y="210" width="284" height="100" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
-  <text x="852" y="265" font-family="Arial" font-size="11" text-anchor="middle" fill="gray">차트 미리보기</text>
+  <text x="852" y="265" font-family="Arial" font-size="11" text-anchor="middle" fill="gray">위젯 미리보기</text>
   
   <!-- 카드 정보 영역 -->
   <text x="710" y="330" font-family="Arial" font-size="13" font-weight="bold">부동산 시장 동향</text>
@@ -125,7 +125,7 @@
   
   <!-- 카드 썸네일 영역 -->
   <rect x="30" y="410" width="300" height="100" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
-  <text x="180" y="465" font-family="Arial" font-size="11" text-anchor="middle" fill="gray">차트 미리보기</text>
+  <text x="180" y="465" font-family="Arial" font-size="11" text-anchor="middle" fill="gray">위젯 미리보기</text>
   
   <!-- 카드 정보 영역 -->
   <text x="30" y="530" font-family="Arial" font-size="13" font-weight="bold">고용 시장 분석</text>
@@ -144,7 +144,7 @@
   
   <!-- 카드 썸네일 영역 -->
   <rect x="370" y="410" width="300" height="100" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
-  <text x="520" y="465" font-family="Arial" font-size="11" text-anchor="middle" fill="gray">차트 미리보기</text>
+  <text x="520" y="465" font-family="Arial" font-size="11" text-anchor="middle" fill="gray">위젯 미리보기</text>
   
   <!-- 카드 정보 영역 -->
   <text x="370" y="530" font-family="Arial" font-size="13" font-weight="bold">무역 수지 현황</text>
@@ -163,7 +163,7 @@
   
   <!-- 카드 썸네일 영역 -->
   <rect x="710" y="410" width="284" height="100" fill="white" stroke="lightgray" stroke-width="1" stroke-dasharray="2,2"/>
-  <text x="852" y="465" font-family="Arial" font-size="11" text-anchor="middle" fill="gray">차트 미리보기</text>
+  <text x="852" y="465" font-family="Arial" font-size="11" text-anchor="middle" fill="gray">위젯 미리보기</text>
   
   <!-- 카드 정보 영역 -->
   <text x="710" y="530" font-family="Arial" font-size="13" font-weight="bold">통화정책 추이</text>
