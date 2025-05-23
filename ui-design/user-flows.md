@@ -634,8 +634,8 @@ flowchart TD
     C --> D[대시보드 선택]
     D --> E[모바일 최적화 대시보드 뷰]
     E --> F{상호작용 옵션}
-    F -->|확대/축소| G[핀치 줌으로 차트 확대]
-    F -->|상세 보기| H[차트 탭하여 전체화면]
+    F -->|확대/축소| G[핀치 줌으로 위젯 확대]
+    F -->|상세 보기| H[위젯 탭하여 전체화면]
     F -->|시간 범위 변경| I[날짜 선택 모달]
 ```
 
@@ -644,12 +644,12 @@ flowchart TD
 ### 3.10 데이터 내보내기 및 공유 흐름
 
 > 관련 UI 요구사항: DV-006(대시보드 내보내기), CM-007(차트 내보내기)  
-> 관련 컴포넌트: ChartExport, DashboardExport (packages/charts/src/components/, packages/dashboard/src/components/)  
+> 관련 컴포넌트: WidgetExport, DashboardExport (packages/widgets/src/components/, packages/dashboard/src/components/)
 > 구현 단계: 페이즈 4 (완성 및 배포) - 고급 기능 및 최적화 (ROADMAP.md 참조)
 
 ```mermaid
 flowchart TD
-    A[대시보드/차트 상세 화면] --> B[내보내기 버튼 클릭]
+    A[대시보드/위젯 상세 화면] --> B[내보내기 버튼 클릭]
     B --> C{내보내기 형식 선택}
     C -->|PNG/이미지| D[이미지로 내보내기]
     C -->|PDF| E[PDF로 내보내기]
@@ -885,10 +885,10 @@ WCAG 2.1 AA 기준을 충족하기 위한 스크린 리더 지원:
   - aria-label, aria-labelledby: 레이블 제공
   - aria-expanded, aria-hidden: 상태 정보 제공
   - aria-live: 동적 콘텐츠 변경 알림
-- 차트 데이터에 대한 텍스트 대체 콘텐츠 제공:
-  - 데이터 테이블 뷰 옵션
+- 위젯 데이터에 대한 텍스트 대체 콘텐츠 제공:
+  - 데이터 테이블 뷰 옵션 (차트형 위젯)
   - 주요 트렌드 및 인사이트 텍스트 요약
-  - SVG 요소에 대한 적절한 ARIA 속성 설정
+  - 텍스트형 위젯의 구조화된 콘텐츠 제공
 
 ### 6.3 색상 및 대비
 
@@ -897,7 +897,8 @@ WCAG 2.1 AA 기준을 충족하기 위한 스크린 리더 지원:
 - WCAG 2.1 AA 수준 준수: 텍스트와 배경 간 4.5:1 이상의 대비
 - 색상에만 의존하지 않는 정보 전달:
   - 아이콘, 패턴, 텍스트 레이블 병행
-  - 색맹 사용자를 위한 차트 패턴 추가 옵션
+  - 색맹 사용자를 위한 차트형 위젯 패턴 추가 옵션
+  - 텍스트형 위젯의 명확한 구조화 및 의미 전달
 - 높은 대비 모드 지원:
   - prefers-contrast 미디어 쿼리 대응
   - 대비 높은 테마 옵션 제공
