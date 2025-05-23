@@ -329,9 +329,9 @@ flowchart TD
     L5 --> M
     
     TS --> N1[Graph Styles - TimeSeries]
-    N1 -->|Line| O1[선 스타일 설정]
-    N1 -->|Area| O2[영역 스타일 설정]
-    N1 -->|Bar| O3[바 스타일 설정]
+    N1 --> O1[시리즈별 스타일 매핑 설정]
+    O1 --> O2[전역 Line Width/Fill Opacity 설정]
+    O2 --> O3[개별 시리즈 스타일 오버라이드]
     
     SC --> N2[Scatter Options]
     N2 --> P1[포인트 크기/모양 설정]

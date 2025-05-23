@@ -226,9 +226,10 @@
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
-| GS-001 | Style | 그래프 스타일 | 선택 | Line | Line, Area, Bar | Time Series |
-| GS-002 | Line Width | Line 스타일 시 선 두께 | 숫자 | 1 | 0.5-10px | Time Series (Line, Area) |
-| GS-003 | Fill Opacity | 채우기 투명도 | 숫자 | 35 | 0-100% | Time Series (Line, Area) |
+| GS-001 | Series Style Mapping | 시리즈별 그래프 스타일 매핑 | 매핑 테이블 | series-1: Line | 시리즈별 Line, Area, Bar | Time Series |
+| GS-002 | Global Line Width | 전체 선 두께 기본값 | 숫자 | 1 | 0.5-10px | Time Series |
+| GS-003 | Global Fill Opacity | 전체 채우기 투명도 기본값 | 숫자 | 35 | 0-100% | Time Series |
+| GS-004 | Series Override | 시리즈별 스타일 개별 설정 | 시리즈 선택기 | - | 추가된 시리즈만 | Time Series |
 
 #### 3.2.2 Scatter Chart Options
 
@@ -308,7 +309,7 @@
 | DS-004 | 시리즈 이름 | 차트에 표시될 시리즈 이름 | 텍스트 | 지표명 | 최대 30자 | 모든 차트 컴포넌트 |
 | DS-005 | 시리즈 색상 | 차트에 표시될 시리즈 색상 | 색상 선택기 | 자동 할당 | 유효한 색상 코드 | 모든 차트 컴포넌트 |
 | DS-006 | Y축 선택 | 시리즈가 표시될 Y축 (주/보조) | 선택 | Primary | Primary, Secondary | Time Series |
-| DS-007 | 시리즈 스타일 | 개별 시리즈의 그래프 스타일 | 선택 | Line | Line, Area, Bar | Time Series |
+| DS-007 | 시리즈 식별자 | 옵션 패널 스타일 설정과 연결할 시리즈 식별자 | 자동생성 | series-1 | series-1, series-2, ... | 모든 차트 컴포넌트 |
 | DS-008 | 데이터 변환 | 원본 데이터 변환 방식 | 선택 | 원본값 | 원본값, 변화율(전기대비), 변화율(전년동기대비), 누적값 | 모든 차트 컴포넌트 |
 | DS-009 | 시리즈 제거 | 현재 시리즈 제거 | 버튼 | - | - | 모든 차트 컴포넌트 |
 | DS-010 | 데이터 시차 | 시계열 데이터 시차 적용 | 숫자 | 0 | -12 ~ 12 (개월/분기/년) | Scatter Chart, Time Series |
@@ -341,8 +342,8 @@
   - X-Axis Options
   - Y-Axis Options (Primary)
   - Y-Axis Options (Secondary)
-  - Graph Styles (Time Series)
-  - 데이터 소스 설정
+  - Graph Styles (Time Series) - 시리즈별 스타일 매핑 및 전역 설정
+  - 데이터 소스 설정 - 순수 데이터 연결만
 
 #### 3.4.2 BarChart
 
@@ -618,3 +619,17 @@
 - Text-사용자정의 위젯은 데이터 소스 설정 영역 숨김 처리
 - 시리즈 추가/제거 시 차트 구성에 즉시 반영
 - 동일한 차트 내 시리즈의 조회 기간과 주기는 항상 동일하게 유지
+
+### 8.3 스타일-데이터 연결 패턴
+
+#### 8.3.1 시리즈 식별자 매핑
+
+- 데이터 소스에서 생성된 시리즈 식별자(series-1, series-2, ...)를 통해 옵션 패널의 스타일 설정과 연결
+- TimeSeries: 시리즈별 독립적인 Line/Area/Bar 스타일 선택 가능
+- 다른 위젯: 위젯 유형별 특화된 스타일 옵션 제공
+
+#### 8.3.2 스타일 상속 구조
+
+1. **전역 기본값**: 위젯 전체에 적용되는 기본 스타일
+2. **시리즈별 오버라이드**: 특정 시리즈에만 적용되는 개별 스타일
+3. **동적 업데이트**: 데이터 소스 변경 시 스타일 매핑 자동 동기화
