@@ -4,24 +4,24 @@
   <text x="10" y="20" font-family="Arial" font-size="14" font-weight="bold">Y축 (보조) ▼</text>
   
   <!-- Y-Axis Secondary Options 상세 내용 -->
-  <rect x="10" y="40" width="360" height="550" fill="white" stroke="lightgray" stroke-width="1"/>
+  <rect x="10" y="40" width="360" height="470" fill="white" stroke="lightgray" stroke-width="1"/>
   
   <!-- YAS-001: Visibility (핵심 토글) -->
   <text x="20" y="60" font-family="Arial" font-size="12" font-weight="bold">보조 Y축 사용</text>
   <rect x="20" y="70" width="60" height="20" fill="white" stroke="black" stroke-width="1"/>
   <circle cx="30" cy="80" r="6" fill="white" stroke="black" stroke-width="1"/>
-  <text x="50" y="84" font-family="Arial" font-size="10">OFF</text>
+  <text x="50" y="84" font-family="Arial" font-size="10">ON</text>
   
   <rect x="90" y="70" width="60" height="20" fill="white" stroke="black" stroke-width="2"/>
   <circle cx="140" cy="80" r="6" fill="black" stroke="black" stroke-width="1"/>
-  <text x="100" y="84" font-family="Arial" font-size="10">ON</text>
+  <text x="100" y="84" font-family="Arial" font-size="10">OFF</text>
   
   <text x="160" y="84" font-family="Arial" font-size="10" fill="gray">활성화 시 하단 옵션 사용 가능</text>
   
   <line x1="20" y1="100" x2="350" y2="100" stroke="lightgray" stroke-width="1"/>
   
   <!-- 활성화 상태에서의 옵션들 -->
-  <rect x="20" y="110" width="340" height="470" fill="white" stroke="lightgray" stroke-width="1"/>
+  <rect x="20" y="110" width="340" height="390" fill="white" stroke="lightgray" stroke-width="1"/>
   
   <!-- YAS-002: Unit -->
   <text x="30" y="130" font-family="Arial" font-size="12">단위</text>
@@ -81,13 +81,10 @@
   <rect x="30" y="420" width="150" height="25" fill="white" stroke="black" stroke-width="1"/>
   <text x="105" y="437" font-family="Arial" font-size="11" text-anchor="middle">insideRight ▼</text>
   
-  <!-- 사용 가이드 -->
-  <rect x="30" y="460" width="320" height="60" fill="white" stroke="lightgray" stroke-width="1"/>
-  <text x="40" y="480" font-family="Arial" font-size="11" fill="gray">💡 보조 Y축 사용 시:</text>
-  <text x="40" y="495" font-family="Arial" font-size="10" fill="gray">• 시리즈별로 주축/보조축 선택 가능</text>
-  <text x="40" y="510" font-family="Arial" font-size="10" fill="gray">• 단위가 다른 데이터를 한 차트에 표시</text>
-  
+  <!-- 구분선 -->
+  <line x1="30" y1="457" x2="340" y2="457" stroke="lightgray" stroke-width="1"/>
+
   <!-- 기본값 복원 버튼 -->
-  <rect x="200" y="535" width="120" height="25" fill="white" stroke="black" stroke-width="1"/>
-  <text x="260" y="552" font-family="Arial" font-size="11" text-anchor="middle">기본값으로 복원</text>
+  <rect x="200" y="467" width="120" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="260" y="484" font-family="Arial" font-size="11" text-anchor="middle">기본값으로 복원</text>
 </svg>

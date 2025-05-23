@@ -4,7 +4,7 @@
   <text x="10" y="20" font-family="Arial" font-size="14" font-weight="bold">Y축 옵션 ▼</text>
   
   <!-- Y-Axis Options 상세 내용 -->
-  <rect x="10" y="40" width="360" height="530" fill="white" stroke="lightgray" stroke-width="1"/>
+  <rect x="10" y="40" width="360" height="470" fill="white" stroke="lightgray" stroke-width="1"/>
   
   <!-- YA-001: Visibility (핵심 토글) -->
   <text x="20" y="60" font-family="Arial" font-size="12" font-weight="bold">Y축 사용</text>
@@ -21,7 +21,7 @@
   <line x1="20" y1="100" x2="350" y2="100" stroke="lightgray" stroke-width="1"/>
   
   <!-- 활성화 상태에서의 옵션들 -->
-  <rect x="20" y="110" width="340" height="450" fill="white" stroke="lightgray" stroke-width="1"/>
+  <rect x="20" y="110" width="340" height="390" fill="white" stroke="lightgray" stroke-width="1"/>
   
   <!-- YA-002: Unit -->
   <text x="30" y="130" font-family="Arial" font-size="12">단위</text>
@@ -86,13 +86,11 @@
   <rect x="200" y="420" width="60" height="20" fill="white" stroke="black" stroke-width="1"/>
   <circle cx="220" cy="430" r="6" fill="black" stroke="black" stroke-width="1"/>
   <text x="235" y="434" font-family="Arial" font-size="10">표시</text>
-  
-  <!-- 사용 가이드 -->
-  <rect x="30" y="460" width="320" height="40" fill="white" stroke="lightgray" stroke-width="1"/>
-  <text x="40" y="480" font-family="Arial" font-size="11" fill="gray">💡 Y축 설정:</text>
-  <text x="40" y="492" font-family="Arial" font-size="10" fill="gray">• 단위가 다른 데이터는 보조 Y축 활용 권장</text>
-  
+
+  <!-- 구분선 -->
+  <line x1="30" y1="457" x2="340" y2="457" stroke="lightgray" stroke-width="1"/>
+
   <!-- 기본값 복원 버튼 -->
-  <rect x="200" y="515" width="120" height="25" fill="white" stroke="black" stroke-width="1"/>
-  <text x="260" y="532" font-family="Arial" font-size="11" text-anchor="middle">기본값으로 복원</text>
+  <rect x="200" y="467" width="120" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="260" y="484" font-family="Arial" font-size="11" text-anchor="middle">기본값으로 복원</text>
 </svg>

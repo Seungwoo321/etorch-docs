@@ -4,7 +4,7 @@
   <text x="10" y="20" font-family="Arial" font-size="14" font-weight="bold">X축 옵션 ▼</text>
   
   <!-- X-Axis Options 상세 내용 -->
-  <rect x="10" y="40" width="360" height="460" fill="white" stroke="lightgray" stroke-width="1"/>
+  <rect x="10" y="40" width="360" height="400" fill="white" stroke="lightgray" stroke-width="1"/>
   
   <!-- XA-001: Visibility (핵심 토글) -->
   <text x="20" y="60" font-family="Arial" font-size="12" font-weight="bold">X축 사용</text>
@@ -21,7 +21,7 @@
   <line x1="20" y1="100" x2="350" y2="100" stroke="lightgray" stroke-width="1"/>
   
   <!-- 활성화 상태에서의 옵션들 -->
-  <rect x="20" y="110" width="340" height="380" fill="white" stroke="lightgray" stroke-width="1"/>
+  <rect x="20" y="110" width="340" height="320" fill="white" stroke="lightgray" stroke-width="1"/>
   
   <!-- XA-002: Data Key -->
   <text x="30" y="130" font-family="Arial" font-size="12">데이터 키</text>
@@ -76,13 +76,8 @@
   
   <!-- 구분선 -->
   <line x1="30" y1="390" x2="340" y2="390" stroke="lightgray" stroke-width="1"/>
-  
-  <!-- 사용 가이드 -->
-  <rect x="30" y="400" width="320" height="40" fill="white" stroke="lightgray" stroke-width="1"/>
-  <text x="40" y="420" font-family="Arial" font-size="11" fill="gray">💡 X축 설정:</text>
-  <text x="40" y="432" font-family="Arial" font-size="10" fill="gray">• 축 유형이 'number'일 때만 최소값/최대값 설정 가능</text>
-  
+
   <!-- 기본값 복원 버튼 -->
-  <rect x="200" y="455" width="120" height="25" fill="white" stroke="black" stroke-width="1"/>
-  <text x="260" y="472" font-family="Arial" font-size="11" text-anchor="middle">기본값으로 복원</text>
+  <rect x="200" y="398" width="120" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="260" y="415" font-family="Arial" font-size="11" text-anchor="middle">기본값으로 복원</text>
 </svg>
