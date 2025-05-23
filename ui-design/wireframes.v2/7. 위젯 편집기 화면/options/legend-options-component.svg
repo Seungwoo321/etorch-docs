@@ -1,0 +1,32 @@
+<svg width="380" height="220" xmlns="http://www.w3.org/2000/svg">
+  <!-- Legend Options (확장됨) -->
+  <rect x="0" y="0" width="380" height="30" fill="white" stroke="black" stroke-width="2"/>
+  <text x="10" y="20" font-family="Arial" font-size="14" font-weight="bold">범례 옵션 ▼</text>
+  
+  <!-- Legend Options 상세 내용 -->
+  <rect x="10" y="40" width="360" height="170" fill="white" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- LG-001: Visibility -->
+  <text x="20" y="60" font-family="Arial" font-size="12" font-weight="bold">범례 표시</text>
+  <rect x="20" y="70" width="60" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <circle cx="30" cy="82" r="4" fill="black" stroke="black" stroke-width="1"/>
+  <text x="45" y="86" font-family="Arial" font-size="11">표시</text>
+  
+  <!-- LG-002: Layout -->
+  <text x="20" y="115" font-family="Arial" font-size="12" font-weight="bold">레이아웃</text>
+  <rect x="20" y="125" width="100" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="70" y="142" font-family="Arial" font-size="11" text-anchor="middle">horizontal ▼</text>
+  <text x="130" y="142" font-family="Arial" font-size="10" fill="gray">horizontal / vertical</text>
+  
+  <!-- LG-003: Horizontal Align -->
+  <text x="20" y="170" font-family="Arial" font-size="12" font-weight="bold">수평 정렬</text>
+  <rect x="20" y="180" width="80" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="60" y="197" font-family="Arial" font-size="11" text-anchor="middle">left ▼</text>
+  <text x="110" y="197" font-family="Arial" font-size="10" fill="gray">left / center / right</text>
+  
+  <!-- LG-004: Vertical Align -->
+  <text x="200" y="170" font-family="Arial" font-size="12" font-weight="bold">수직 정렬</text>
+  <rect x="200" y="180" width="80" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="240" y="197" font-family="Arial" font-size="11" text-anchor="middle">bottom ▼</text>
+  <text x="290" y="197" font-family="Arial" font-size="10" fill="gray">top / middle / bottom</text>
+</svg>

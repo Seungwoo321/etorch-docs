@@ -1,0 +1,30 @@
+<svg width="380" height="250" xmlns="http://www.w3.org/2000/svg">
+  <!-- Panel Options (확장됨) -->
+  <rect x="0" y="0" width="380" height="30" fill="white" stroke="black" stroke-width="2"/>
+  <text x="10" y="20" font-family="Arial" font-size="14" font-weight="bold">패널 옵션 ▼</text>
+  
+  <!-- Panel Options 상세 내용 -->
+  <rect x="10" y="40" width="360" height="190" fill="white" stroke="lightgray" stroke-width="1"/>
+  
+  <!-- PO-001: Title -->
+  <text x="20" y="60" font-family="Arial" font-size="12" font-weight="bold">제목</text>
+  <rect x="20" y="70" width="340" height="25" fill="white" stroke="black" stroke-width="1"/>
+  <text x="30" y="87" font-family="Arial" font-size="11" fill="gray">위젯 제목을 입력하세요</text>
+  <text x="300" y="87" font-family="Arial" font-size="9" fill="lightgray">최대 100자</text>
+  
+  <!-- PO-002: Description -->
+  <text x="20" y="115" font-family="Arial" font-size="12" font-weight="bold">설명</text>
+  <rect x="20" y="125" width="340" height="60" fill="white" stroke="black" stroke-width="1"/>
+  <text x="30" y="142" font-family="Arial" font-size="11" fill="gray">위젯에 대한 설명을 입력하세요</text>
+  <text x="30" y="157" font-family="Arial" font-size="11" fill="gray">(선택사항)</text>
+  <text x="300" y="175" font-family="Arial" font-size="9" fill="lightgray">최대 200자</text>
+  
+  <!-- PO-003: 백그라운드 투명 여부 -->
+  <text x="20" y="205" font-family="Arial" font-size="12" font-weight="bold">배경 투명</text>
+  <rect x="300" y="195" width="60" height="20" fill="white" stroke="black" stroke-width="1"/>
+  <circle cx="310" cy="205" r="4" fill="white" stroke="black" stroke-width="1"/>
+  <text x="325" y="209" font-family="Arial" font-size="11">활성화</text>
+  
+  <!-- 설명 텍스트 -->
+  <text x="20" y="225" font-family="Arial" font-size="10" fill="gray">패널 배경을 투명하게 설정합니다</text>
+</svg>
