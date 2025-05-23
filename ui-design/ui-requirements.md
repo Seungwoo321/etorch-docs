@@ -231,7 +231,15 @@
 | GS-003 | Global Fill Opacity | 전체 채우기 투명도 기본값 | 숫자 | 35 | 0-100% | Time Series |
 | GS-004 | Series Override | 시리즈별 스타일 개별 설정 | 시리즈 선택기 | - | 추가된 시리즈만 | Time Series |
 
-#### 3.2.2 Scatter Chart Options
+#### 3.2.2 Bar Styles (BarChart)
+
+| 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
+|---------|--------|------|-----------|--------|----------|-------------------|
+| BS-001 | Series Style Mapping | 시리즈별 바 스타일 매핑 | 매핑 테이블 | series-1: Bar | 시리즈별 Bar 스타일 | BarChart |
+| BS-002 | Global Bar Width | 전체 바 너비 기본값 | 숫자 | 20 | 5-100px | BarChart |
+| BS-003 | Series Override | 시리즈별 스타일 개별 설정 | 시리즈 선택기 | - | 추가된 시리즈만 | BarChart |
+
+#### 3.2.3 Scatter Chart Options
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
@@ -242,7 +250,7 @@
 | SC-005 | Regression Type | 회귀선 유형 | 선택 | linear | linear, polynomial, exponential | Scatter Chart |
 | SC-006 | XY Label | XY 좌표 레이블 표시 | 불리언 | false | true/false | Scatter Chart |
 
-#### 3.2.3 Radar Chart Options
+#### 3.2.4 Radar Chart Options
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
@@ -253,7 +261,7 @@
 | RC-005 | Show Data Points | 데이터 포인트 표시 | 불리언 | true | true/false | Radar Chart |
 | RC-006 | Normalize Data | 데이터 정규화 | 불리언 | true | true/false | Radar Chart |
 
-#### 3.2.4 Radial Bar Chart Options
+#### 3.2.5 Radial Bar Chart Options
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
@@ -268,9 +276,7 @@
 | RB-009 | Use Gradient | 그라데이션 사용 여부 | 불리언 | false | true/false | Radial Bar Chart |
 | RB-010 | Gradient Colors | 그라데이션 색상 범위 | 색상 배열 | ["#8884d8", "#82ca9d"] | 유효한 색상 코드 | Radial Bar Chart |
 
-#### 3.2.5 Text Component Options
-
-#### 3.2.5 Text Widget Options
+#### 3.2.6 Text Widget Options
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|----------------|
@@ -289,8 +295,9 @@
 
 #### 3.3.1 데이터 소스 적용 위젯
 
-- **적용 위젯**: TimeSeries, BarChart, ScatterChart, RadarChart, RadialBarChart, Text-데이터기반
-- **미적용 위젯**: Text-사용자정의 (데이터 소스 불필요)
+- **다중 시리즈 지원**: TimeSeries, BarChart, ScatterChart, RadarChart, RadialBarChart
+- **단일 데이터 소스**: Text-데이터기반 (시리즈 식별자 불필요)
+- **데이터 소스 미적용**: Text-사용자정의 (데이터 소스 불필요)
 
 #### 3.3.2 전체 위젯 공통 설정
 
@@ -308,8 +315,8 @@
 | DS-003 | 지표 검색 | 지표명/코드로 검색 | 검색 입력 | 빈 문자열 | - | 모든 차트 컴포넌트 |
 | DS-004 | 시리즈 이름 | 차트에 표시될 시리즈 이름 | 텍스트 | 지표명 | 최대 30자 | 모든 차트 컴포넌트 |
 | DS-005 | 시리즈 색상 | 차트에 표시될 시리즈 색상 | 색상 선택기 | 자동 할당 | 유효한 색상 코드 | 모든 차트 컴포넌트 |
-| DS-006 | Y축 선택 | 시리즈가 표시될 Y축 (주/보조) | 선택 | Primary | Primary, Secondary | Time Series |
-| DS-007 | 시리즈 식별자 | 옵션 패널 스타일 설정과 연결할 시리즈 식별자 | 자동생성 | series-1 | series-1, series-2, ... | 모든 차트 컴포넌트 |
+| DS-006 | Y축 선택 | 시리즈가 표시될 Y축 (주/보조) | 선택 | Primary | Primary, Secondary | Time Series, BarChart, ScatterChart |
+| DS-007 | 시리즈 식별자 | 옵션 패널 스타일 설정과 연결할 시리즈 식별자 | 자동생성 | series-1 | series-1, series-2, ... | 차트형 위젯 (TimeSeries, BarChart, ScatterChart, RadarChart, RadialBarChart) |
 | DS-008 | 데이터 변환 | 원본 데이터 변환 방식 | 선택 | 원본값 | 원본값, 변화율(전기대비), 변화율(전년동기대비), 누적값 | 모든 차트 컴포넌트 |
 | DS-009 | 시리즈 제거 | 현재 시리즈 제거 | 버튼 | - | - | 모든 차트 컴포넌트 |
 | DS-010 | 데이터 시차 | 시계열 데이터 시차 적용 | 숫자 | 0 | -12 ~ 12 (개월/분기/년) | Scatter Chart, Time Series |
@@ -353,6 +360,7 @@
   - Legend Options
   - X-Axis Options
   - Y-Axis Options (Primary)
+  - Bar Styles (BarChart) - 시리즈별 스타일 매핑
   - 데이터 소스 설정
 
 #### 3.4.3 ScatterChart
@@ -405,10 +413,11 @@
 |--------------|---------|----------|
 | 전체 | R-001 | Panel Options는 모든 컴포넌트에서 항상 활성화됨 |
 | Time Series | R-TS-001 | Y-Axis (Secondary) 옵션은 YAS-001 (Visibility)가 true일 때만 나머지 필드가 활성화됨 |
-| Time Series | R-TS-002 | Graph Style (GS-001)이 'Line'일 때만 Line 관련 옵션(GS-002) 활성화 |
-| Time Series | R-TS-003 | Graph Style (GS-001)이 'Area'일 때만 Area 관련 옵션(GS-003) 활성화 |
+| Time Series | R-TS-002 | 시리즈별 스타일이 'Line'일 때만 해당 시리즈의 Line 관련 옵션 활성화 |
+| Time Series | R-TS-003 | 시리즈별 스타일이 'Area'일 때만 해당 시리즈의 Area 관련 옵션 활성화 |
 | Time Series | R-TS-004 | 시리즈의 Y축 선택(DS-006)이 'Secondary'일 때는 해당 시리즈만 Secondary Y축에 표시됨 |
 | Time Series | R-TS-005 | 데이터 시리즈의 개별 스타일(DS-007)은 해당 시리즈에만 적용됨 |
+| BarChart | R-BC-001 | 시리즈별 바 스타일 매핑(BS-001)에 따라 개별 시리즈 스타일 적용 |
 
 #### 3.5.2 데이터 소스 의존성 규칙
 
@@ -420,6 +429,15 @@
 | R-DS-004 | 일간(D) 데이터는 최대 1년 기간만 조회 가능, 다른 주기는 더 긴 기간 지원 |
 | R-DS-005 | 조회 주기(CS-002)와 기간(CS-001)은 차트의 모든 시리즈에 공통 적용됨 |
 | R-DS-006 | 시리즈 추가 시 상단의 공통 설정(조회 기간, 조회 주기)은 모든 시리즈에 동일하게 적용됨 |
+
+#### 3.5.3 스타일-데이터 연결 의존성 규칙
+
+| 규칙 ID | 규칙 설명 |
+|---------|----------|
+| R-ST-001 | 데이터 소스의 시리즈 식별자(DS-007)는 옵션 패널의 스타일 설정과 1:1 매핑됨 |
+| R-ST-002 | 시리즈 추가/삭제 시 옵션 패널의 스타일 매핑도 자동 동기화됨 |
+| R-ST-003 | TimeSeries에서 시리즈별 그래프 스타일(GS-001)은 해당 시리즈 식별자와 연결됨 |
+| R-ST-004 | Text-데이터기반 위젯은 단일 데이터 소스만 사용하므로 시리즈 식별자 불필요 |
 
 ## 4. UI/UX 공통 요구사항
 
