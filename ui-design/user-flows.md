@@ -114,7 +114,7 @@ flowchart TD
 
 **핵심 특징:**
 
-- SNS 로그인만 지원(자체 회원가입 없음): Google, Naver, Kakao
+- SNS 로그인만 지원(자체 회원가입 없음): Google, Naver, Kakao (UP-001)
 - Supabase Auth를 활용한 인증 시스템 연동
 - AuthCallback 컴포넌트를 통한 인증 정보 처리
 - AuthGuard 컴포넌트를 통한 보호된 경로 접근 제어
@@ -137,55 +137,48 @@ flowchart TD
     I --> J[대시보드 홈]
 ```
 
-이 흐름은 새 사용자의 온보딩 경험을 상세히 설명하여 초기 사용자 학습 곡선을 완화합니다. 첫 방문 사용자에게 서비스의 가치를 신속하게 이해시키고, 직관적인 사용 방법을 안내합니다.
+이 흐름은 새 사용자의 온보딩 경험을 상세히 설명하여 초기 사용자 학습 곡선을 완화합니다.
 
 ### 3.2 대시보드 관리 흐름
 
 > 관련 와이어프레임: [대시보드 화면](./wireframes/dashboard-wireframe.svg), [대시보드 편집기](./wireframes/dashboard-editor-wireframe.svg)  
-> 관련 UI 요구사항: DL-001~005(대시보드 목록), DV-001~007(대시보드 상세), DE-001~009(대시보드 편집)  
+> 관련 UI 요구사항: DL-001~005(대시보드 목록), DV-001~006(대시보드 상세), DE-001~009(대시보드 편집)  
 > 관련 컴포넌트: DashboardComponent, DashboardGrid, GridItem (packages/dashboard/components/)  
 > 구현 단계: 페이즈 2 (핵심 기능) - 대시보드 시스템 (ROADMAP.md 참조)
 
 ```mermaid
 flowchart TD
     A[메인 대시보드 페이지] --> B{대시보드 선택}
-    B -->|새 대시보드 생성| C[대시보드 생성 페이지]
+    B -->|DL-005: 새 대시보드 생성| C[대시보드 생성 페이지]
     B -->|기존 대시보드 선택| D[대시보드 상세 페이지]
     
-    C --> E[타이틀/설명 입력]
-    E --> F[레이아웃 선택]
-    F --> G[첫 차트/위젯 추가]
-    G --> H[저장]
-    H --> D
+    C --> E[DE-001: 타이틀 입력]
+    E --> F[DE-002: 설명 입력]
+    F --> G[레이아웃 선택]
+    G --> H[DE-003: 첫 위젯 추가]
+    H --> I[DE-007: 저장]
+    I --> D
     
-    D --> I{작업 선택}
-    I -->|위젯 추가| J[위젯 추가 모달]
-    I -->|레이아웃 편집| K[레이아웃 편집 모드]
-    I -->|시간범위 변경| L[TimeRangeControl 컴포넌트]
-    I -->|주기 변경| M[PeriodSelector 컴포넌트]
-    I -->|저장| N[DashboardHeaderControls - 저장]
-    I -->|공유| O[DashboardHeaderControls - 공유]
-    I -->|내보내기| P[DashboardHeaderControls - 내보내기]
+    D --> J{작업 선택}
+    J -->|DE-003: 위젯 추가| K[위젯 추가 드롭다운]
+    J -->|DE-004/DE-005: 레이아웃 편집| L[레이아웃 편집 모드]
+    J -->|DV-001: 시간범위 변경| M[TimeRangeControl 컴포넌트]
+    J -->|DV-002: 새로고침| N[데이터 새로고침]
+    J -->|DV-003: 자동 새로고침| O[자동 새로고침 설정]
+    J -->|DV-004: 공유| P[공유 옵션 모달]
+    J -->|DV-005: 내보내기| Q[내보내기 옵션]
+    J -->|DV-006: 편집 모드| R[편집 모드 전환]
     
-    J --> Q[WidgetType 선택]
-    Q --> R[DataSourcePanel 구성]
-    R --> S[위젯 추가 완료]
-    S --> D
+    K --> S[WM-001: 위젯 유형 선택]
+    S --> T[위젯 편집기로 이동]
+    T --> U[위젯 추가 완료]
+    U --> D
     
-    K --> T1[GridLayout 편집 모드 활성화]
-    T1 --> T2[LayoutControls 표시]
-    T2 --> T3[위젯 드래그/리사이징]
-    T3 --> T4[레이아웃 저장]
-    T4 --> D
-    
-    L --> U1[DateRangePicker 표시]
-    U1 --> U2[QuickRanges 제공]
-    U2 --> U3[기간 변경 적용]
-    U3 --> D
-    
-    M --> V1[PeriodOptions 표시]
-    V1 --> V2[D/M/Q/A 주기 선택]
-    V2 --> D
+    L --> V[GridLayout 편집 모드]
+    V --> W[DE-004: 위젯 드래그 이동]
+    W --> X[DE-005: 위젯 크기 조정]
+    X --> Y[DE-007: 레이아웃 저장]
+    Y --> D
 ```
 
 **핵심 특징:**
@@ -193,81 +186,20 @@ flowchart TD
 - react-grid-layout 기반의 유연한 대시보드 레이아웃 관리
 - GridLayout, GridItem 컴포넌트를 통한 위젯 배치
 - DashboardControls 컴포넌트를 통한 통합 제어
-- TimeRangeControl: 시간 범위 선택 (최근 1년, 최근 3년, 커스텀 범위 등)
-- PeriodSelector: 데이터 주기 선택 (일간-D, 월간-M, 분기-Q, 연간-A)
+- TimeRangeControl (DV-001): 시간 범위 선택 기능
+- 자동 새로고침 (DV-003): 설정된 간격으로 데이터 갱신
 - 위젯 유형: ChartWidget, TextWidget 등 다양한 컨텐츠 지원
-
-**서버/클라이언트 컴포넌트 흐름:**
-
-```mermaid
-flowchart TD
-    subgraph "서버 컴포넌트"
-        A[DashboardPage] --> B[DashboardServerWrapper]
-        B --> H[DashboardHeader]
-    end
-    
-    subgraph "클라이언트 컴포넌트"
-        B --> C[DashboardComponent]
-        C --> D[DashboardGrid]
-        C --> E[DashboardControls]
-        
-        D --> D1[GridLayout]
-        D1 --> D2[GridItem]
-        D2 --> D3[ChartItem]
-        D2 --> D4[TextItem]
-        
-        E --> E1[TimeRangeControl]
-        E --> E2[RefreshControl]
-        E --> E3[ViewOptions]
-    end
-    
-    style A,B,H fill:#ccffcc,stroke:#333,stroke-width:1px
-    style C,D,E,D1,D2,D3,D4,E1,E2,E3 fill:#ffcccb,stroke:#333,stroke-width:1px
-```
-
-#### 3.2.1 서버 액션 통합 패턴
-
-E-Torch의 대시보드 편집 흐름은 Next.js 서버 액션을 활용하여 클라이언트-서버 통신을 간소화합니다:
-
-```tsx
-// 서버 액션 정의
-'use server'
-export async function saveDashboardAction(formData: FormData) {
-  // 서버 측 유효성 검사 및 데이터 저장
-  // ...
-  revalidatePath(`/dashboard/${dashboardId}`)
-  return { success: true }
-}
-
-// 클라이언트 컴포넌트에서 활용
-export function SaveButton() {
-  const [isPending, startTransition] = useTransition()
-  
-  return (
-    <form action={(formData) => {
-      startTransition(async () => {
-        const result = await saveDashboardAction(formData)
-        // 결과 처리
-      })
-    }}>
-      <button type="submit" disabled={isPending}>
-        {isPending ? '저장 중...' : '저장'}
-      </button>
-    </form>
-  )
-}
-```
 
 ### 3.3 위젯 생성 및 편집 흐름
 
-> 관련 와이어프레임: [차트 에디터](./wireframes/improved-chart-editor-wireframe.svg)  
-> 관련 UI 요구사항: PO-001~003(패널 옵션), TO-001~005(툴팁 옵션), CS-001~002(조회 기간/주기 설정)  
-> 관련 컴포넌트: WidgetEditor, WidgetPreview, OptionsPanel (packages/widgets/src/editor/)
+> 관련 와이어프레임: [위젯 편집기](./wireframes/widget-editor-wireframe.svg)  
+> 관련 UI 요구사항: WM-001~007(위젯 관리), PO-001~003(패널 옵션), TO-001~005(툴팁 옵션), GS-001~004(그래프 스타일) 등  
+> 관련 컴포넌트: WidgetEditor, WidgetPreview, OptionsPanel (packages/widgets/src/editor/)  
 > 구현 단계: 페이즈 2 (핵심 기능) - 차트 컴포넌트 (ROADMAP.md 참조)
 
 ```mermaid
 flowchart TD
-    A[WidgetEditor 진입] --> B{WidgetType 선택}
+    A[WidgetEditor 진입] --> B{WM-001: 위젯 유형 선택}
     B -->|TimeSeries| TS[시계열 차트]
     B -->|BarChart| BC[바 차트]
     B -->|ScatterChart| SC[산점도 차트]
@@ -276,87 +208,73 @@ flowchart TD
     B -->|Text-사용자정의| TX1[텍스트 위젯 (사용자 정의)]
     B -->|Text-데이터기반| TX2[텍스트 위젯 (데이터 기반)]
     
-    TS --> C[DataSourcePanel]
+    TS --> C[데이터 소스 설정]
     BC --> C
     SC --> C
     RC --> C
     RB --> C
     TX2 --> C
 
-    TX1 --> K[CustomContent 편집]
-    TX2 --> L[DataSource 설정]
-    L --> M[DataOperation 선택]
-    M --> N[TextPreview]
+    TX1 --> K[TX-001: 사용자 정의 텍스트 편집]
+    TX2 --> L[TX-002: 데이터 소스 설정]
+    L --> M[TX-003: 데이터 처리 방식 선택]
+    M --> N[텍스트 위젯 미리보기]
     K --> N
     
     C --> D[DataQueryBuilder]
-    D --> E[SourceSelector]
+    D --> E[DS-001: 데이터 출처 선택]
     E -->|KOSIS| F1[KOSIS 지표 검색]
     E -->|ECOS| F2[ECOS 지표 검색]
     E -->|OECD| F3[OECD 지표 검색]
     
-    F1 --> G[IndicatorSelector]
+    F1 --> G[DS-002/DS-003: 지표 선택]
     F2 --> G
     F3 --> G
-    G --> H[TransformControls]
+    G --> H[DS-008: 데이터 변환 방식 선택]
     
     H -->|원본값| I1[원본 데이터 활용]
-    H -->|변화율-전기대비| I2[MoM/QoQ/YoY 계산]
+    H -->|변화율-전기대비| I2[MoM/QoQ 계산]
     H -->|변화율-전년동기대비| I3[YoY 계산]
     H -->|누적값| I4[데이터 누적 계산]
     
-    I1 --> J[ChartPreview]
+    I1 --> J[차트 미리보기]
     I2 --> J
     I3 --> J
     I4 --> J
     
-    J --> K{차트 OptionsPanel 편집}
-    K -->|PanelOptions| L1[타이틀/설명 설정]
-    K -->|TooltipOptions| L2[툴팁 설정]
-    K -->|LegendOptions| L3[범례 설정]
-    K -->|AxisOptions| L4[X/Y축 설정]
-    K -->|StyleOptions| L5[스타일 설정]
-
-    TK2 --> TK3{텍스트 OptionsPanel 편집}
-    TK3 -->|PanelOptions| TL1[타이틀/설명 설정]
-    TK3 -->|TextOptions| TL2[폰트/정렬/색상 설정]
-    TK3 -->|FormatOptions| TL3[숫자 포맷/조건부 서식]
+    J --> OPT{옵션 패널 편집}
+    OPT -->|PO-001~003| L1[Panel Options: 제목/설명/배경 설정]
+    OPT -->|TO-001~005| L2[Tooltip Options: 툴팁 모드/너비/커서 설정]
+    OPT -->|LG-001~004| L3[Legend Options: 범례 가시성/레이아웃 설정]
+    OPT -->|XA-001~010| L4[X-Axis Options: X축 설정]
+    OPT -->|YA-001~011| L5[Y-Axis Options (Primary): 주축 설정]
+    OPT -->|YAS-001~011| L6[Y-Axis Options (Secondary): 보조축 설정]
     
-    L1 --> M[변경사항 적용]
-    L2 --> M
-    L3 --> M
-    L4 --> M
-    L5 --> M
+    N --> TXT{텍스트 위젯 옵션}
+    TXT -->|TX-004~010| T1[텍스트 포맷/정렬/색상 설정]
     
-    TS --> N1[Graph Styles - TimeSeries]
-    N1 --> O1[시리즈별 스타일 매핑 설정]
-    O1 --> O2[전역 Line Width/Fill Opacity 설정]
-    O2 --> O3[개별 시리즈 스타일 오버라이드]
+    % 위젯별 전용 옵션 분기
+    TS --> WSP1[GS-001~004: Graph Styles 설정]
+    BC --> WSP2[BS-001~003: Bar Styles 설정]
+    SC --> WSP3[SC-001~006: Scatter Options 설정] 
+    RC --> WSP4[RC-001~006: Radar Options 설정]
+    RB --> WSP5[RB-001~010: Radial Bar Options 설정]
     
-    SC --> N2[Scatter Options]
-    N2 --> P1[포인트 크기/모양 설정]
-    N2 --> P2[회귀선 설정]
+    L1 --> APPLY[변경사항 적용]
+    L2 --> APPLY
+    L3 --> APPLY
+    L4 --> APPLY
+    L5 --> APPLY
+    L6 --> APPLY
+    T1 --> APPLY
+    WSP1 --> APPLY
+    WSP2 --> APPLY
+    WSP3 --> APPLY
+    WSP4 --> APPLY
+    WSP5 --> APPLY
     
-    RC --> N3[Radar Options]
-    N3 --> Q1[그리드/축 설정]
-    N3 --> Q2[영역 채우기 설정]
-    
-    RB --> N4[Radial Bar Options]
-    N4 --> R1[각도/반경 설정]
-    N4 --> R2[배경 설정]
-    
-    M --> S[차트 저장]
-    O1 --> M
-    O2 --> M
-    O3 --> M
-    P1 --> M
-    P2 --> M
-    Q1 --> M
-    Q2 --> M
-    R1 --> M
-    R2 --> M
-    
-    S --> T[DashboardGrid에 추가]
+    APPLY --> SAVE[WM-004: 위젯 저장]
+    SAVE --> ADD[DashboardGrid에 추가]
 ```
 
 **핵심 특징:**
@@ -368,34 +286,88 @@ flowchart TD
 - 데이터 소스 통합 및 데이터 변환 파이프라인
 - 단계별 편집 과정 및 저장 체계
 
-주요 단계에서 사용되는 UI 컴포넌트:
+#### 3.3.1 시리즈-스타일 매핑 흐름
 
-- 차트 유형 선택: CM-001(차트 유형 선택) UI 컴포넌트 활용
-- 데이터 소스 설정: DM-001~003(데이터 출처/지표 선택) 컴포넌트 활용
-- 시각화 옵션 설정:
-  - 패널 옵션(PO-001~003): 제목, 설명, 배경 설정
-  - 툴팁 옵션(TO-001~005): 툴팁 모드, 너비, 커서 스타일 설정
-  - 레전드 옵션(LG-001~004): 범례 가시성, 레이아웃, 정렬 설정
+```mermaid
+flowchart TD
+    A[AS-001: 시리즈 추가] --> B[DS-007: 시리즈 식별자 자동 생성]
+    B --> C[series-1, series-2, series-3...]
+    C --> D[옵션 패널 스타일 매핑]
+    D --> E{위젯 유형별 스타일 적용}
+    E -->|TimeSeries| F[GS-001: 시리즈별 Line/Area/Bar 매핑]
+    E -->|BarChart| G[BS-001: 시리즈별 Bar 스타일 매핑]
+    E -->|기타 차트| H[해당 위젯 전용 스타일 적용]
+    
+    F --> I[개별 시리즈 스타일 오버라이드]
+    G --> I
+    H --> I
+    
+    I --> J[DS-009: 시리즈 제거 시 매핑 동기화]
+    J --> K[스타일 매핑 업데이트 완료]
+```
 
-#### 3.3.1 React 19 최적화 패턴 활용
+#### 3.3.2 옵션 의존성 및 활성화 흐름
 
-E-Torch의 위젯 생성 및 편집 기능은 React 19의 최신 기능을 활용하여 최적화됩니다:
+```mermaid
+flowchart TD
+    A[위젯 유형 선택] --> B{활성화 옵션 영역 결정}
+    
+    B -->|TimeSeries| C[Panel + Tooltip + Legend + X/Y축 + Y보조축 + Graph Styles]
+    B -->|BarChart| D[Panel + Tooltip + Legend + X/Y축 + Bar Styles]
+    B -->|ScatterChart| E[Panel + Tooltip + Legend + X/Y축 + Scatter Options]
+    B -->|RadarChart| F[Panel + Tooltip + Legend + Radar Options]
+    B -->|RadialBarChart| G[Panel + Tooltip + Legend + Radial Bar Options]
+    B -->|Text-사용자정의| H[Panel + Text Options만]
+    B -->|Text-데이터기반| I[Panel + Text Options + 데이터 소스]
+    
+    C --> J{YAS-001: 보조축 표시 여부}
+    J -->|true| K[YAS-002~011 활성화]
+    J -->|false| L[YAS-002~011 비활성화]
+    
+    D --> M[시리즈별 Y축 선택에 따른 축 매핑]
+    E --> M
+    
+    K --> N[위젯 렌더링]
+    L --> N
+    M --> N
+    F --> N
+    G --> N
+    H --> N
+    I --> N
+```
 
-- **useOptimistic**: 서버 응답 전 낙관적 UI 업데이트로 반응성 향상
-- **useFormStatus**: 폼 상태(저장 중, 오류 등)의 선언적 관리
-- **자동 메모이제이션**: React 19의 자동 메모이제이션으로 성능 최적화
-- **Suspense for Data Fetching**: 데이터 로딩 상태의 선언적 관리
+#### 3.3.3 데이터 소스 의존성 흐름
+
+```mermaid
+flowchart TD
+    A[CS-001: 조회 기간 설정] --> B[모든 시리즈에 공통 적용]
+    C[CS-002: 조회 주기 설정] --> B
+    
+    B --> D[DS-001: 데이터 출처별 지표 필터링]
+    D --> E{지표 주기 호환성 확인}
+    E -->|KOSIS| F[M, Q, A 주기만 지원]
+    E -->|ECOS| G[D, M, Q, A 모든 주기 지원]
+    E -->|OECD| H[출처별 지원 주기 확인]
+    
+    F --> I[선택 가능한 주기 업데이트]
+    G --> I
+    H --> I
+    
+    I --> J[DS-002: 지표 코드 유효성 검증]
+    J --> K[데이터 쿼리 실행]
+    K --> L[차트 렌더링]
+```
 
 ### 3.4 데이터 소스 조회 및 분석 흐름
 
 > 관련 UI 요구사항: DS-001~010(데이터 소스 관리), CS-001~002(조회 기간/주기 설정)  
 > 관련 컴포넌트: DataQueryBuilder, SourceSelector, IndicatorSelector (packages/data-sources/src/components/)  
 > 적용 위젯: 차트형 위젯 전체, Text-데이터기반 위젯  
-> 구현 단계: 페이즈 2 (핵심 기능) - 데이터 소스 관리 (ROADMAP.md 참조)  
+> 구현 단계: 페이즈 2 (핵심 기능) - 데이터 소스 관리 (ROADMAP.md 참조)
 
 ```mermaid
 flowchart TD
-    A[DataQueryBuilder 진입] --> B{데이터 소스 선택}
+    A[DataQueryBuilder 진입] --> B{DS-001: 데이터 소스 선택}
     B -->|KOSIS| C1[KOSIS 지표 검색]
     B -->|ECOS| C2[ECOS 지표 검색]
     B -->|OECD| C3[OECD 지표 검색]
@@ -404,49 +376,46 @@ flowchart TD
     C2 --> D
     C3 --> D
     
-    D -->|SearchIndicator| E1[지표명/코드 검색]
-    D -->|IndicatorTree| E2[카테고리별 트리뷰]
-    D -->|RecentIndicators| E3[최근 사용 지표]
+    D -->|DS-003: 지표 검색| E1[지표명/코드 검색]
+    D -->|카테고리 탐색| E2[카테고리별 트리뷰]
+    D -->|최근 사용| E3[최근 사용 지표]
     
-    E1 --> F[지표 선택]
+    E1 --> F[DS-002: 지표 선택]
     E2 --> F
     E3 --> F
     
-    F --> G[TimeRangeSelector]
-    G --> H[PeriodSelector]
-    H --> I[DataPreview]
+    F --> G[CS-001: 시간 범위 설정]
+    G --> H[CS-002: 주기 선택]
+    H --> I[데이터 미리보기]
     
-    I --> J{데이터 변환}
-    J -->|TransformOptions| K[데이터 변환 방식 선택]
-    K -->|원본값| L1[원본 데이터 활용]
-    K -->|변화율-전기대비| L2[MoM/QoQ/YoY 계산]
-    K -->|변화율-전년동기대비| L3[YoY 계산]
-    K -->|누적값| L4[데이터 누적 계산]
+    I --> J{DS-008: 데이터 변환}
+    J -->|원본값| K1[원본 데이터 활용]
+    J -->|변화율-전기대비| K2[MoM/QoQ/YoY 계산]
+    J -->|변화율-전년동기대비| K3[YoY 계산]
+    J -->|누적값| K4[데이터 누적 계산]
     
-    L1 --> M[변환된 데이터 미리보기]
-    L2 --> M
-    L3 --> M
-    L4 --> M
+    K1 --> L[변환된 데이터 미리보기]
+    K2 --> L
+    K3 --> L
+    K4 --> L
     
-    M --> N{데이터 활용}
-    N -->|차트 생성| O1[ChartEditor로 데이터 전달]
-    N -->|CSV 내보내기| O2[exportToCSV]
-    N -->|Excel 내보내기| O3[exportToExcel]
-    N -->|추가 지표 조회| P[시리즈 추가]
+    L --> M{데이터 활용}
+    M -->|차트 생성| N1[ChartEditor로 데이터 전달]
+    M -->|WM-007: CSV 내보내기| N2[exportToCSV]
+    M -->|WM-007: Excel 내보내기| N3[exportToExcel]
+    M -->|AS-001: 추가 지표 조회| O[시리즈 추가]
     
-    P --> Q[새 DataQueryCard 생성]
-    Q --> B
+    O --> P[새 DataQueryCard 생성]
+    P --> B
 ```
 
 **핵심 특징:**
 
 - 통합 데이터 조회 시스템 (KOSIS, ECOS, OECD)
-- 지표 검색 및 선택 인터페이스
-- 기간 및 주기 설정 컴포넌트
-- 데이터 변환 및 미리보기 기능
-- 다양한 데이터 활용 옵션
-
-**주의**: 주기 선택은 차트 생성 시에만 의미가 있으며, 완성된 대시보드에서는 기간 조회만 가능합니다.
+- 지표 검색 및 선택 인터페이스 (DS-003)
+- 기간 및 주기 설정 컴포넌트 (CS-001, CS-002)
+- 데이터 변환 및 미리보기 기능 (DS-008)
+- 다양한 데이터 활용 옵션 (WM-007, AS-001)
 
 ### 3.5 데이터 비교 분석 흐름
 
@@ -488,7 +457,7 @@ flowchart TD
 
 **핵심 특징:**
 
-- 기간별 데이터 비교 기능 (UI 요구사항 명세 CP-001~006)
+- 기간별 데이터 비교 기능 (CP-001~006)
 - 다양한 비교 유형 지원: 전년동기, 이전기간, 사용자정의
 - 비교 시각화 방식: 중첩, 나란히, 차이값
 - 스타일 커스터마이징으로 시각적 구분 명확화
@@ -504,37 +473,38 @@ flowchart TD
 ```mermaid
 flowchart TD
     A[대시보드 상세 페이지] --> B[DashboardHeaderControls]
-    B --> C{공유 옵션}
+    B --> C{DV-004: 공유 옵션}
     C -->|링크 공유| D[DashboardSharing 컴포넌트]
     
-    D --> E[isPublic 상태 확인]
+    D --> E[DS-001: 공개 상태 확인]
     E -->|비공개| F1[공개 대시보드로 설정 안내]
-    E -->|공개| F2[공유 링크 생성]
+    E -->|공개| F2[DS-002: 공유 링크 생성]
     
     F1 -->|공개 설정| F2
-    F2 --> G[링크 복사/SNS 공유]
+    F2 --> G[DS-003: 링크 복사/SNS 공유]
     
-    H[DashboardExplore 페이지] --> I[DashboardSearchFilter]
-    I --> J[공개 대시보드 목록]
-    J --> K[DashboardCard 항목]
+    H[DashboardExplore 페이지] --> I[DS-005: 대시보드 검색]
+    I --> J[DS-006: 카테고리 필터]
+    J --> K[공개 대시보드 목록]
+    K --> L[DashboardCard 항목]
     
-    K --> L{DashboardCard 작업}
-    L -->|미리보기| M1[대시보드 미리보기]
-    L -->|구독| M2[구독 버튼 클릭]
-    L -->|복제| M3[내 대시보드로 복제]
+    L --> M{DashboardCard 작업}
+    M -->|DS-008: 미리보기| N1[대시보드 미리보기]
+    M -->|DS-007: 구독| N2[구독 버튼 클릭]
+    M -->|복제| N3[내 대시보드로 복제]
     
-    M1 --> N1[대시보드 상세 보기]
-    M2 --> N2[구독 대시보드에 추가]
-    M3 --> N3[복제된 대시보드 편집]
+    N1 --> O1[대시보드 상세 보기]
+    N2 --> O2[구독 대시보드에 추가]
+    N3 --> O3[복제된 대시보드 편집]
 ```
 
 **핵심 특징:**
 
-- 대시보드 공유 기능: 링크 생성, 공개/비공개 설정
-- DashboardExplore를 통한 공개 대시보드 탐색
-- 카테고리 필터 및 검색 기능
+- 대시보드 공유 기능: 링크 생성, 공개/비공개 설정 (DS-001, DS-002)
+- DashboardExplore를 통한 공개 대시보드 탐색 (DS-004)
+- 카테고리 필터 및 검색 기능 (DS-005, DS-006)
 - DashboardCard를 통한 직관적인 목록 표시
-- 구독 및 복제 기능으로 확장성 제공
+- 구독 및 복제 기능으로 확장성 제공 (DS-007, DS-008)
 
 ### 3.7 구독 및 결제 관리 흐름
 
@@ -547,15 +517,15 @@ flowchart TD
 flowchart TD
     A[ProfileSettings 페이지] --> B[SubscriptionManagement 탭]
     
-    B --> C{CurrentPlan 확인}
-    C -->|무료 플랜| D[PlanOptions 표시]
-    C -->|유료 플랜| E[CurrentPlan 정보 표시]
+    B --> C{SM-001: 구독 정보 확인}
+    C -->|무료 플랜| D[SM-002: 플랜 옵션 표시]
+    C -->|유료 플랜| E[현재 플랜 정보 표시]
     
     D --> F[플랜 선택]
     F -->|월간 구독| G1[월간 플랜 선택]
     F -->|연간 구독| G2[연간 플랜 선택]
     
-    G1 --> H[결제 정보 입력 폼]
+    G1 --> H[SM-003: 결제 정보 입력]
     G2 --> H
     
     H --> I[토스페이먼츠 결제 연동]
@@ -565,38 +535,20 @@ flowchart TD
     
     E --> M{구독 관리 옵션}
     M -->|플랜 변경| F
-    M -->|구독 취소| N[취소 확인 다이얼로그]
-    M -->|결제 내역| O[PaymentHistory 컴포넌트]
+    M -->|SM-004: 구독 취소| N[취소 확인 다이얼로그]
+    M -->|SM-005: 결제 내역| O[PaymentHistory 컴포넌트]
+    M -->|SM-006: 결제 방법 관리| P[결제 수단 관리]
     
-    N -->|취소 확인| P[구독 취소 처리]
-    P --> Q[무료 플랜으로 전환]
+    N -->|취소 확인| Q[구독 취소 처리]
+    Q --> R[무료 플랜으로 전환]
 ```
 
 **핵심 특징:**
 
-- 명확한 무료/유료 플랜 구분
-- CurrentPlan 컴포넌트를 통한 현재 구독 정보 표시
-- PlanOptions 컴포넌트를 통한 다양한 플랜 옵션 제공
-- 토스페이먼츠 결제 연동
-- PaymentHistory를 통한 결제 내역 관리
-
-#### 3.7.1 구독 전환 및 결제 경험 흐름
-
-```mermaid
-flowchart TD
-    A[구독 관리 페이지 방문] --> B[플랜 비교 검토]
-    B --> C[플랜 선택]
-    C --> D[토스페이먼츠 결제 페이지]
-    D --> E[결제 정보 입력]
-    E --> F[결제 처리]
-    F -->|성공| G[구독 활성화 확인]
-    F -->|실패| H[오류 안내]
-    G --> I[프리미엄 기능 즉시 접근]
-    H --> J[대체 결제 수단 제안]
-    J --> E
-```
-
-이 흐름은 사용자가 유료 플랜으로 전환하는 과정과 결제 경험을 시각화합니다.
+- 명확한 무료/유료 플랜 구분 (SM-001, SM-002)
+- 토스페이먼츠 결제 연동 (SM-003)
+- 구독 취소 및 결제 내역 관리 (SM-004, SM-005)
+- 결제 방법 관리 기능 (SM-006)
 
 ### 3.8 대시보드 발견 및 구독 흐름
 
@@ -607,11 +559,11 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[대시보드 탐색 페이지 방문] --> B[카테고리/인기순 필터링]
+    A[DS-004: 대시보드 탐색 페이지] --> B[DS-006: 카테고리/인기순 필터링]
     B --> C[관심 대시보드 발견]
     C --> D{행동 선택}
-    D -->|미리보기| E[대시보드 상세 보기]
-    D -->|구독| F[구독 추가]
+    D -->|DS-008: 미리보기| E[대시보드 상세 보기]
+    D -->|DS-007: 구독| F[구독 추가]
     D -->|복제| G[내 대시보드로 복제]
     
     E --> H[전체 화면으로 분석]
@@ -619,7 +571,7 @@ flowchart TD
     G --> J[복제된 대시보드 편집]
 ```
 
-이 흐름은 사용자가 다른 사용자의 대시보드를 발견하고 활용하는 과정을 보여줍니다. 특히 일반 투자자 페르소나가 전문가의 인사이트를 활용하는 중요한 경로입니다.
+이 흐름은 사용자가 다른 사용자의 대시보드를 발견하고 활용하는 과정을 보여줍니다.
 
 ### 3.9 모바일 사용자 경험 흐름
 
@@ -629,27 +581,27 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[모바일 접속] --> B[압축된 네비게이션 메뉴]
+    A[모바일 접속] --> B[LN-005: 압축된 네비게이션 메뉴]
     B --> C[대시보드 카드 세로 스크롤]
     C --> D[대시보드 선택]
-    D --> E[모바일 최적화 대시보드 뷰]
+    D --> E[LN-001: 모바일 최적화 대시보드 뷰]
     E --> F{상호작용 옵션}
     F -->|확대/축소| G[핀치 줌으로 위젯 확대]
     F -->|상세 보기| H[위젯 탭하여 전체화면]
     F -->|시간 범위 변경| I[날짜 선택 모달]
 ```
 
-이 흐름은 모바일 기기에서의 E-Torch 사용 경험을 설명합니다. 반응형 디자인을 통해 작은 화면에서도 효과적으로 대시보드를 탐색하고 조작할 수 있습니다.
+이 흐름은 모바일 기기에서의 E-Torch 사용 경험을 설명합니다.
 
 ### 3.10 데이터 내보내기 및 공유 흐름
 
-> 관련 UI 요구사항: DV-006(대시보드 내보내기), CM-007(차트 내보내기)  
-> 관련 컴포넌트: WidgetExport, DashboardExport (packages/widgets/src/components/, packages/dashboard/src/components/)
+> 관련 UI 요구사항: DV-005(대시보드 내보내기), WM-007(위젯 내보내기)  
+> 관련 컴포넌트: WidgetExport, DashboardExport (packages/widgets/src/components/, packages/dashboard/src/components/)  
 > 구현 단계: 페이즈 4 (완성 및 배포) - 고급 기능 및 최적화 (ROADMAP.md 참조)
 
 ```mermaid
 flowchart TD
-    A[대시보드/위젯 상세 화면] --> B[내보내기 버튼 클릭]
+    A[대시보드/위젯 상세 화면] --> B[DV-005/WM-007: 내보내기 버튼]
     B --> C{내보내기 형식 선택}
     C -->|PNG/이미지| D[이미지로 내보내기]
     C -->|PDF| E[PDF로 내보내기]
@@ -663,7 +615,7 @@ flowchart TD
     H --> I
 ```
 
-이 흐름은 product-spec.md의 "데이터 시각화를 통한 강의자료 및 분석자료 생성" 기능을 구체화합니다. 워터마크가 포함된 내보내기 기능은 브랜드 홍보와 전문성 확산에 기여합니다.
+이 흐름은 데이터 시각화를 통한 강의자료 및 분석자료 생성 기능을 구체화합니다.
 
 ## 4. 상태 전이 및 인터랙션 패턴
 
@@ -690,23 +642,22 @@ stateDiagram-v2
 - 지연 로딩 시 스켈레톤 UI 단계적 표시 (300ms 임계값)
 - 오류 상태의 명확한 시각적 표시
 - 오류 발생 시 재시도 옵션 제공
-- 데이터 캐싱 및 백그라운드 갱신
 
 ### 4.2 편집 모드 전환 패턴
 
 ```mermaid
 stateDiagram-v2
     [*] --> ViewMode
-    ViewMode --> EditMode: 편집 버튼 클릭
+    ViewMode --> EditMode: DV-006 편집 버튼 클릭
     EditMode --> ViewMode: 취소 버튼 클릭
-    EditMode --> Validating: 저장 버튼 클릭
+    EditMode --> Validating: WM-004 저장 버튼 클릭
     Validating --> EditMode: 유효성 검사 실패
     Validating --> Saving: 유효성 검사 성공
     Saving --> ViewMode: 저장 성공
     Saving --> SavingError: 저장 실패
     SavingError --> EditMode: 에러 확인 후 편집 재개
     
-    ViewMode --> AutoSavedDraft: 임시 저장 존재
+    ViewMode --> AutoSavedDraft: DE-008 임시 저장 존재
     AutoSavedDraft --> EditMode: 임시 저장 복원
     EditMode --> AutoSaving: 변경 후 일정 시간 경과
     AutoSaving --> EditMode: 임시 저장 완료
@@ -715,102 +666,45 @@ stateDiagram-v2
 **핵심 패턴:**
 
 - 뷰 모드와 편집 모드의 명확한 UI 구분
-- Zustand 상태를 활용한 위젯 편집 상태 관리
 - 위젯 유형별 유효성 검사를 통한 데이터 무결성 보장
-- 차트형/텍스트형 위젯의 차별화된 검증 로직
-- 자동 저장 (임시 저장) 기능 제공
+- 자동 저장 기능 제공 (DE-008)
 - 취소 시 변경사항 폐기 확인 다이얼로그
-- 저장 중/오류 상태의 명확한 피드백
 
 ### 4.3 드래그 앤 드롭 인터랙션
 
 ```mermaid
 stateDiagram-v2
     [*] --> Ready
-    Ready --> DragStart: mousedown/touchstart
-    DragStart --> Dragging: 드래그 시작 임계값 초과
+    Ready --> DragStart: DE-004 드래그 시작
+    DragStart --> Dragging: 드래그 임계값 초과
     Dragging --> DragOver: 드롭 영역 진입
     DragOver --> Dragging: 드롭 영역 이탈
-    Dragging --> DragEnd: mouseup/touchend
+    Dragging --> DragEnd: 드래그 종료
     DragEnd --> Ready: 유효하지 않은 위치
     DragEnd --> Dropping: 유효한 위치
-    Dropping --> LayoutUpdating: 레이아웃 재계산
+    Dropping --> LayoutUpdating: DE-005 크기 조정
     LayoutUpdating --> Ready: GridLayout 업데이트 완료
 ```
 
 **핵심 패턴:**
 
-- react-grid-layout의 onDragStart, onDrag, onDragStop 이벤트 활용
-- 드래그 시작 시 시각적 피드백 (그림자 효과, 투명도 조정)
-- 드래그 중 가이드라인 및 스냅 그리드 표시
+- react-grid-layout의 드래그 앤 드롭 이벤트 활용
+- 드래그 시작 시 시각적 피드백
 - 드롭 가능 영역 하이라이트
-- 드롭 후 애니메이션 효과로 자연스러운 전환
-- 레이아웃 변경 사항 자동 저장 또는 명시적 저장 옵션
-
-### 4.4 Zustand와 TanStack Query 통합 패턴
-
-E-Torch는 Zustand 5를 활용한 클라이언트 상태 관리와 TanStack Query 5를 활용한 서버 상태 관리를 통합하는 패턴을 사용합니다:
-
-```mermaid
-flowchart TD
-    subgraph "클라이언트 상태 (Zustand 5)"
-        Z1[DashboardStore] --> Z2[GridLayoutState]
-        Z1 --> Z3[WidgetState]
-        Z1 --> Z4[WidgetEditorState]
-    end
-    
-    subgraph "서버 상태 (TanStack Query 5)"
-        T1[useChartData] --> T2[DataCache]
-        T1 --> T3[QueryKeys]
-        T1 --> T4[useMutation]
-    end
-    
-    Z1 -.-> T1
-    T1 -.-> Z1
-```
-
-- **Zustand 스토어**: UI 상태, 에디터 상태, 레이아웃 상태 등 클라이언트 중심 상태 관리
-- **TanStack Query**: 경제지표 데이터, 위젯 메타데이터, 대시보드 메타데이터 등 서버 데이터 상태 관리
-- **상태 통합**: `useServerState` 및 `useClientState` 훅을 통한 상태 통합
-- **낙관적 업데이트**: React 19의 `useOptimistic` 훅을 활용한 UI 즉시 응답
+- 레이아웃 변경 사항 자동/수동 저장 옵션
 
 ## 5. 오류 처리 및 예외 상황
 
-> 구현 단계: 페이즈 2 (핵심 기능) → 페이즈 4 (고급 기능 및 최적화) (ROADMAP.md 참조)
-
-### 5.1 MVP 단계 오류 처리 흐름
-
-MVP 출시(2025-06-20)에서는 다음 핵심 오류 처리 흐름을 우선적으로 구현합니다:
-
-```mermaid
-flowchart TD
-    A[사용자 행동] --> B{오류 유형}
-    
-    B -->|네트워크 오류| C[오프라인 알림 표시]
-    C --> D[캐시된 데이터 표시]
-    D --> E[재연결 시 자동 복구]
-    
-    B -->|인증 만료| F[재로그인 요청 모달]
-    F --> G[로그인 완료]
-    G --> H[이전 상태로 복귀]
-    
-    B -->|데이터 누락| I[데이터 불완전 표시]
-    I --> J[대체 데이터 소스 제안]
-    J --> K[사용자 데이터 소스 선택]
-```
-
-### 5.2 오류 발생 시나리오 및 대응
+### 5.1 오류 발생 시나리오 및 대응
 
 | 오류 유형 | 발생 가능 상황 | 대응 방안 | UI 처리 |
 |---------|--------------|---------|---------|
-| 네트워크 오류 | API 요청 실패, 서버 다운 | 자동 재시도, 오프라인 캐시 활용 | 토스트 알림, 재시도 버튼 제공 |
-| 인증 오류 | 토큰 만료, 권한 부족 | 재인증 유도, 권한 안내 | 모달 다이얼로그, 로그인 페이지 리다이렉션 |
-| 데이터 유효성 오류 | 잘못된 입력값, 형식 오류 | 명확한 오류 메시지, 입력 가이드 | 인라인 오류 표시, 필드별 유효성 힌트 |
-| 동시 편집 충돌 | 여러 사용자가 동일 위젯/대시보드 편집 | 낙관적 락, 충돌 해결 UI | 변경사항 병합 옵션, 충돌 알림 |
-| 데이터 소스 제한 | API 호출 한도 초과, 권한 문제 | 사용량 표시, 대체 소스 제안 | 제한 안내 메시지, 업그레이드 유도 |
-| 데이터 누락 | 지표 데이터 불완전, 갭 존재 | 보간법 적용, 누락 데이터 표시 | 점선 또는 특수 마커로 표시 |
+| 네트워크 오류 | API 요청 실패, 서버 다운 | 자동 재시도, 오프라인 캐시 활용 | FA-001 토스트 알림, 재시도 버튼 |
+| 인증 오류 | 토큰 만료, 권한 부족 | 재인증 유도, 권한 안내 | FA-004 확인 대화상자 |
+| 데이터 유효성 오류 | 잘못된 입력값, 형식 오류 | 명확한 오류 메시지, 입력 가이드 | FA-005 인라인 오류 표시 |
+| 동시 편집 충돌 | 여러 사용자가 동일 위젯/대시보드 편집 | 낙관적 락, 충돌 해결 UI | 변경사항 병합 옵션 |
 
-### 5.3 예외 처리 전략
+### 5.2 예외 처리 전략
 
 ```mermaid
 flowchart TD
@@ -818,43 +712,15 @@ flowchart TD
     B --> C{오류 유형 분류}
     
     C -->|네트워크 오류| D[QueryErrorRetryBoundary]
-    D -->|재연결 시도| E1[자동 재시도 로직]
-    E1 -->|성공| F1[데이터 갱신 및 UI 복구]
-    E1 -->|실패| G1[오프라인 캐싱 데이터 활용]
+    C -->|인증 오류| E[AuthErrorHandler]
+    C -->|입력 오류| F[FormErrorHandler]
+    C -->|예상치 못한 오류| G[GlobalErrorBoundary]
     
-    C -->|인증 오류| D2[AuthErrorHandler]
-    D2 --> E2[세션 재검증]
-    E2 -->|유효| F2[작업 재개]
-    E2 -->|만료| G2[재인증 요청]
-    
-    C -->|입력 오류| D3[FormErrorHandler]
-    D3 --> E3[유효성 피드백 표시]
-    E3 --> F3[오류 필드 하이라이트]
-    
-    C -->|비즈니스 로직 오류| D4[BusinessErrorHandler]
-    D4 --> E4[사용자 친화적 메시지 변환]
-    E4 --> F4[문제 해결 안내 표시]
-    
-    C -->|예상치 못한 오류| D5[GlobalErrorBoundary]
-    D5 --> E5["오류 로깅 (서버 전송)"]
-    E5 --> F5[안전한 폴백 UI 표시]
-    
-    G1 --> H[사용자에게 상태 알림]
-    G2 --> H
-    F3 --> H
-    F4 --> H
-    F5 --> H
+    D --> H[FA-001: 토스트 알림 표시]
+    E --> I[FA-004: 재인증 모달]
+    F --> J[FA-005: 필드별 오류 표시]
+    G --> K[FA-005: 안전한 폴백 UI]
 ```
-
-**핵심 전략:**
-
-- 다층적 오류 처리: 컴포넌트, 페이지, 애플리케이션 수준
-- ErrorStore를 통한 중앙 오류 관리
-- 사용자 친화적 오류 메시지 (technical details → solutions)
-- React Error Boundary 활용한 컴포넌트 단위 격리
-- Tanstack Query의 오류 처리 및 재시도 메커니즘 활용
-- 점진적 성능 저하: 완전 실패보다 부분 기능 제한
-- 자동 복구 메커니즘 및 대체 데이터 소스 활용
 
 ## 6. 접근성 고려사항
 
@@ -862,75 +728,35 @@ flowchart TD
 
 모든 주요 기능은 키보드만으로 접근 가능해야 합니다:
 
-- Tab 키를 통한 포커스 이동
+- Tab 키를 통한 포커스 이동 (TA-005)
 - Enter/Space 키를 통한 버튼 활성화
 - 화살표 키를 통한 드롭다운 메뉴 탐색
 - Esc 키를 통한 모달/팝업 닫기
 - 단축키 제공: 저장(Ctrl+S), 취소(Esc), 도움말(F1) 등
 
-**키보드 접근성 구현:**
-
-- 모든 인터랙티브 요소에 적절한 tabIndex 속성 설정
-- 포커스 트래핑: 모달, 드롭다운 등에서 포커스가 외부로 빠져나가지 않도록 제어
-- 포커스 관리: 모달 열기/닫기 시 포커스 위치 관리
-- 키보드 단축키 관리자 구현 및 문서화
-
 ### 6.2 스크린 리더 지원
 
-WCAG 2.1 AA 기준을 충족하기 위한 스크린 리더 지원:
+WCAG 2.1 AA 기준을 충족하기 위한 스크린 리더 지원 (TA-006):
 
 - 의미 있는 구조화: 적절한 HTML 시맨틱 요소 사용
 - 모든 이미지 및 아이콘에 대체 텍스트 제공
-- ARIA 레이블 및 역할 적절히 사용:
-  - aria-label, aria-labelledby: 레이블 제공
-  - aria-expanded, aria-hidden: 상태 정보 제공
-  - aria-live: 동적 콘텐츠 변경 알림
-- 위젯 데이터에 대한 텍스트 대체 콘텐츠 제공:
-  - 데이터 테이블 뷰 옵션 (차트형 위젯)
-  - 주요 트렌드 및 인사이트 텍스트 요약
-  - 텍스트형 위젯의 구조화된 콘텐츠 제공
+- ARIA 레이블 및 역할 적절히 사용
+- 위젯 데이터에 대한 텍스트 대체 콘텐츠 제공
 
 ### 6.3 색상 및 대비
 
-시각적 접근성을 위한 색상 및 대비 고려:
+시각적 접근성을 위한 색상 및 대비 고려 (TA-002, TA-004):
 
 - WCAG 2.1 AA 수준 준수: 텍스트와 배경 간 4.5:1 이상의 대비
-- 색상에만 의존하지 않는 정보 전달:
-  - 아이콘, 패턴, 텍스트 레이블 병행
-  - 색맹 사용자를 위한 차트형 위젯 패턴 추가 옵션
-  - 텍스트형 위젯의 명확한 구조화 및 의미 전달
-- 높은 대비 모드 지원:
-  - prefers-contrast 미디어 쿼리 대응
-  - 대비 높은 테마 옵션 제공
+- 색상에만 의존하지 않는 정보 전달
+- 고대비 모드 지원
 - 색상 팔레트 최적화: ColorSafe 활용 접근성 검증
 
-### 6.4 색상 및 테마 전략
+### 6.4 반응형 디자인
 
-E-Torch는 Tailwind CSS 4의 OKLCH 색상 시스템을 활용하여 더 넓은 색 영역과 인지적으로 균일한 밝기를 제공합니다:
-
-```tsx
-// 색상에 의존하지 않는 상태 표시 컴포넌트 예시
-function StatusIndicator({ 
-  status, 
-  label 
-}: StatusIndicatorProps) {
-  // 테마 변수를 활용한 OKLCH 색상 적용
-  return (
-    <div className={`status-indicator bg-${status} text-${status}-foreground`}>
-      <span className="status-icon" aria-hidden="true" />
-      <span>{label}</span>
-    </div>
-  )
-}
-```
-
-### 6.5 반응형 디자인
-
-다양한 기기 및 화면 크기에 대응:
+다양한 기기 및 화면 크기에 대응 (LN-001):
 
 - 모바일 우선 접근 방식
 - 적응형 레이아웃: 그리드 시스템 활용
 - 터치 타겟 최적화: 모바일에서 최소 44x44px 터치 영역
 - 콘텐츠 재배치: 화면 크기에 따른 컴포넌트 재배치
-- 기능 우선순위: 작은 화면에서 핵심 기능 우선 표시
-- 제스처 지원: 스와이프, 핀치 줌 등 모바일 제스처 활용
