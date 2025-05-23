@@ -166,27 +166,39 @@ SNS 로그인 기반의 간단한 인증 화면입니다.
 
 대시보드를 생성하고 편집하는 화면입니다.
 
-### 5.1 데스크톱 대시보드 편집기 - 위젯 추가 드롭다운 (1440×900)
+### 5.1 데스크톱 대시보드 편집기 (1440×900)
+
+**주요 구성 요소:**
+
+- 대시보드 헤더 (제목, 편집 모드 상태 표시)
+- 컨트롤 영역 (위젯 추가, 기간 설정, 편집 도구, 저장/취소)
+- 그리드 편집 모드 (3×3 배치, 드래그 앤 드롭)
+- 우측 속성 패널 (선택된 위젯 정보 및 설정)
+
+![데스크톱 대시보드 편집기](./wireframes.v2/4.%20대시보드%20편집기%20화면/desktop-dashboard_editor-wireframe.svg)
+
+### 5.2 데스크톱 대시보드 편집기 - 위젯 추가 드롭다운 (1440×900)
 
 **주요 구성 요소:**
 
 - 위젯 추가 드롭다운 메뉴 (새 위젯 생성, 내 위젯에서 추가, 위젯 복사)
-- 그리드 편집 모드
-- 우측 속성 패널
+- 그리드 편집 모드 (배경 처리)
+- 우측 속성 패널 (비활성화 상태)
 
 ![데스크톱 위젯 추가 드롭다운](./wireframes.v2/4.%20대시보드%20편집기%20화면/desktop-dashboard_editor-widget_add_dropdown-wireframe.svg)
 
-### 5.2 데스크톱 대시보드 설정 모달 (1440×900)
+### 5.3 데스크톱 대시보드 설정 모달 (1440×900)
 
 **주요 구성 요소:**
 
 - 모달 오버레이
 - 기본 정보 설정 (제목, 설명)
 - 공개 설정 및 메타데이터
+- 저장/취소 버튼
 
 ![데스크톱 대시보드 설정 모달](./wireframes.v2/4.%20대시보드%20편집기%20화면/desktop-dashboard_editor-settings_modal-wireframe.svg)
 
-### 5.3 태블릿 대시보드 편집기 (1024×800)
+### 5.4 태블릿 대시보드 편집기 (1024×800)
 
 **주요 구성 요소:**
 
@@ -196,7 +208,7 @@ SNS 로그인 기반의 간단한 인증 화면입니다.
 
 ![태블릿 대시보드 편집기](./wireframes.v2/4.%20대시보드%20편집기%20화면/tablet-dashboard_editor-wireframe.svg)
 
-### 5.4 모바일 대시보드 편집기 (375×800)
+### 5.5 모바일 대시보드 편집기 (375×800)
 
 **주요 구성 요소:**
 
@@ -206,7 +218,7 @@ SNS 로그인 기반의 간단한 인증 화면입니다.
 
 ![모바일 대시보드 편집기](./wireframes.v2/4.%20대시보드%20편집기%20화면/mobile-dashboard_editor-wireframe.svg)
 
-### 5.5 모바일 날짜 설정 - iOS 네이티브 (375×800)
+### 5.6 모바일 날짜 설정 - iOS 네이티브 (375×800)
 
 **주요 구성 요소:**
 
@@ -216,7 +228,7 @@ SNS 로그인 기반의 간단한 인증 화면입니다.
 
 ![모바일 iOS 날짜 선택기](./wireframes.v2/4.%20대시보드%20편집기%20화면/mobile-dashboard_editor-date_settings-custom-ios_native_date_picker-wireframe.svg)
 
-### 5.6 모바일 날짜 설정 - Android 네이티브 (375×800)
+### 5.7 모바일 날짜 설정 - Android 네이티브 (375×800)
 
 **주요 구성 요소:**
 
@@ -378,6 +390,7 @@ SNS 로그인 기반의 간단한 인증 화면입니다.
 
 ### 대시보드 편집기 화면
 
+- `wireframes.v2/4. 대시보드 편집기 화면/desktop-dashboard_editor-wireframe.svg`
 - `wireframes.v2/4. 대시보드 편집기 화면/desktop-dashboard_editor-widget_add_dropdown-wireframe.svg`
 - `wireframes.v2/4. 대시보드 편집기 화면/desktop-dashboard_editor-settings_modal-wireframe.svg`
 - `wireframes.v2/4. 대시보드 편집기 화면/tablet-dashboard_editor-wireframe.svg`
@@ -401,15 +414,3 @@ SNS 로그인 기반의 간단한 인증 화면입니다.
 - `wireframes.v2/7. 위젯 편집기 화면/options/y_axis_options_component.svg`
 - `wireframes.v2/7. 위젯 편집기 화면/options/y_axis_secondary_options-component.svg`
 - `wireframes.v2/7. 위젯 편집기 화면/options/graph_styles_component.svg`
-
----
-
-## 설계 원칙
-
-1. **일관성**: 모든 화면에서 동일한 헤더, 네비게이션 구조 유지
-2. **반응형**: 데스크톱, 태블릿, 모바일 각각에 최적화된 레이아웃
-3. **터치 최적화**: 모바일에서 44px 이상의 터치 타겟 크기 확보
-4. **접근성**: 명확한 계층 구조와 시각적 구분
-5. **사용성**: 직관적인 인터랙션 패턴과 피드백 제공
-
-이 와이어프레임들은 개발 시 각 화면의 구조와 컴포넌트 배치를 명확히 파악할 수 있도록 설계되었습니다.
