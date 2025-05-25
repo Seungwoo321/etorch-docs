@@ -17,7 +17,7 @@
 
 | 기능 | 목표값 | 측정 기준 |
 |------|--------|----------|
-| 차트 렌더링 | < 3초 | 1000포인트 시계열 |
+| 차트 렌더링 | < 2초 | 1000포인트 시계열 |
 | 편집 반응성 | 60fps | 드래그 200ms + 리사이즈 300ms |
 | 메모리 사용량 | < 200MB | 대시보드당 |
 | 권한 검증 | < 10ms | 플랜별 기능 제한 |
@@ -25,16 +25,17 @@
 
 ## 2. 기술 스택
 
-### 2.1 핵심 기술 (정확한 버전)
+### 2.1 핵심 기술
 
 | 영역 | 기술 | 버전 | E-Torch 특화 설정 |
 |------|------|------|------------------|
-| **모노레포** | Turborepo + pnpm | 2.5.3 + 10.11.0 | 9패키지 분할 |
+| **모노레포** | Turborepo + pnpm | 2.5.3 + 10.11.0 | 10패키지 분할 |
 | **프레임워크** | Next.js + React | 15.3.2 + 19.1.0 | App Router + useOptimistic |
 | **UI** | Tailwind CSS + Shadcn/UI | 4.1.7 + latest | CSS-first, OKLCH 색상 |
 | **상태관리** | Zustand + TanStack Query | 5.0.5 + 5.77.0 | 서버/클라이언트 분리 |
 | **차트** | Recharts | 2.15.3 | LTTB + 7가지 위젯 |
-| **레이아웃** | react-grid-layout | 1.5.1 | 300ms/200ms 디바운싱 |
+| **레이아웃** | react-grid-layout | 1.5.1 | 200ms/300ms 디바운싱 |
+| **패널** | Shadcn ResizablePanel | latest | 위젯 에디터 핵심 |
 | **인증** | Supabase Auth | v2 | SNS 3개 + 구독 모델 |
 | **결제** | 토스페이먼츠 | latest | PaymentWidget + 빌링키 |
 
@@ -42,25 +43,239 @@
 
 ```css
 @theme {
-  /* 반응형 헤더 */
+  /* E-Torch 브랜드 색상 (OKLCH) */
+  --color-primary: oklch(0.2 0.15 240);     /* #0c1e3e */
+  --color-secondary: oklch(0.5 0.2 230);    /* #1a56db */
+  --color-tertiary: oklch(0.45 0.18 220);   /* #0284c7 */
+  
+  /* 반응형 헤더 높이 */
   --header-desktop: 80px; --header-tablet: 72px; --header-mobile: 64px;
-  /* 툴바 */
+  /* 편집 툴바 높이 */
   --toolbar-desktop: 64px; --toolbar-tablet: 56px;
-  /* 사이드바 */
+  /* 사이드바 너비 */
   --sidebar-width: 200px; --sidebar-collapsed: 60px;
-  /* 속성 패널 */
-  --property-panel-width: 320px; --property-panel-min: 280px;
+  
+  /* 위젯 에디터 패널 시스템 */
+  --preview-panel-min: 400px; --options-panel-min: 320px;
+  --property-panel-width: 320px; --property-panel-range: 280px-480px;
+  
   /* 위젯 최소 크기 */
   --widget-min-desktop: 300px 200px; --widget-min-tablet: 250px 180px;
-  /* 성능 최적화 */
-  --debounce-resize: 300ms; --debounce-drag: 200ms;
+  
+  /* 성능 최적화 디바운싱 */
+  --debounce-drag: 200ms; --debounce-resize: 300ms; --debounce-search: 300ms;
+  
   /* 터치 최적화 */
   --touch-target: 44px; --touch-spacing: 8px;
-  /* E-Torch 브랜드 색상 (OKLCH) */
-  --color-primary: oklch(0.2 0.15 240);
-  --color-secondary: oklch(0.5 0.2 230);
-  --color-tertiary: oklch(0.45 0.18 220);
+  
+  /* 그리드 시스템 */
+  --grid-cols-desktop: 12; --grid-cols-tablet: 8; --grid-cols-mobile: 4;
+  --grid-gap-desktop: 16px; --grid-gap-tablet: 12px; --grid-gap-mobile: 8px;
 }
+```
+
+#### 5.2.1 편집 모드 상태 머신
+
+```mermaid
+stateDiagram-v2
+    [*] --> ViewMode : 대시보드 조회
+    
+    ViewMode --> EditMode : 편집 버튼 클릭
+    EditMode --> ViewMode : 저장/취소
+    
+    state EditMode {
+        [*] --> Idle : 편집 모드 진입
+        
+        Idle --> DragStart : 위젯 드래그 시작
+        Idle --> ResizeStart : 위젯 리사이즈 시작
+        Idle --> WidgetEdit : 위젯 편집
+        
+        DragStart --> Dragging : 드래그 중
+        Dragging --> DragEnd : 드래그 완료
+        DragEnd --> Idle : 200ms 디바운싱 후
+        
+        ResizeStart --> Resizing : 리사이즈 중
+        Resizing --> ResizeEnd : 리사이즈 완료
+        ResizeEnd --> Idle : 300ms 디바운싱 후
+        
+        WidgetEdit --> WidgetEditor : 위젯 에디터 열기
+        WidgetEditor --> Idle : 위젯 저장/취소
+        
+        state Dragging {
+            [*] --> ChartDisabled : 차트 렌더링 비활성화
+            ChartDisabled --> PositionUpdate : 위치 실시간 업데이트
+            PositionUpdate --> ChartDisabled : 계속 드래그
+        }
+        
+        state Resizing {
+            [*] --> ChartDisabled : 차트 렌더링 비활성화
+            ChartDisabled --> SizeUpdate : 크기 실시간 업데이트
+            SizeUpdate --> ChartDisabled : 계속 리사이즈
+        }
+        
+        state WidgetEditor {
+            [*] --> PreviewPanel : 미리보기 패널
+            PreviewPanel --> OptionsPanel : 옵션 패널
+            OptionsPanel --> DataSourcePanel : 데이터 소스 패널
+            DataSourcePanel --> PreviewPanel : 실시간 동기화
+        }
+    }
+    
+    note right of DragEnd : 200ms 디바운싱\n빠른 반응성 우선
+    note right of ResizeEnd : 300ms 디바운싱\n정확성 우선
+    note right of ChartDisabled : 60fps 유지를 위한\n성능 최적화
+```
+
+#### 7.1.1 구독 모델 권한 검증 플로우
+
+```mermaid
+graph TD
+    subgraph "사용자 액션"
+        UserAction["사용자 액션<br/>(대시보드 생성, 위젯 추가, 지표 선택 등)"]
+    end
+    
+    subgraph "캐시 확인 (5분)"
+        CacheCheck{"캐시된 권한 정보<br/>존재하는가?"}
+        CacheValid{"캐시가 유효한가?<br/>(5분 이내)"}
+        CachedPlan["캐시된 플랜 정보<br/>(basic/pro)"]
+    end
+    
+    subgraph "권한 검증 (< 10ms)"
+        AuthCheck["Supabase Auth<br/>세션 확인"]
+        PlanCheck["구독 플랜 확인<br/>(subscription_plan)"]
+        DefaultPlan["기본 플랜 적용<br/>(basic)"]
+    end
+    
+    subgraph "제한 사항 적용"
+        DashboardLimit{"대시보드 수<br/>제한 확인"}
+        WidgetLimit{"위젯 수<br/>제한 확인"}
+        IndicatorLimit{"지표 접근<br/>권한 확인"}
+        PeriodLimit{"데이터 기간<br/>제한 확인"}
+    end
+    
+    subgraph "UI 상태 업데이트 (< 10ms)"
+        EnableFeature["기능 활성화"]
+        DisableFeature["기능 비활성화<br/>(회색 처리 + 툴팁)"]
+        ShowUpgrade["업그레이드 안내<br/>(배너/모달)"]
+        ApplyWatermark["워터마크 적용<br/>(Basic 플랜)"]
+    end
+    
+    UserAction --> CacheCheck
+    
+    CacheCheck -->|Yes| CacheValid
+    CacheCheck -->|No| AuthCheck
+    
+    CacheValid -->|Valid| CachedPlan
+    CacheValid -->|Expired| AuthCheck
+    
+    AuthCheck --> PlanCheck
+    PlanCheck -->|Authenticated| CachedPlan
+    PlanCheck -->|Not Authenticated| DefaultPlan
+    
+    CachedPlan --> DashboardLimit
+    DefaultPlan --> DashboardLimit
+    
+    DashboardLimit -->|Within Limit| WidgetLimit
+    DashboardLimit -->|Exceeded| DisableFeature
+    
+    WidgetLimit -->|Within Limit| IndicatorLimit
+    WidgetLimit -->|Exceeded| DisableFeature
+    
+    IndicatorLimit -->|Accessible| PeriodLimit
+    IndicatorLimit -->|Restricted| DisableFeature
+    
+    PeriodLimit -->|Within Limit| EnableFeature
+    PeriodLimit -->|Exceeded| DisableFeature
+    
+    EnableFeature --> ApplyWatermark
+    DisableFeature --> ShowUpgrade
+    
+    classDef action fill:#e3f2fd
+    classDef cache fill:#f3e5f5
+    classDef auth fill:#e8f5e8
+    classDef limit fill:#fff3e0
+    classDef ui fill:#fce4ec
+    
+    class UserAction action
+    class CacheCheck,CacheValid,CachedPlan cache
+    class AuthCheck,PlanCheck,DefaultPlan auth
+    class DashboardLimit,WidgetLimit,IndicatorLimit,PeriodLimit limit
+    class EnableFeature,DisableFeature,ShowUpgrade,ApplyWatermark ui
+```
+
+#### 3.2.1 데이터 플로우 아키텍처
+
+```mermaid
+graph LR
+    subgraph "데이터 소스"
+        KOSIS["KOSIS API<br/>(M,Q,A 주기)<br/>무제한 기간"]
+        ECOS["ECOS API<br/>(D,M,Q,A 주기)<br/>일별 1년 제한"]
+        OECD["OECD API<br/>(향후 확장)<br/>현재 비활성화"]
+    end
+    
+    subgraph "어댑터 레이어"
+        KOSISAdapter["KOSIS 어댑터<br/>응답 정규화"]
+        ECOSAdapter["ECOS 어댑터<br/>응답 정규화"]
+        OECDAdapter["OECD 어댑터<br/>(미구현)"]
+    end
+    
+    subgraph "데이터 처리"
+        Validator["데이터 검증<br/>(기간/주기 제한)"]
+        Transformer["데이터 변환<br/>(원본값/변화율/누적값)"]
+        LTTB["LTTB 다운샘플링<br/>(1000+ 포인트 임계값)"]
+    end
+    
+    subgraph "캐싱 레이어"
+        APICache["API 응답 캐시<br/>(15분)"]
+        ComputeCache["계산 결과 캐시<br/>(30분)"]
+        HistoryCache["과거 데이터 캐시<br/>(24시간)"]
+    end
+    
+    subgraph "차트 렌더링"
+        Recharts["Recharts<br/>(시각화)"]
+        AccessibleChart["접근성 차트<br/>(WCAG 2.1 AA)"]
+        DataTable["데이터 테이블<br/>(스크린 리더용)"]
+    end
+    
+    subgraph "구독 모델 필터링"
+        PlanFilter["플랜별 지표 필터<br/>(Basic: 20개, Pro: 40개)"]
+        PeriodFilter["기간 제한 필터<br/>(Basic: 3년, Pro: 무제한)"]
+    end
+    
+    KOSIS --> KOSISAdapter
+    ECOS --> ECOSAdapter
+    OECD --> OECDAdapter
+    
+    KOSISAdapter --> Validator
+    ECOSAdapter --> Validator
+    OECDAdapter --> Validator
+    
+    Validator --> PlanFilter
+    PlanFilter --> PeriodFilter
+    PeriodFilter --> Transformer
+    
+    Transformer --> LTTB
+    LTTB --> APICache
+    APICache --> ComputeCache
+    ComputeCache --> HistoryCache
+    
+    HistoryCache --> Recharts
+    Recharts --> AccessibleChart
+    AccessibleChart --> DataTable
+    
+    classDef source fill:#e3f2fd
+    classDef adapter fill:#f3e5f5
+    classDef process fill:#e8f5e8
+    classDef cache fill:#fff3e0
+    classDef render fill:#fce4ec
+    classDef filter fill:#f1f8e9
+    
+    class KOSIS,ECOS,OECD source
+    class KOSISAdapter,ECOSAdapter,OECDAdapter adapter
+    class Validator,Transformer,LTTB process
+    class APICache,ComputeCache,HistoryCache cache
+    class Recharts,AccessibleChart,DataTable render
+    class PlanFilter,PeriodFilter filter
 ```
 
 ## 3. 아키텍처 계층 구조
@@ -75,14 +290,14 @@
 
 ### 3.2 데이터 소스 제약사항
 
-| 데이터 소스 | 현재 상태 | 지원 주기 | 제한사항 | UI 표시 |
+| 데이터 소스 | 현재 상태 | 지원 주기 | 기간 제한 | UI 표시 |
 |------------|----------|----------|----------|--------|
-| **KOSIS** | ✅ 완전 지원 | M, Q, A | 무제한 기간 | 기본 선택 |
-| **ECOS** | ✅ 완전 지원 | D, M, Q, A | 일별은 1년만 | 주기별 제한 |
+| **KOSIS** | ✅ 완전 지원 | M, Q, A | 무제한 | 기본 선택 |
+| **ECOS** | ✅ 완전 지원 | D, M, Q, A | **일별만 1년 제한** | 주기별 제한 |
 | **OECD** | 🚧 향후 확장 | 미정 | 현재 비활성화 | 비활성화 + 툴팁 |
 
 ```typescript
-// 데이터 소스 설정 (현재 + 향후)
+// 데이터 소스 설정 (기간 제한 포함)
 export const DATA_SOURCE_CONFIG = {
   KOSIS: {
     id: 'kosis',
@@ -90,7 +305,6 @@ export const DATA_SOURCE_CONFIG = {
     status: 'active',
     supportedPeriods: ['M', 'Q', 'A'] as const,
     maxHistoryYears: null, // 무제한
-    apiEndpoint: '/api/kosis',
     indicatorCount: { basic: 12, pro: 12 }
   },
   ECOS: {
@@ -99,76 +313,224 @@ export const DATA_SOURCE_CONFIG = {
     status: 'active',
     supportedPeriods: ['D', 'M', 'Q', 'A'] as const,
     maxHistoryYears: { D: 1, M: null, Q: null, A: null }, // 일별만 1년 제한
-    apiEndpoint: '/api/ecos',
     indicatorCount: { basic: 8, pro: 28 }
   },
   OECD: {
     id: 'oecd',
     name: 'OECD 통계',
     status: 'planned', // 현재 미지원
-    supportedPeriods: [], // 향후 정의
+    supportedPeriods: [],
     maxHistoryYears: null,
-    apiEndpoint: '/api/oecd', // 준비만
     indicatorCount: { basic: 0, pro: 0 },
-    plannedRelease: '2025-Q3' // 예상 출시일
+    plannedRelease: '2025-Q3'
   }
 } as const
 
-// UI에서 사용할 데이터 소스 필터링
-export const getAvailableDataSources = () => {
-  return Object.entries(DATA_SOURCE_CONFIG)
-    .filter(([_, config]) => config.status === 'active')
-    .map(([key, config]) => ({ key, ...config }))
-}
-
-// 지표 검색 시 소스별 필터링
-export const getIndicatorsBySource = (source: keyof typeof DATA_SOURCE_CONFIG, plan: 'basic' | 'pro') => {
-  const config = DATA_SOURCE_CONFIG[source]
-  if (config.status !== 'active') return []
-  
-  const maxCount = config.indicatorCount[plan]
-  return indicators.filter(indicator => 
-    indicator.source === source
-  ).slice(0, maxCount)
+// ECOS 일별 데이터 1년 제한 검증
+export const validateDataPeriod = (source: string, period: string, startDate: Date, endDate: Date) => {
+  if (source === 'ecos' && period === 'D') {
+    const oneYearAgo = new Date()
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
+    
+    if (startDate < oneYearAgo) {
+      throw new Error('ECOS 일별 데이터는 최근 1년까지만 조회 가능합니다')
+    }
+  }
 }
 ```
 
 ### 3.3 7가지 위젯 시스템
 
-| 위젯 타입 | 데이터 소스 필요 | 구현 클래스 |
-|----------|----------------|------------|
-| time-series | ✅ | TimeSeriesWidget |
-| bar-chart | ✅ | BarChartWidget |
-| scatter-chart | ✅ | ScatterChartWidget |
-| radar-chart | ✅ | RadarChartWidget |
-| radial-bar-chart | ✅ | RadialBarChartWidget |
-| text-custom | ❌ | TextCustomWidget |
-| text-data | ✅ (단일) | TextDataWidget |
+| 위젯 타입 | 데이터 소스 필요 | 최대 시리즈 | 구현 클래스 |
+|----------|----------------|------------|------------|
+| time-series | ✅ | 5개 | TimeSeriesWidget |
+| bar-chart | ✅ | 5개 | BarChartWidget |
+| scatter-chart | ✅ | 5개 | ScatterChartWidget |
+| radar-chart | ✅ | 5개 | RadarChartWidget |
+| radial-bar-chart | ✅ | 5개 | RadialBarChartWidget |
+| text-custom | ❌ | - | TextCustomWidget |
+| text-data | ✅ | 1개 | TextDataWidget |
 
-## 4. 모노레포 구조 (9패키지)
+#### 3.3.1 위젯 시스템 아키텍처
 
-### 4.1 패키지 의존성
-
+```mermaid
+graph TB
+    subgraph "위젯 팩토리 패턴"
+        WidgetFactory["WidgetFactory<br/>(팩토리 클래스)"]
+        WidgetType["위젯 타입 결정<br/>(7가지 타입)"]
+        WidgetFactory --> WidgetType
+    end
+    
+    subgraph "차트형 위젯 (5가지)"
+        TimeSeries["TimeSeries<br/>(Line/Area/Bar 혼합)"]
+        BarChart["BarChart<br/>(수직/수평 바)"]
+        ScatterChart["ScatterChart<br/>(산점도 + 회귀선)"]
+        RadarChart["RadarChart<br/>(다각형/원형)"]
+        RadialBarChart["RadialBarChart<br/>(방사형 바)"]
+    end
+    
+    subgraph "텍스트형 위젯 (2가지)"
+        TextCustom["TextCustom<br/>(사용자 정의)"]
+        TextData["TextData<br/>(데이터 기반)"]
+    end
+    
+    subgraph "공통 인터페이스"
+        IWidget["IWidget Interface"]
+        IChartWidget["IChartWidget Interface"]
+        ITextWidget["ITextWidget Interface"]
+    end
+    
+    subgraph "데이터 처리"
+        DataSource["DataSource<br/>(KOSIS/ECOS)"]
+        LTTB["LTTB 다운샘플링<br/>(1000+ 포인트)"]
+        SeriesManager["SeriesManager<br/>(최대 5개)"]
+    end
+    
+    WidgetType --> TimeSeries
+    WidgetType --> BarChart
+    WidgetType --> ScatterChart
+    WidgetType --> RadarChart
+    WidgetType --> RadialBarChart
+    WidgetType --> TextCustom
+    WidgetType --> TextData
+    
+    TimeSeries --> IChartWidget
+    BarChart --> IChartWidget
+    ScatterChart --> IChartWidget
+    RadarChart --> IChartWidget
+    RadialBarChart --> IChartWidget
+    
+    TextCustom --> ITextWidget
+    TextData --> ITextWidget
+    
+    IChartWidget --> IWidget
+    ITextWidget --> IWidget
+    
+    DataSource --> LTTB
+    LTTB --> SeriesManager
+    SeriesManager --> IChartWidget
+    DataSource --> TextData
+    
+    classDef chartWidget fill:#e3f2fd
+    classDef textWidget fill:#f3e5f5
+    classDef interface fill:#e8f5e8
+    classDef data fill:#fff3e0
+    
+    class TimeSeries,BarChart,ScatterChart,RadarChart,RadialBarChart chartWidget
+    class TextCustom,TextData textWidget
+    class IWidget,IChartWidget,ITextWidget interface
+    class DataSource,LTTB,SeriesManager data
 ```
-core (타입, 상수)
-├── utils (LTTB, 포맷터)
-├── ui (Shadcn/UI + 워터마크)
-├── data-sources (KOSIS/ECOS 어댑터)
-│   └── state (Zustand + TanStack Query)
-│       └── charts (7가지 위젯)
-│           └── dashboard (편집 + 레이아웃)
-├── server-api (결제 + 인증)
-└── eslint-config (접근성 규칙)
+
+## 4. 모노레포 구조 (10패키지)
+
+### 4.1 패키지 의존성 그래프
+
+```mermaid
+graph TB
+    Core["@e-torch/core<br/>(타입, 상수, 구독 모델)"]
+    Utils["@e-torch/utils<br/>(LTTB, 포맷터)"]
+    UI["@e-torch/ui<br/>(Shadcn/UI, 워터마크)"]
+    DataSources["@e-torch/data-sources<br/>(KOSIS/ECOS 어댑터)"]
+    State["@e-torch/state<br/>(Zustand + TanStack Query)"]
+    Charts["@e-torch/charts<br/>(7가지 위젯 + LTTB)"]
+    Dashboard["@e-torch/dashboard<br/>(편집 + 레이아웃)"]
+    Panels["@e-torch/panels<br/>(리사이즈 패널 시스템)"]
+    ServerAPI["@e-torch/server-api<br/>(결제 + 인증)"]
+    ESLint["@e-torch/eslint-config<br/>(접근성 + 성능 규칙)"]
+    
+    Core --> Utils
+    Core --> UI
+    Core --> DataSources
+    Core --> State
+    Core --> ServerAPI
+    
+    Utils --> Charts
+    Utils --> Dashboard
+    
+    UI --> Charts
+    UI --> Dashboard
+    UI --> Panels
+    
+    DataSources --> State
+    State --> Charts
+    Charts --> Dashboard
+    Dashboard --> Panels
+    
+    ServerAPI --> State
+    
+    ESLint --> Core
+    
+    classDef corePackage fill:#e1f5fe
+    classDef uiPackage fill:#f3e5f5
+    classDef dataPackage fill:#e8f5e8
+    classDef serverPackage fill:#fff3e0
+    
+    class Core,Utils corePackage
+    class UI,Charts,Dashboard,Panels uiPackage
+    class DataSources,State dataPackage
+    class ServerAPI serverPackage
 ```
 
-### 4.2 핵심 패키지 책임
+### 4.2 패키지별 핵심 책임
 
-| 패키지 | 주요 책임 | 핵심 export |
-|--------|----------|-------------|
-| @e-torch/core | 타입, 상수, 구독 모델 | PLAN_LIMITS, 위젯 타입 |
-| @e-torch/charts | LTTB, 7가지 위젯 | useLTTBSampling |
-| @e-torch/ui | 워터마크, 접근성 | AccessibleChart |
-| @e-torch/data-sources | KOSIS/ECOS 어댑터 | useDataSource |
+| 패키지 | 주요 책임 | 핵심 export | 특화 기능 |
+|--------|----------|-------------|----------|
+| @e-torch/core | 타입, 상수, 구독 모델 | PLAN_LIMITS, 위젯 타입 | 구독 모델 제한사항 |
+| @e-torch/utils | LTTB, 포맷터, 유틸리티 | useLTTBSampling | 1000+ 포인트 다운샘플링 |
+| @e-torch/ui | Shadcn/UI, 워터마크, 접근성 | AccessibleChart | WCAG 2.1 AA 준수 |
+| @e-torch/data-sources | KOSIS/ECOS 어댑터 | useDataSource | 일별 1년 제한 검증 |
+| @e-torch/state | Zustand + TanStack Query | useGlobalState | 서버/클라이언트 분리 |
+| @e-torch/charts | 7가지 위젯 + LTTB | WidgetFactory | 위젯 팩토리 패턴 |
+| @e-torch/dashboard | 편집 + 레이아웃 | DashboardEditor | react-grid-layout |
+| @e-torch/panels | 리사이즈 패널 시스템 | ResizableWidgetEditor | 위젯 에디터 전용 |
+| @e-torch/server-api | 결제 + 인증 + 서버액션 | PaymentActions | 토스페이먼츠 연동 |
+| @e-torch/eslint-config | 접근성 + 성능 규칙 | eslintConfig | jsx-a11y 규칙 |
+
+### 4.3 리사이즈 패널 시스템 (@e-torch/panels)
+
+```typescript
+// 위젯 에디터 전용 패널 시스템
+export const ResizableWidgetEditor = () => (
+  <ResizablePanelGroup direction="horizontal" className="h-full">
+    {/* 좌측: 미리보기 영역 */}
+    <ResizablePanel 
+      defaultSize={60} 
+      minSize={40} 
+      className="min-w-[400px]"
+    >
+      <div className="flex flex-col h-full">
+        <PreviewPanel />
+        {/* 하단: 데이터 소스 패널 (조건부 표시) */}
+        <ResizablePanel defaultSize={30} minSize={20}>
+          <DataSourcePanel />
+        </ResizablePanel>
+      </div>
+    </ResizablePanel>
+    
+    <ResizableHandle />
+    
+    {/* 우측: 옵션 패널 */}
+    <ResizablePanel 
+      defaultSize={40} 
+      minSize={30} 
+      className="min-w-[320px]"
+    >
+      <OptionsPanel />
+    </ResizablePanel>
+  </ResizablePanelGroup>
+)
+
+// 패널 크기 상태 저장
+export const usePanelSizes = () => {
+  const [sizes, setSizes] = useLocalStorage('widget-editor-panel-sizes', {
+    preview: 60,
+    options: 40,
+    dataSource: 30
+  })
+  return { sizes, setSizes }
+}
+```
 
 ## 5. 성능 최적화
 
@@ -177,7 +539,7 @@ core (타입, 상수)
 | 지표 | 목표값 | 측정 방법 | 구현 방법 |
 |------|--------|----------|----------|
 | **LCP** | < 2.5초 | Web Vitals API | 스켈레톤 UI + 지연 로딩 |
-| **FID** | < 100ms | Web Vitals API | debounce 300ms/200ms |
+| **FID** | < 100ms | Web Vitals API | debounce 200ms/300ms |
 | **CLS** | < 0.1 | Web Vitals API | 스켈레톤 UI 크기 고정 |
 | **INP** | < 200ms | Web Vitals API | 편집 중 차트 렌더링 비활성화 |
 | **차트 렌더링** | < 2초 | Performance API | LTTB 1000+ 임계값 |
@@ -185,48 +547,107 @@ core (타입, 상수)
 | **단일 지표 조회** | < 500ms | API 응답 모니터링 | SWR 캐싱 15분 |
 | **메모리 사용량** | < 200MB | Performance API | 위젯 언마운트 시 정리 |
 
-```typescript
-// 성능 임계값 상수
-export const PERFORMANCE_THRESHOLDS = {
-  LCP: 2500,     // ms
-  FID: 100,      // ms (deprecated 2024+)
-  INP: 200,      // ms (FID 대체 지표 2024+)
-  CLS: 0.1,      // score
-  CHART_RENDER: 2000, // ms
-  DASHBOARD_LOAD: 2000, // ms
-  API_RESPONSE: 500,    // ms
-  MEMORY_LIMIT: 200,    // MB
-} as const
-
-// 디바운싱 시간
-export const DEBOUNCE_TIMES = {
-  DRAG: 200,    // ms - 빠른 반응성
-  RESIZE: 300,  // ms - 정확성 우선
-  SEARCH: 300,  // ms - 검색 입력
-} as const
-```
-
 ### 5.2 react-grid-layout 최적화
 
-| 설정 | 값 | 목적 |
-|------|----|----|
-| onDragStop | debounce 200ms | 빠른 반응성 |
-| onResizeStop | debounce 300ms | 정확성 우선 |
-| 터치 타겟 | 44×44px | 모바일 최적화 |
-| 그리드 컬럼 | 12/8/4 (데스크톱/태블릿/모바일) | 반응형 |
+```typescript
+// 정확한 디바운싱 시간 적용
+const gridLayoutProps = {
+  // 드래그: 빠른 반응성 우선 (200ms)
+  onDragStop: debounce((layout) => {
+    setChartRenderingEnabled(true)
+    saveLayout(layout)
+  }, 200),
+  
+  // 리사이즈: 정확성 우선 (300ms)  
+  onResizeStop: debounce((layout) => {
+    setChartRenderingEnabled(true)
+    saveLayout(layout)
+  }, 300),
+  
+  // 편집 중 성능 최적화
+  onDragStart: () => setChartRenderingEnabled(false),
+  onResizeStart: () => setChartRenderingEnabled(false),
+  
+  // 터치 최적화
+  touchAction: 'manipulation',
+  draggableHandle: '.drag-handle', // 44×44px 핸들
+}
+```
 
 ### 5.3 차트 렌더링 최적화
 
-| 조건 | 임계값 | 최적화 방법 |
-|------|--------|------------|
-| 데이터 포인트 | 1000+ | LTTB 다운샘플링 |
-| 위젯 개수 | 20+ | react-window 가상화 |
-| 편집 모드 | 드래그/리사이즈 중 | 차트 렌더링 비활성화 |
-| 메모리 사용 | 200MB+ | 컴포넌트 언마운트 시 정리 |
+| 조건 | 임계값 | 최적화 방법 | 구현 위치 |
+|------|--------|------------|----------|
+| 데이터 포인트 | 1000+ | LTTB 다운샘플링 | @e-torch/charts |
+| 위젯 개수 | 20+ | react-window 가상화 | @e-torch/dashboard |
+| 편집 모드 | 드래그/리사이즈 중 | 차트 렌더링 비활성화 | 편집 컴포넌트 |
+| 메모리 사용 | 200MB+ | 컴포넌트 언마운트 시 정리 | useEffect cleanup |
 
-## 6. 구독 모델 + 토스페이먼츠
+## 6. 속성 패널 반응형 시스템
 
-### 6.1 권한 검증 (< 10ms)
+### 6.1 화면 크기별 속성 패널 동작
+
+| 화면 크기 | 패널 형태 | 크기 | 토글 방식 | 구현 컴포넌트 |
+|----------|----------|------|----------|-------------|
+| **데스크톱 1200px+** | 우측 고정 패널 | 320px (280-480px 조절) | 좌측 경계선 드래그 | ResizablePanel |
+| **태블릿 768-1199px** | 하단 서랍 | 화면 높이의 60% | 하단 핸들 드래그 | Sheet |
+| **모바일 ~767px** | 풀스크린 모달 | 전체 화면 | 플로팅 버튼 | Dialog |
+
+```typescript
+// 반응형 속성 패널 구현
+const PropertyPanel = ({ children }: { children: React.ReactNode }) => {
+  const isDesktop = useMediaQuery("(min-width: 1200px)")
+  const isTablet = useMediaQuery("(min-width: 768px)")
+  
+  if (isDesktop) {
+    return (
+      <ResizablePanel 
+        defaultSize={320} 
+        minSize={280} 
+        maxSize={480}
+        className="border-l"
+      >
+        {children}
+      </ResizablePanel>
+    )
+  }
+  
+  if (isTablet) {
+    return (
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="outline" className="fixed bottom-4 right-4">
+            속성 편집
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="bottom" className="h-[60vh]">
+          {children}
+        </SheetContent>
+      </Sheet>
+    )
+  }
+  
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button 
+          size="icon" 
+          className="fixed bottom-4 right-4 w-12 h-12 rounded-full"
+        >
+          <Settings className="h-6 w-6" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="w-full h-full max-w-none p-0">
+        {children}
+      </DialogContent>
+    </Dialog>
+  )
+}
+```
+
+## 7. 구독 모델 + 토스페이먼츠
+
+### 7.1 권한 검증 (< 10ms 캐싱)
 
 ```typescript
 // 5분 캐시로 권한 검증 최적화
@@ -235,23 +656,28 @@ export const useAuthWithCache = () => {
     queryKey: ['auth-session'],
     queryFn: () => supabase.auth.getSession(),
     staleTime: 5 * 60 * 1000, // 5분 캐시
+    gcTime: 10 * 60 * 1000,   // 10분 가비지 컬렉션
   })
-  return { user: session?.user, plan: session?.user?.subscription_plan || 'basic' }
+  return { 
+    user: session?.user, 
+    plan: session?.user?.subscription_plan || 'basic' 
+  }
 }
 ```
 
-### 6.2 플랜별 제한
+### 7.2 플랜별 제한
 
 | 기능 | Basic (무료) | Pro (유료) | 기술 구현 |
 |------|-------------|-----------|----------|
 | **대시보드 수** | 3개 | 무제한 | DB 제약 + UI 진행바 |
 | **위젯 수** | 6개/대시보드 | 무제한 | react-grid-layout 제한 |
-| **경제지표** | 20개 (MVP) | 40개 (전체) | API 권한 검증 |
+| **경제지표** | 20개 (MVP) | 40개 | API 권한 검증 |
 | **데이터 기간** | 최근 3년 | 전체 기간 | DatePicker 비활성화 |
+| **ECOS 일별** | 최근 1년 | 최근 1년 | 소스별 제한 (플랜 무관) |
 | **워터마크** | "E-Torch로 제작됨" | 제거 가능 | CSS 오버레이 |
 | **대시보드 복사** | 불가 | 가능 | 버튼 비활성화 |
 | **임베드 코드** | 불가 | 가능 | Pro 전용 기능 |
-| **내보내기 품질** | 워터마크 포함 | 고해상도 | Canvas 렌더링 설정 |
+| **내보내기 품질** | 워터마크 + 1.6배율 | 고해상도 2배율 | Canvas 렌더링 설정 |
 
 ```typescript
 // 권한 검증 상수
@@ -263,180 +689,240 @@ export const PLAN_LIMITS = {
     dataYears: 3,
     watermark: true,
     copyDashboard: false,
-    embedCode: false
+    embedCode: false,
+    exportScale: 1.6
   },
   pro: {
     dashboards: Infinity,
     widgets: Infinity,
     indicators: 40,
     dataYears: Infinity,
-    watermark: false,
+    watermark: false, // 제거 가능
     copyDashboard: true,
-    embedCode: true
+    embedCode: true,
+    exportScale: 2.0
+  }
+} as const
+
+// ECOS 일별 제한은 플랜 무관 (소스 자체 제한)
+export const DATA_SOURCE_LIMITS = {
+  ecos: {
+    daily: { maxYears: 1 }, // 모든 플랜 공통
+    monthly: { maxYears: null },
+    quarterly: { maxYears: null },
+    annual: { maxYears: null }
   }
 } as const
 ```
 
-### 6.3 토스페이먼츠 결제
+## 8. 워터마크 + 접근성
+
+### 8.1 워터마크 시스템
 
 ```typescript
-// PaymentWidget 기본 설정
-const paymentWidget = PaymentWidget(clientKey, user.id)
-paymentWidget.renderPaymentMethods('#payment-methods', {
-  value: 9900 // Pro 월간 9,900원
-})
-```
-
-## 7. 워터마크 + 접근성
-
-### 7.1 워터마크 시스템
-
-| 플랜 | 워터마크 표시 | 내보내기 | 구현 위치 |
-|------|--------------|----------|----------|
-| **Basic** | "E-Torch로 제작됨" 우하단 고정 | 포함 | CSS 오버레이 |
-| **Pro** | 제거 가능 옵션 | 제거 가능 | 조건부 렌더링 |
-
-```typescript
-// 워터마크 컴포넌트
 interface WatermarkProps {
   show: boolean
-  onExport?: boolean // 내보내기 시에만 표시
+  onExport?: boolean
+  position?: 'bottom-right' | 'bottom-left'
+  opacity?: number
 }
 
-const Watermark = ({ show, onExport = false }: WatermarkProps) => {
+const Watermark = ({ 
+  show, 
+  onExport = false, 
+  position = 'bottom-right',
+  opacity = 0.7
+}: WatermarkProps) => {
   if (!show) return null
   
   return (
     <div 
       className={cn(
-        "absolute bottom-2 right-2 z-50",
+        "absolute bottom-2 z-50 pointer-events-none",
+        position === 'bottom-right' ? "right-2" : "left-2",
         "bg-black/10 px-2 py-1 rounded text-xs text-gray-600",
-        onExport && "print:block", // 내보내기 시에만 출력
-        !onExport && "print:hidden" // 일반 화면에서는 숨김
+        onExport ? "print:block" : "print:hidden"
       )}
+      style={{ opacity }}
+      aria-hidden="true"
     >
       E-Torch로 제작됨
     </div>
   )
 }
 
-// 사용 예시
-const DashboardView = () => {
-  const { plan } = useSubscription()
-  const showWatermark = plan === 'basic'
-  
-  return (
-    <div className="relative">
-      {/* 대시보드 콘텐츠 */}
-      <DashboardGrid />
-      
-      {/* 워터마크 */}
-      <Watermark show={showWatermark} />
-    </div>
-  )
-}
-
-// 내보내기 시 워터마크 설정
+// 내보내기 시 워터마크 + 품질 설정
 export const exportDashboard = async (format: 'png' | 'pdf') => {
   const { plan } = useSubscription()
-  const includeWatermark = plan === 'basic'
+  const scale = PLAN_LIMITS[plan].exportScale
+  const includeWatermark = PLAN_LIMITS[plan].watermark
   
   const canvas = await html2canvas(dashboardRef.current, {
-    // Basic 플랜: 워터마크 포함, 0.8 품질
-    // Pro 플랜: 워터마크 제거 가능, 1.0 품질
-    scale: plan === 'pro' ? 2 : 1.6, // 고해상도
+    scale,
     useCORS: true,
-    backgroundColor: '#ffffff'
+    backgroundColor: '#ffffff',
+    // Pro 플랜: 고품질, Basic: 워터마크 포함
+    ignoreElements: (element) => {
+      return !includeWatermark && element.classList.contains('watermark')
+    }
   })
   
-  // Pro 플랜에서 워터마크 제거 옵션 제공
-  if (plan === 'pro' && !includeWatermark) {
-    // 워터마크 없는 버전으로 내보내기
-  }
+  return canvas.toDataURL('image/png', plan === 'pro' ? 1.0 : 0.8)
 }
 ```
 
-### 7.2 WCAG 2.1 AA 접근성
+### 8.2 WCAG 2.1 AA 접근성
 
-| 요구사항 | 구현 방법 | 검증 도구 |
-|----------|----------|----------|
-| 차트 대체 텍스트 | aria-label + 데이터 테이블 | axe-core |
-| 키보드 네비게이션 | tabindex, Arrow키 지원 | 수동 테스트 |
-| 색상 대비 4.5:1 | OKLCH 기반 자동 검증 | Colour Contrast Analyser |
-| 터치 타겟 44×44px | min-w/h-[44px] 클래스 | 시각적 확인 |
+| 요구사항 | 구현 방법 | 검증 도구 | 패키지 위치 |
+|----------|----------|----------|------------|
+| 차트 대체 텍스트 | aria-label + 데이터 테이블 | axe-core | @e-torch/ui |
+| 키보드 네비게이션 | tabindex, Arrow키 지원 | 수동 테스트 | 모든 컴포넌트 |
+| 색상 대비 4.5:1 | OKLCH 기반 자동 검증 | Colour Contrast Analyser | @e-torch/ui |
+| 터치 타겟 44×44px | min-w/h-[44px] 클래스 | 시각적 확인 | @e-torch/ui |
 
-## 8. 모바일 최적화
+```typescript
+// 접근성 컴포넌트 (@e-torch/ui)
+export const AccessibleChart = ({ 
+  data, 
+  chartType, 
+  ariaLabel 
+}: AccessibleChartProps) => {
+  const summaryText = generateDataSummary(data)
+  
+  return (
+    <div role="img" aria-label={ariaLabel}>
+      {/* 시각적 차트 */}
+      <ChartComponent data={data} type={chartType} />
+      
+      {/* 스크린 리더용 데이터 테이블 (숨김) */}
+      <table className="sr-only" aria-label={`${ariaLabel} 데이터 테이블`}>
+        <caption>{summaryText}</caption>
+        <thead>
+          <tr>
+            <th>날짜</th>
+            <th>값</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((item, index) => (
+            <tr key={index}>
+              <td>{item.date}</td>
+              <td>{item.value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+```
 
-### 8.1 터치 인터페이스
+## 9. 모바일 최적화
 
-| 설정 | 값 | 적용 범위 |
-|------|----|---------|
-| 터치 타겟 | 44×44px | 모든 버튼, 링크 |
-| 터치 간격 | 8px | 인접 요소 |
-| 스와이프 감지 | 100px 이동 | 대시보드 네비게이션 |
-| 편집 제한 | 드래그만 지원 | 리사이즈는 속성 패널 |
+### 9.1 편집 기능 제한사항
 
-### 8.2 반응형 레이아웃
-
-| 화면 크기 | 그리드 | 위젯 크기 | 편집 기능 |
-|----------|-------|---------|---------|
-| 데스크톱 1200px+ | 12컬럼 | 300×200px | 드래그 + 리사이즈 |
-| 태블릿 768-1199px | 8컬럼 | 250×180px | 드래그 + 리사이즈 |
-| 모바일 ~767px | 4컬럼 | 100% 너비 | 드래그만 |
-
-### 8.3 모바일 편집 제한사항
-
-| 화면 크기 | 드래그 | 리사이즈 | 구현 방법 |
-|----------|-------|---------|----------|
-| **데스크톱 1200px+** | ✅ 지원 | ✅ 핸들 | react-grid-layout 기본 |
-| **태블릿 768-1199px** | ✅ 지원 | ✅ 핸들 | 터치 최적화 핸들 |
-| **모바일 ~767px** | ✅ 지원 | ❌ 속성 패널만 | 풀스크린 모달 |
+| 화면 크기 | 드래그 | 리사이즈 | 크기 조절 방법 | 구현 방식 |
+|----------|-------|---------|-------------|----------|
+| **데스크톱 1200px+** | ✅ 지원 | ✅ 핸들 | 모서리 드래그 | react-grid-layout 기본 |
+| **태블릿 768-1199px** | ✅ 지원 | ✅ 확대 핸들 | 터치 최적화 핸들 (48×48px) | 터치 이벤트 |
+| **모바일 ~767px** | ✅ 지원 | ❌ 비활성화 | 속성 패널 프리셋만 | 풀스크린 모달 |
 
 ```typescript
 // 모바일 편집 제한 구현
 const useResponsiveGridProps = () => {
   const isMobile = useMediaQuery("(max-width: 767px)")
+  const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1199px)")
   
   return {
     isDraggable: true, // 모든 화면에서 드래그 지원
     isResizable: !isMobile, // 모바일에서만 리사이즈 비활성화
     
-    // 모바일용 대체 리사이즈 (속성 패널)
+    // 터치 타겟 크기 조정
+    ...(isTablet && {
+      resizeHandles: ['se'], // 우하단만
+      resizeHandle: <div className="w-12 h-12 absolute -bottom-2 -right-2" />
+    }),
+    
+    // 모바일 대체 리사이즈
     ...(isMobile && {
       onLayoutChange: (layout) => {
-        // 모바일에서는 드래그로만 위치 변경
-        // 크기는 속성 패널의 프리셋에서만 변경
+        // 드래그로만 위치 변경, 크기는 속성 패널에서
       }
     })
   }
 }
 
-// 모바일 속성 패널 - 크기 조절 프리셋
-const MOBILE_WIDGET_SIZES = {
-  small: { w: 4, h: 2 },   // 4컬럼 전체 너비
-  medium: { w: 4, h: 3 },  // 높이만 증가
-  large: { w: 4, h: 4 },   // 정사각형
+// 모바일 위젯 크기 프리셋
+const MOBILE_WIDGET_PRESETS = {
+  small: { w: 4, h: 2, label: '작게 (2행)' },
+  medium: { w: 4, h: 3, label: '중간 (3행)' },
+  large: { w: 4, h: 4, label: '크게 (4행)' },
+  extra: { w: 4, h: 6, label: '매우 크게 (6행)' }
 } as const
+
+// 모바일 속성 패널에서 크기 선택
+const MobileWidgetSizeSelector = ({ widgetId, currentSize, onChange }) => (
+  <div className="space-y-2">
+    <Label>위젯 크기</Label>
+    <RadioGroup 
+      value={`${currentSize.w}x${currentSize.h}`}
+      onValueChange={(value) => {
+        const preset = Object.values(MOBILE_WIDGET_PRESETS)
+          .find(p => `${p.w}x${p.h}` === value)
+        if (preset) onChange(preset)
+      }}
+    >
+      {Object.entries(MOBILE_WIDGET_PRESETS).map(([key, preset]) => (
+        <div key={key} className="flex items-center space-x-2">
+          <RadioGroupItem 
+            value={`${preset.w}x${preset.h}`} 
+            id={key}
+            className="min-w-[44px] min-h-[44px]" // 터치 타겟
+          />
+          <Label htmlFor={key} className="min-h-[44px] flex items-center">
+            {preset.label}
+          </Label>
+        </div>
+      ))}
+    </RadioGroup>
+  </div>
+)
 ```
 
-## 9. 개발 도구 설정
+### 9.2 터치 인터페이스 최적화
 
-### 9.1 ESLint 접근성
+| 설정 | 값 | 적용 범위 | CSS 구현 |
+|------|----|---------|---------|
+| 터치 타겟 | 44×44px | 모든 버튼, 링크 | min-w-[44px] min-h-[44px] |
+| 터치 간격 | 8px | 인접 요소 | space-x-2 space-y-2 |
+| 드래그 핸들 | 48×48px | 위젯 이동 핸들 | w-12 h-12 |
+| 스와이프 감지 | 100px 이동 | 대시보드 네비게이션 | 터치 이벤트 |
+
+## 10. 개발 도구 설정
+
+### 10.1 ESLint 접근성 + 성능 규칙
 
 ```json
 {
-  "extends": ["plugin:jsx-a11y/recommended"],
+  "extends": [
+    "plugin:jsx-a11y/recommended",
+    "plugin:react-hooks/recommended"
+  ],
   "rules": {
     "jsx-a11y/alt-text": "error",
-    "jsx-a11y/aria-label": "error"
+    "jsx-a11y/aria-label": "error",
+    "jsx-a11y/click-events-have-key-events": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    "@typescript-eslint/no-unused-vars": "error"
   }
 }
 ```
 
-### 9.2 성능 모니터링 목표
+### 10.2 성능 모니터링
 
-| 지표 | 목표값 | 임계값 초과 시 |
-|------|--------|-------------|
-| LCP | < 2.5초 | 경고 로그 |
-| FID | < 100ms | 경고 로그 |
-| CLS | < 0.1 | 경고 로그 |
+| 지표 | 목표값 | 경고 임계값 | 에러 임계값 | 자동 대응 |
+|------|--------|------------|-----------|----------|
+| LCP | < 2.5초 | > 3초 | > 5초 | 콘솔 경고 |
+| FID/INP | < 200ms | > 300ms | > 500ms | 디바운싱 강화 |
+| CLS | < 0.1 | > 0.2 | > 0.3 | 스켈레톤 UI 강화 |
+| 메모리 | < 200MB | > 250MB | > 300MB | 가비지 컬렉션 강제 |
