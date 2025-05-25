@@ -493,7 +493,7 @@
 | R-SUB-001 | **Basic 플랜: MVP 20개 지표만 접근 가능, 최근 3년 데이터만 조회** |
 | R-SUB-002 | **Pro 플랜: 전체 40개 지표 접근 가능, 전체 기간 데이터 조회** |
 | R-SUB-003 | **기간별 비교 기능(CP-001~006)은 Pro 플랜만 사용 가능** |
-| R-SUB-004 | **OECD 데이터 소스는 현재 개발 중으로 모든 플랜에서 비활성화** |
+| R-SUB-004 | **OECD 데이터 소스는 향후 확장 예정으로 현재 모든 플랜에서 비활성화** |
 | R-SUB-005 | **지표 검색(DS-003) 시 구독 플랜에 따라 검색 결과 필터링** |
 
 #### 3.5.4 스타일-데이터 연결 의존성 규칙
@@ -1561,7 +1561,7 @@ const gridLayoutProps = {
     setChartRenderingEnabled(false);
   },
   onResizeStop: debounce(() => {
-    // 차트 복잡도에 따른 적응적 지연 시간 (기본 300ms, 범위 200-500ms)
+    // 차트 복잡도에 따른 적응적 디바운싱 시간 (기본 300ms, 범위 200-500ms)
     setChartRenderingEnabled(true);
   }, getAdaptiveDebounceTime()),
 
