@@ -349,7 +349,7 @@
 
 #### 3.3.1 데이터 소스 적용 위젯
 
-- **다중 시리즈 지원**: TimeSeries, BarChart, ScatterChart, RadarChart, RadialBarChart
+- **다중 시리즈 지원**: Time Series, Bar Chart, Scatter Chart, Radar Chart, Radial Bar Chart
 - **단일 데이터 소스**: Text-데이터기반 (시리즈 식별자 불필요)
 - **데이터 소스 미적용**: Text-사용자정의 (데이터 소스 불필요)
 
@@ -877,7 +877,7 @@
 | PR-004 | 대시보드 로딩 시간 | 대시보드 전체 렌더링 완료 시간 | < 2초 | 사용자 타이밍 API |
 | PR-005 | 상호작용 반응성 | 사용자 입력에 대한 UI 반응 시간 | < 100ms | 이벤트 타이밍 |
 | PR-006 | 메모리 사용량 | 프론트엔드 메모리 사용량 | < 200MB | 성능 프로파일링 |
-| PR-007 | 번들 크기 | 초기 JS 번들 크기 | < 200KB | 번들 분석기 |
+| PR-007 | 번들 크기 | 초기 JS 번들 크기 | < 800KB | 번들 분석기 |
 | PR-008 | 렌더링 성능 | 프레임 드롭 없는 애니메이션 | 60fps | 성능 모니터링 |
 
 #### 5.1.2 Core Web Vitals (2025년 기준)
@@ -887,7 +887,7 @@
 | PR-009 | LCP (Largest Contentful Paint) | 최대 콘텐츠 렌더링 시간 | < 2.5초 | Web Vitals API |
 | PR-010 | FID (First Input Delay) | 첫 입력 지연 시간 | < 100ms | Web Vitals API |
 | PR-011 | CLS (Cumulative Layout Shift) | 누적 레이아웃 이동 | < 0.1 | Web Vitals API |
-| PR-012 | INP (Interaction to Next Paint) | 상호작용 후 다음 페인트 (2025년 신규) | < 200ms | Web Vitals API |
+| PR-012 | INP (Interaction to Next Paint) | 상호작용 후 다음 페인트 (FID 대체 지표) | < 200ms | Web Vitals API |
 | PR-013 | TTFB (Time to First Byte) | 첫 바이트 응답 시간 | < 600ms | Navigation Timing API |
 
 #### 5.1.3 경제지표 데이터 특화 성능
