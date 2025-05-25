@@ -68,19 +68,19 @@ graph TD
 | **차트 렌더링 성능** | 1,000+ 데이터 포인트 시 3초 이내 | LTTB 다운샘플링, 가상화 적용 |
 | **편집 모드 반응성** | 드래그 중 60fps 유지 | 차트 렌더링 비활성화, 300ms 디바운싱 |
 | **메모리 사용량** | 대시보드당 200MB 이하 | React.memo, 불필요한 상태 정리 |
-| **구독 플랜 검증** | 10ms 이내 권한 확인 | 클라이언트 캐시 + 서버 재검증 |
+| **구독 플랜 검증** | 10ms 이내 권한 확인 (Basic: 20개 지표, Pro: 40개 지표) | 클라이언트 캐시 + 서버 재검증 |
 
 #### 비즈니스 로직 제약사항
 
 ```mermaid
 graph LR
     subgraph "구독 플랜별 아키텍처 분기"
-        Basic[Basic 플랜] --> B1[20개 지표]
+        Basic[Basic 플랜] --> B1[20개 지표<br/>(KOSIS 12개+ECOS 8개)]
         Basic --> B2[3년 데이터]
         Basic --> B3[3개 대시보드]
         Basic --> B4[6개 위젯/대시보드]
         
-        Pro[Pro 플랜] --> P1[40개 지표]
+        Pro[Pro 플랜] --> P1[40개 지표<br/>(KOSIS 12개+ECOS 28개)]
         Pro --> P2[전체 기간]
         Pro --> P3[무제한 대시보드]
         Pro --> P4[무제한 위젯]
@@ -112,8 +112,8 @@ graph LR
 ```mermaid
 graph TD
     subgraph "데이터 소스 계층"
-        KOSIS[KOSIS API<br/>12개 지표]
-        ECOS[ECOS API<br/>28개 지표]
+        KOSIS[KOSIS API<br/>12개 지표<br/>(종합경기3, 주식2, 물가1, GDP6)]
+        ECOS[ECOS API<br/>28개 지표<br/>(금리4, GDP8, 환율6, 통화량8, 기타8)]
         OECD[OECD API<br/>향후 확장]
         
         KOSIS -.->|M,Q,A 주기| Adapter1[KOSIS 어댑터]
@@ -297,13 +297,13 @@ graph TD
 // packages/state/src/auth.ts
 const FEATURE_GATES = {
   basic: {
-    indicators: 20,
+    indicators: 20, // KOSIS 12개 + ECOS 8개
     dashboards: 3,
     widgets: 6,
     dataRange: '3years'
   },
   pro: {
-    indicators: 40,
+    indicators: 40, // KOSIS 12개 + ECOS 28개
     dashboards: Infinity,
     widgets: Infinity,
     dataRange: 'all'
@@ -450,7 +450,12 @@ import { useLTTBSampling } from '@/hooks/useLTTBSampling'
 
 export const ChartRenderer = memo(({ data, type, options }) => {
   const sampledData = useLTTBSampling(data, 1000) // 임계값
-  // 렌더링 로직
+  // 5가지 차트 타입 렌더링 로직
+})
+
+// packages/charts/src/components/TextWidgetRenderer.tsx
+export const TextWidgetRenderer = memo(({ content, type, options }) => {
+  // Text-사용자정의, Text-데이터기반 렌더링 로직
 })
 ```
 
@@ -563,7 +568,7 @@ packages:
 | **ui** | core, utils | Shadcn/UI 통합 | CSS-first 테마 |
 | **data-sources** | core, utils | API 어댑터 | KOSIS/ECOS 통합 |
 | **state** | core, utils, data-sources | 상태 관리 | 서버/클라이언트 분리 |
-| **charts** | core, ui, utils, data-sources, state | 차트 컴포넌트 | 5가지 차트 타입 |
+| **charts** | core, ui, utils, data-sources, state | 차트 + 위젯 컴포넌트 | 5가지 차트 + 2가지 텍스트 위젯 |
 | **dashboard** | 모든 패키지 | 대시보드 관리 | react-grid-layout |
 | **server-api** | core, utils | API 핸들러 | Next.js 15 통합 |
 
@@ -751,7 +756,7 @@ export const BarChart = lazy(() =>
 | **eslint-config** | 코드 품질 규칙 | Standard JS + TSESLint | 없음 |
 | **core** | 타입 정의, 상수 | 구독 모델 타입, 차트 타입 | 없음 |
 | **ui** | 기본 UI 컴포넌트 | Shadcn/UI + CSS-first | core, utils |
-| **charts** | 차트 렌더링 | 5가지 차트 + LTTB | core, ui, utils, data-sources |
+| **charts** | 차트 + 위젯 렌더링 | 5가지 차트 + 2가지 텍스트 위젯 + LTTB | core, ui, utils, data-sources |
 | **dashboard** | 대시보드 관리 | react-grid-layout + 위젯 | core, ui, charts, data-sources |
 | **data-sources** | 데이터 연동 | KOSIS/ECOS 어댑터 | core, utils |
 | **utils** | 유틸리티 함수 | 경제지표 포맷터 | 없음 |
@@ -991,6 +996,7 @@ export const useAuth = () => {
   
   const plan = session?.user?.user_metadata?.subscription_plan || 'basic'
   
+  // Basic: KOSIS 12개+ECOS 8개, Pro: KOSIS 12개+ECOS 28개
   return {
     user: session?.user,
     plan: plan as 'basic' | 'pro',
