@@ -189,7 +189,8 @@ core (타입, 상수)
 // 성능 임계값 상수
 export const PERFORMANCE_THRESHOLDS = {
   LCP: 2500,     // ms
-  FID: 100,      // ms  
+  FID: 100,      // ms (deprecated 2024+)
+  INP: 200,      // ms (FID 대체 지표 2024+)
   CLS: 0.1,      // score
   CHART_RENDER: 2000, // ms
   DASHBOARD_LOAD: 2000, // ms
