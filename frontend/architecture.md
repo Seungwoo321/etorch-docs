@@ -2,254 +2,53 @@
 
 ## 1. 아키텍처 개요
 
-### 1.1 프론트엔드 아키텍처 목표
+### 1.1 E-Torch 특화 제약사항
 
-E-Torch 프론트엔드는 경제지표 시각화 특성과 구독 모델을 고려한 확장 가능한 아키텍처를 목표로 합니다.
+| 도메인 특성 | 기술적 제약 | 구현 방법 |
+|------------|------------|----------|
+| **KOSIS/ECOS 통합** | 이기종 API 응답 차이 | 어댑터 패턴 |
+| **1000+ 데이터 포인트** | 메모리 200MB 제한 | LTTB 다운샘플링 |
+| **구독 모델** | 권한 검증 < 10ms | 클라이언트 캐시 5분 |
+| **정기 발표 데이터** | 정확성 > 실시간성 | 24시간 캐시 |
 
-#### 핵심 기술적 목표
+### 1.2 핵심 성능 목표
 
-- **복잡한 데이터 시각화 최적화**: 1,000+ 데이터 포인트 차트 렌더링 성능 보장
-- **실시간 대화형 편집**: react-grid-layout 기반 드래그 앤 드롭 편집기 구현
-- **구독 모델 런타임 제어**: 플랜별 기능 제한/활성화 실시간 적용
-- **다중 데이터 소스 통합**: KOSIS/ECOS API 응답 차이 흡수 및 정규화
-- **적응형 사용자 경험**: 전문가/일반 사용자별 UI 복잡도 동적 조절
+| 기능 | 목표값 | 측정 기준 |
+|------|--------|----------|
+| 차트 렌더링 | < 3초 | 1000포인트 시계열 |
+| 편집 반응성 | 60fps | 드래그 중 |
+| 메모리 사용량 | < 200MB | 대시보드당 |
+| 권한 검증 | < 10ms | 플랜별 기능 제한 |
 
-### 1.2 아키텍처 설계 원칙
-
-```mermaid
-graph TD
-    subgraph "프론트엔드 아키텍처 원칙"
-        A[성능 최적화] --> A1[차트 렌더링<br/>가상화/다운샘플링]
-        A --> A2[코드 분할<br/>동적 임포트]
-        A --> A3[메모리 관리<br/>편집 모드 최적화]
-        
-        B[확장성] --> B1[패키지 모듈화<br/>9개 독립 패키지]
-        B --> B2[차트 유형 확장<br/>플러그인 패턴]
-        B --> B3[데이터 소스 확장<br/>어댑터 패턴]
-        
-        C[상태 분리] --> C1[서버 상태<br/>TanStack Query]
-        C --> C2[클라이언트 상태<br/>Zustand]
-        C --> C3[편집 상태<br/>격리된 스토어]
-        
-        D[구독 모델 대응] --> D1[기능 게이팅<br/>런타임 검증]
-        D --> D2[UI 차별화<br/>조건부 렌더링]
-        D --> D3[데이터 접근 제어<br/>프록시 패턴]
-        
-        E[타입 안전성] --> E1[엄격한 타입<br/>TypeScript 5.5+]
-        E --> E2[스키마 검증<br/>Zod 통합]
-        E --> E3[API 계약<br/>타입 생성]
-        
-        F[경제지표 특화] --> F1[시계열 최적화<br/>LTTB 알고리즘]
-        F --> F2[정기 발표 대응<br/>캐시 전략]
-        F --> F3[다중 시리즈<br/>메모리 효율]
-    end
-    
-    classDef performance fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
-    classDef scalability fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
-    classDef state fill:#fff3e0,stroke:#e65100,stroke-width:2px;
-    classDef subscription fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
-    classDef type fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
-    classDef domain fill:#fff8e1,stroke:#f57f17,stroke-width:2px;
-    
-    class A,A1,A2,A3 performance;
-    class B,B1,B2,B3 scalability;
-    class C,C1,C2,C3 state;
-    class D,D1,D2,D3 subscription;
-    class E,E1,E2,E3 type;
-    class F,F1,F2,F3 domain;
-```
-
-### 1.3 아키텍처 제약사항 및 고려사항
-
-#### 기술적 제약사항
-
-| 제약사항 | 영향 범위 | 아키텍처 대응 |
-|---------|----------|-------------|
-| **차트 렌더링 성능** | 1,000+ 데이터 포인트 시 3초 이내 | LTTB 다운샘플링, 가상화 적용 |
-| **편집 모드 반응성** | 드래그 중 60fps 유지 | 차트 렌더링 비활성화, 300ms 디바운싱 |
-| **메모리 사용량** | 대시보드당 200MB 이하 | React.memo, 불필요한 상태 정리 |
-| **구독 플랜 검증** | 10ms 이내 권한 확인 (Basic: 20개 지표, Pro: 40개 지표) | 클라이언트 캐시 + 서버 재검증 |
-
-#### 비즈니스 로직 제약사항
-
-```mermaid
-graph LR
-    subgraph "구독 플랜별 아키텍처 분기"
-        Basic[Basic 플랜] --> B1[20개 지표<br/>(KOSIS 12개+ECOS 8개)]
-        Basic --> B2[3년 데이터]
-        Basic --> B3[3개 대시보드]
-        Basic --> B4[6개 위젯/대시보드]
-        
-        Pro[Pro 플랜] --> P1[40개 지표<br/>(KOSIS 12개+ECOS 28개)]
-        Pro --> P2[전체 기간]
-        Pro --> P3[무제한 대시보드]
-        Pro --> P4[무제한 위젯]
-    end
-    
-    subgraph "프론트엔드 구현"
-        B1 --> UI1[지표 선택 제한]
-        B2 --> UI2[날짜 선택기 제한]
-        B3 --> UI3[생성 버튼 비활성화]
-        B4 --> UI4[위젯 추가 제한]
-        
-        P1 --> UI5[전체 지표 접근]
-        P2 --> UI6[전체 기간 선택]
-        P3 --> UI7[무제한 생성]
-        P4 --> UI8[무제한 추가]
-    end
-    
-    classDef basic fill:#ffebee,stroke:#c62828,stroke-width:2px;
-    classDef pro fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px;
-    classDef ui fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
-    
-    class Basic,B1,B2,B3,B4 basic;
-    class Pro,P1,P2,P3,P4 pro;
-    class UI1,UI2,UI3,UI4,UI5,UI6,UI7,UI8 ui;
-```
-
-### 1.4 데이터 흐름 아키텍처
+### 1.3 아키텍처 설계 원칙
 
 ```mermaid
 graph TD
-    subgraph "데이터 소스 계층"
-        KOSIS[KOSIS API<br/>12개 지표<br/>(종합경기3, 주식2, 물가1, GDP6)]
-        ECOS[ECOS API<br/>28개 지표<br/>(금리4, GDP8, 환율6, 통화량8, 기타8)]
-        OECD[OECD API<br/>향후 확장]
-        
-        KOSIS -.->|M,Q,A 주기| Adapter1[KOSIS 어댑터]
-        ECOS -.->|D,M,Q,A 주기| Adapter2[ECOS 어댑터]
-        OECD -.->|비활성화| Adapter3[OECD 어댑터]
-    end
+    A[성능 최적화] --> A1[LTTB 다운샘플링<br/>1000+ 포인트]
+    A --> A2[300ms 디바운싱<br/>편집 모드]
     
-    subgraph "상태 관리 계층"
-        Adapter1 --> ServerAPI[server-api 패키지]
-        Adapter2 --> ServerAPI
-        Adapter3 --> ServerAPI
-        
-        ServerAPI --> TQ[TanStack Query<br/>서버 상태]
-        TQ --> DataSources[data-sources 패키지]
-        DataSources --> State[state 패키지<br/>Zustand]
-    end
+    B[구독 모델 대응] --> B1[Basic: 20개 지표<br/>Pro: 40개 지표]
+    B --> B2[런타임 권한 검증<br/>< 10ms]
     
-    subgraph "프레젠테이션 계층"
-        State --> Charts[charts 패키지]
-        State --> Dashboard[dashboard 패키지]
-        Charts --> UI[ui 패키지]
-        Dashboard --> UI
-        
-        UI --> Web[apps/web<br/>Next.js 15]
-    end
-    
-    subgraph "사용자 계층"
-        Web --> Expert[전문 투자자<br/>복잡한 UI]
-        Web --> General[일반 투자자<br/>단순한 UI]
-    end
-    
-    classDef source fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef state fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px;
-    classDef ui fill:#e1f5fe,stroke:#0277bd,stroke-width:2px;
-    classDef user fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
-    
-    class KOSIS,ECOS,OECD,Adapter1,Adapter2,Adapter3 source;
-    class ServerAPI,TQ,DataSources,State state;
-    class Charts,Dashboard,UI,Web ui;
-    class Expert,General user;
+    C[모노레포 분리] --> C1[9개 패키지<br/>의존성 순서 준수]
+    C --> C2[Next.js 15<br/>App Router]
 ```
-
-### 1.5 성능 아키텍처 전략
-
-#### 차트 렌더링 최적화
-
-```mermaid
-graph TD
-    subgraph "데이터 처리 파이프라인"
-        Raw[원본 데이터] --> Check{포인트 수 확인}
-        Check -->|< 1000개| Direct[직접 렌더링]
-        Check -->|≥ 1000개| LTTB[LTTB 다운샘플링]
-        
-        LTTB --> Sampled[샘플링된 데이터]
-        Direct --> Render[차트 렌더링]
-        Sampled --> Render
-        
-        Render --> Cache[결과 캐싱<br/>15분]
-    end
-    
-    subgraph "편집 모드 최적화"
-        Edit[편집 시작] --> Disable[차트 렌더링 비활성화]
-        Disable --> Drag[드래그/리사이즈]
-        Drag --> Debounce[300ms 디바운싱]
-        Debounce --> Enable[차트 렌더링 재활성화]
-    end
-    
-    subgraph "메모리 관리"
-        Component[컴포넌트] --> Memo[React.memo]
-        Component --> Cleanup[언마운트 시 정리]
-        Component --> WeakMap[WeakMap 캐시]
-    end
-    
-    classDef process fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px;
-    classDef edit fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef memory fill:#e1f5fe,stroke:#0277bd,stroke-width:2px;
-    
-    class Raw,Check,Direct,LTTB,Sampled,Render,Cache process;
-    class Edit,Disable,Drag,Debounce,Enable edit;
-    class Component,Memo,Cleanup,WeakMap memory;
-```
-
-### 1.6 보안 및 인증 아키텍처
-
-```mermaid
-graph TD
-    subgraph "인증 플로우"
-        Login[SNS 로그인] --> OAuth[OAuth 인증]
-        OAuth --> Supabase[Supabase Auth]
-        Supabase --> JWT[JWT 토큰]
-        JWT --> Session[세션 관리]
-    end
-    
-    subgraph "구독 검증"
-        Session --> Middleware[인증 미들웨어]
-        Middleware --> PlanCheck[플랜 검증]
-        PlanCheck --> Cache[권한 캐시<br/>5분]
-        Cache --> UI[UI 제한 적용]
-    end
-    
-    subgraph "결제 보안"
-        Payment[결제 요청] --> Toss[토스페이먼츠]
-        Toss --> Webhook[웹훅 검증]
-        Webhook --> Update[구독 상태 업데이트]
-    end
-    
-    classDef auth fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px;
-    classDef plan fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef payment fill:#fce4ec,stroke:#c2185b,stroke-width:2px;
-    
-    class Login,OAuth,Supabase,JWT,Session auth;
-    class Middleware,PlanCheck,Cache,UI plan;
-    class Payment,Toss,Webhook,Update payment;
-```
-
-이 아키텍처는 경제지표 시각화의 특수성과 구독 모델의 복잡성을 모두 고려하여 설계되었으며, 성능과 확장성을 동시에 보장합니다.
 
 ## 2. 기술 스택
 
-### 2.1 핵심 기술 스택 (E-Torch 특화)
+### 2.1 핵심 기술 (E-Torch 특화 설정)
 
 | 영역 | 기술 | 버전 | E-Torch 특화 설정 |
 |------|------|------|------------------|
-| **모노레포** | Turborepo + pnpm | 2.5.3 + 10.11.0 | 9패키지 분할, 빌드 캐싱 |
-| **프레임워크** | Next.js + React | 15.3.2 + 19.1.0 | App Router, 경제지표 캐싱 24h |
-| **UI** | Tailwind CSS + Shadcn/UI | 4.1.7 + latest | CSS-first, OKLCH 색상 |
-| **상태관리** | Zustand + TanStack Query | 5.0.5 + 5.77.0 | 클라이언트/서버 상태 분리 |
-| **차트** | Recharts | 2.15.3 | 1000+ 포인트 LTTB 다운샘플링 |
-| **레이아웃** | react-grid-layout | 1.5.1 | 드래그 300ms 디바운싱 |
-| **인증** | Supabase Auth | v2 | SNS 로그인 3개 (구글/네이버/카카오) |
-| **폼/검증** | React Hook Form + Zod | 7.56.4 + 3.25.28 | 경제지표 스키마 검증 |
-| **테스트** | Vitest + Playwright | 1.x + 1.40+ | 차트 시각적 회귀 테스트 |
+| **모노레포** | Turborepo + pnpm | 2.5.3 + 10.11.0 | 9패키지 분할 |
+| **프레임워크** | Next.js + React | 15.3.2 + 19.1.0 | App Router 전용 |
+| **UI** | Tailwind CSS + Shadcn/UI | 4.1.7 + latest | CSS-first, OKLCH |
+| **상태관리** | Zustand + TanStack Query | 5.0.5 + 5.77.0 | 서버/클라이언트 분리 |
+| **차트** | Recharts | 2.15.3 | LTTB 다운샘플링 |
+| **레이아웃** | react-grid-layout | 1.5.1 | 300ms 디바운싱 |
+| **인증** | Supabase Auth | v2 | SNS 로그인 3개 |
 
-### 2.2 E-Torch 특화 구현 설정
-
-#### Tailwind CSS 4 (CSS-first)
+### 2.2 Tailwind CSS 4 설정 (CSS-first)
 
 ```css
 /* globals.css */
@@ -261,11 +60,6 @@ graph TD
   --color-secondary: oklch(0.5 0.2 230);
   --color-tertiary: oklch(0.45 0.18 220);
   
-  /* 반응형 브레이크포인트 */
-  --breakpoint-tablet: 768px;
-  --breakpoint-desktop: 1200px;
-  --container-max-width: 1440px;
-  
   /* 성능 최적화 값 */
   --debounce-resize: 300ms;
   --debounce-drag: 200ms;
@@ -275,673 +69,168 @@ graph TD
 @supports not (color: oklch(0 0 0)) {
   :root {
     --color-primary: hsl(225, 60%, 15%);
-    --color-secondary: hsl(225, 80%, 50%);
-    --color-tertiary: hsl(200, 80%, 45%);
   }
 }
 ```
 
-#### 성능 임계값 및 최적화
-
-| 기능 | 임계값 | 최적화 방법 |
-|------|--------|------------|
-| **차트 렌더링** | 1000+ 포인트 | LTTB 다운샘플링 자동 적용 |
-| **편집 반응성** | 드래그 중 60fps | 차트 렌더링 비활성화 |
-| **메모리 관리** | 200MB/대시보드 | React.memo + 언마운트 정리 |
-| **권한 검증** | < 10ms | 클라이언트 캐시 5분 유지 |
-| **데이터 캐싱** | 경제지표 24시간 | TanStack Query staleTime |
-
-#### 구독 모델 런타임 제어
+### 2.3 구독 모델 런타임 제어
 
 ```typescript
-// packages/state/src/auth.ts
+// 권한 검증 (10ms 이내)
 const FEATURE_GATES = {
-  basic: {
-    indicators: 20, // KOSIS 12개 + ECOS 8개
-    dashboards: 3,
-    widgets: 6,
-    dataRange: '3years'
-  },
-  pro: {
-    indicators: 40, // KOSIS 12개 + ECOS 28개
-    dashboards: Infinity,
-    widgets: Infinity,
-    dataRange: 'all'
-  }
+  basic: { indicators: 20, dashboards: 3, widgets: 6 },
+  pro: { indicators: 40, dashboards: Infinity, widgets: Infinity }
 } as const
 
-// 런타임 권한 검증 (10ms 이내)
-export const useFeatureGate = (feature: keyof typeof FEATURE_GATES.basic) => {
+export const useFeatureGate = (feature: string) => {
   const { plan } = useAuth()
-  return useMemo(() => FEATURE_GATES[plan][feature], [plan, feature])
-}
-```
-
-#### react-grid-layout 최적화 설정
-
-```typescript
-// packages/dashboard/src/components/DashboardGrid.tsx
-const gridLayoutProps = {
-  cols: { lg: 12, md: 8, sm: 4 },
-  breakpoints: { lg: 1200, md: 768, sm: 0 },
-  margin: [16, 16],
-  
-  // 성능 최적화
-  onDragStart: () => setChartRenderingEnabled(false),
-  onDragStop: debounce(() => setChartRenderingEnabled(true), 200),
-  onResizeStart: () => setChartRenderingEnabled(false),
-  onResizeStop: debounce(() => setChartRenderingEnabled(true), 300),
-}
-```
-
-#### 경제지표 데이터 처리
-
-```typescript
-// packages/charts/src/utils/downsampling.ts
-export const applyLTTB = (data: DataPoint[], threshold = 1000) => {
-  if (data.length <= threshold) return data
-  return lttbDownsampling(data, threshold)
-}
-
-// 자동 다운샘플링 적용
-export const processChartData = (data: DataPoint[]) => {
-  return data.length > 1000 ? applyLTTB(data) : data
-}
-```
-
-### 2.3 개발 환경 설정
-
-#### ESLint 설정 (Flat Config)
-
-```javascript
-// eslint.config.mjs
-import { nextJsConfig } from '@e-torch/eslint-config/next'
-
-export default [
-  ...nextJsConfig,
-  {
-    rules: {
-      // E-Torch 특화 규칙
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      'react-hooks/exhaustive-deps': 'error'
-    }
-  }
-]
-```
-
-#### TypeScript 설정
-
-```json
-{
-  "compilerOptions": {
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true
-  }
+  return FEATURE_GATES[plan][feature]
 }
 ```
 
 ## 3. 아키텍처 계층 구조
 
-### 3.1 핵심 설정
+### 3.1 서버/클라이언트 컴포넌트 분리
 
-#### Turborepo + pnpm 구성
+| 컴포넌트 유형 | 책임 | 구현 방식 |
+|-------------|------|----------|
+| **서버 컴포넌트** | 데이터 페칭, 메타데이터 로드 | Next.js 15 App Router |
+| **클라이언트 컴포넌트** | 인터랙션, 상태 관리 | "use client" |
+| **서버 액션** | 데이터 변경, 검증 | "use server" |
 
-```json
-// turbo.json
-{
-  "pipeline": {
-    "build": { "dependsOn": ["^build"], "outputs": [".next/**", "dist/**"] },
-    "dev": { "cache": false, "persistent": true },
-    "lint": {},
-    "type-check": {}
-  }
-}
-```
-
-```yaml
-# pnpm-workspace.yaml
-packages:
-  - "apps/*"
-  - "packages/*"
-```
-
-### 3.2 패키지 의존성 (E-Torch 특화)
-
-| 패키지 | 직접 의존성 | 핵심 책임 |
-|--------|-------------|----------|
-| **core** | utils | 타입 정의, 상수 |
-| **ui** | core, utils | Shadcn/UI + CSS-first |
-| **charts** | core, ui, utils, data-sources | Recharts + 5가지 차트 |
-| **dashboard** | core, ui, charts, data-sources | react-grid-layout |
-| **data-sources** | core, utils | KOSIS/ECOS 어댑터 |
-| **state** | core, utils, data-sources | Zustand + TanStack Query |
-| **server-api** | core, utils | Next.js API 핸들러 |
-
-### 3.3 E-Torch 특화 패키지 설정
-
-#### ESLint Config (Standard 기반)
-
-```javascript
-// packages/eslint-config/base.mjs
-import standardJs from '@seungwoo321/eslint-plugin-standard-js'
-import tseslint from 'typescript-eslint'
-
-export const config = [
-  {
-    ignores: ['apps/web/app/components/ui/*'] // Shadcn/UI 제외
-  },
-  {
-    files: ['**/*.{js,ts,jsx,tsx}'],
-    extends: [
-      ...standardJs.configs.recommended,
-      ...tseslint.configs.recommended
-    ]
-  }
-]
-```
-
-#### 차트 패키지 (성능 최적화)
-
-```typescript
-// packages/charts/src/components/ChartRenderer.tsx
-import { memo } from 'react'
-import { useLTTBSampling } from '@/hooks/useLTTBSampling'
-
-export const ChartRenderer = memo(({ data, type, options }) => {
-  const sampledData = useLTTBSampling(data, 1000) // 임계값
-  // 5가지 차트 타입 렌더링 로직
-})
-
-// packages/charts/src/components/TextWidgetRenderer.tsx
-export const TextWidgetRenderer = memo(({ content, type, options }) => {
-  // Text-사용자정의, Text-데이터기반 렌더링 로직
-})
-```
-
-#### 상태 패키지 (서버 상태 분리)
-
-```typescript
-// packages/state/src/stores/dashboard.ts
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-
-export const useDashboardStore = create(
-  persist(
-    (set) => ({
-      // 클라이언트 상태만
-      editMode: false,
-      selectedWidget: null
-    }),
-    { name: 'dashboard-state' }
-  )
-)
-```
-
-### 3.4 구독 모델 통합
-
-#### 권한 검증 (< 10ms 목표)
-
-```typescript
-// packages/core/src/types/subscription.ts
-export type PlanLimits = {
-  basic: { dashboards: 3, widgets: 6, indicators: 20, dataYears: 3 }
-  pro: { dashboards: -1, widgets: -1, indicators: 40, dataYears: -1 }
-}
-
-// 런타임 검증
-export const checkPlanLimit = (plan: Plan, resource: Resource) => {
-  return PLAN_LIMITS[plan][resource] === -1 || 
-         currentUsage[resource] < PLAN_LIMITS[plan][resource]
-}
-```
-
-### 3.5 성능 최적화 설정
-
-#### 메모리 관리 (200MB 제한)
-
-```typescript
-// packages/charts/src/hooks/useChartMemory.ts
-import { useEffect } from 'react'
-
-export const useChartMemory = (data: ChartData[]) => {
-  useEffect(() => {
-    return () => {
-      // 차트 데이터 정리
-      data.forEach(d => d.cleanup?.())
-    }
-  }, [])
-}
-```
-
-#### 코드 분할 (동적 임포트)
-
-```typescript
-// packages/charts/src/index.ts
-export const TimeSeriesChart = lazy(() => 
-  import('./components/TimeSeriesChart')
-)
-export const BarChart = lazy(() => 
-  import('./components/BarChart')
-)
-// 필요시에만 로드
-```
-
----
-
-**핵심**: 의존성 순서 준수, E-Torch 특화 설정 적용, 성능 임계값 준수
-
-## 4. 모노레포 패키지 구조 설계
-
-### 4.1 핵심 설정
-
-#### Turborepo + pnpm 구성
-
-```json
-// turbo.json
-{
-  "pipeline": {
-    "build": { "dependsOn": ["^build"], "outputs": [".next/**", "dist/**"] },
-    "dev": { "cache": false, "persistent": true },
-    "lint": {},
-    "type-check": {}
-  }
-}
-```
-
-```yaml
-# pnpm-workspace.yaml
-packages:
-  - "apps/*"
-  - "packages/*"
-```
-
-### 4.2 패키지 의존성 구조
-
-#### 9개 패키지 구조 (E-Torch 특화)
-
-| 패키지 | 직접 의존성 | 핵심 책임 | E-Torch 특화 |
-|--------|-------------|----------|------------|
-| **eslint-config** | - | 코드 품질 규칙 | Standard JS 기반 |
-| **core** | utils | 타입 정의, 상수 | 차트/구독 타입 |
-| **utils** | - | 공통 유틸리티 | LTTB 다운샘플링 |
-| **ui** | core, utils | Shadcn/UI 통합 | CSS-first 테마 |
-| **data-sources** | core, utils | API 어댑터 | KOSIS/ECOS 통합 |
-| **state** | core, utils, data-sources | 상태 관리 | 서버/클라이언트 분리 |
-| **charts** | core, ui, utils, data-sources, state | 차트 + 위젯 컴포넌트 | 5가지 차트 + 2가지 텍스트 위젯 |
-| **dashboard** | 모든 패키지 | 대시보드 관리 | react-grid-layout |
-| **server-api** | core, utils | API 핸들러 | Next.js 15 통합 |
-
-#### 패키지 의존성 그래프
+### 3.2 데이터 흐름
 
 ```mermaid
 graph TD
-    subgraph "기반 계층"
-        eslint[eslint-config]
-        core[core]
-        utils[utils]
-    end
-    
-    subgraph "UI 계층" 
-        ui[ui]
-    end
-    
-    subgraph "데이터 계층"
-        data[data-sources]
-        api[server-api]
-        state[state]
-    end
-    
-    subgraph "기능 계층"
-        charts[charts]
-        dashboard[dashboard]
-    end
-    
-    subgraph "애플리케이션"
-        web[apps/web]
-    end
-    
-    %% 의존성
-    ui --> core
-    ui --> utils
-    
-    data --> core
-    data --> utils
-    
-    api --> core
-    api --> utils
-    
-    state --> core
-    state --> utils
-    state --> data
-    
-    charts --> core
-    charts --> ui
-    charts --> utils
-    charts --> data
-    charts --> state
-    
-    dashboard --> charts
-    dashboard --> state
-    dashboard --> ui
-    
-    web --> dashboard
-    web --> api
-    
-    classDef base fill:#e8f5e8,stroke:#2e7d32;
-    classDef ui fill:#fff3e0,stroke:#f57c00;
-    classDef data fill:#e3f2fd,stroke:#1565c0;
-    classDef feature fill:#fce4ec,stroke:#c2185b;
-    classDef app fill:#f3e5f5,stroke:#7b1fa2;
-    
-    class eslint,core,utils base;
-    class ui ui;
-    class data,api,state data;
-    class charts,dashboard feature;
-    class web app;
+    A[KOSIS/ECOS API] --> B[어댑터 패턴]
+    B --> C[TanStack Query<br/>서버 상태]
+    C --> D[Zustand<br/>클라이언트 상태]
+    D --> E[Charts 패키지]
+    E --> F[UI 렌더링]
 ```
 
-### 4.3 E-Torch 특화 패키지 설정
-
-#### ESLint Config (Standard 기반)
-
-```javascript
-// packages/eslint-config/base.mjs
-import standardJs from '@seungwoo321/eslint-plugin-standard-js'
-import tseslint from 'typescript-eslint'
-
-export const config = [
-  {
-    ignores: ['apps/web/app/components/ui/*'] // Shadcn/UI 제외
-  },
-  {
-    files: ['**/*.{js,ts,jsx,tsx}'],
-    extends: [
-      ...standardJs.configs.recommended,
-      ...tseslint.configs.recommended
-    ]
-  }
-]
-```
-
-#### Charts 패키지 (성능 최적화)
+### 3.3 성능 최적화 구현
 
 ```typescript
-// packages/charts/src/components/ChartRenderer.tsx
-import { memo } from 'react'
-import { useLTTBSampling } from '@/hooks/useLTTBSampling'
-
-export const ChartRenderer = memo(({ data, type, options }) => {
-  const sampledData = useLTTBSampling(data, 1000) // 임계값
-  return <Chart data={sampledData} type={type} {...options} />
-})
-```
-
-#### State 패키지 (서버 상태 분리)
-
-```typescript
-// packages/state/src/stores/dashboard.ts
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-
-export const useDashboardStore = create(
-  persist(
-    (set) => ({
-      // 클라이언트 상태만
-      editMode: false,
-      selectedWidget: null
-    }),
-    { name: 'dashboard-state' }
-  )
-)
-```
-
-#### 구독 모델 통합 (< 10ms 목표)
-
-```typescript
-// packages/core/src/types/subscription.ts
-export type PlanLimits = {
-  basic: { dashboards: 3, widgets: 6, indicators: 20, dataYears: 3 }
-  pro: { dashboards: -1, widgets: -1, indicators: 40, dataYears: -1 }
+// LTTB 다운샘플링 (1000+ 포인트)
+export const processChartData = (data: DataPoint[]) => {
+  return data.length > 1000 ? applyLTTB(data, 1000) : data
 }
 
-// 런타임 검증
-export const checkPlanLimit = (plan: Plan, resource: Resource) => {
-  return PLAN_LIMITS[plan][resource] === -1 || 
-         currentUsage[resource] < PLAN_LIMITS[plan][resource]
-}
-```
-
-#### 성능 최적화 설정
-
-메모리 관리 (200MB 제한):
-
-```typescript
-// packages/charts/src/hooks/useChartMemory.ts
-import { useEffect } from 'react'
-
-export const useChartMemory = (data: ChartData[]) => {
-  useEffect(() => {
-    return () => {
-      // 차트 데이터 정리
-      data.forEach(d => d.cleanup?.())
-    }
-  }, [])
-}
-```
-
-코드 분할 (동적 임포트):
-
-```typescript
-// packages/charts/src/index.ts
-export const TimeSeriesChart = lazy(() => 
-  import('./components/TimeSeriesChart')
-)
-export const BarChart = lazy(() => 
-  import('./components/BarChart')
-)
-// 필요시에만 로드
-```
-
----
-
-**핵심**: 의존성 순서 준수, E-Torch 특화 설정 적용, 성능 임계값 준수
-
-## 5. 패키지별 책임 구분
-
-### 5.1 패키지 개요
-
-| 패키지 | 핵심 책임 | E-Torch 특화 설정 | 의존성 |
-|--------|-----------|------------------|--------|
-| **eslint-config** | 코드 품질 규칙 | Standard JS + TSESLint | 없음 |
-| **core** | 타입 정의, 상수 | 구독 모델 타입, 차트 타입 | 없음 |
-| **ui** | 기본 UI 컴포넌트 | Shadcn/UI + CSS-first | core, utils |
-| **charts** | 차트 + 위젯 렌더링 | 5가지 차트 + 2가지 텍스트 위젯 + LTTB | core, ui, utils, data-sources |
-| **dashboard** | 대시보드 관리 | react-grid-layout + 위젯 | core, ui, charts, data-sources |
-| **data-sources** | 데이터 연동 | KOSIS/ECOS 어댑터 | core, utils |
-| **utils** | 유틸리티 함수 | 경제지표 포맷터 | 없음 |
-| **state** | 상태 관리 | Zustand + TanStack Query | core, utils, data-sources |
-| **server-api** | API 연동 | Next.js 15 API 핸들러 | core, utils |
-
-### 5.2 ESLint Config 패키지
-
-```javascript
-// packages/eslint-config/base.mjs
-import standardJs from '@seungwoo321/eslint-plugin-standard-js'
-import tseslint from 'typescript-eslint'
-
-export const config = [
-  {
-    ignores: ['apps/web/app/components/ui/*'] // Shadcn/UI 제외
-  },
-  {
-    files: ['**/*.{js,ts,jsx,tsx}'],
-    extends: [
-      ...standardJs.configs.recommended,
-      ...tseslint.configs.recommended
-    ]
-  }
-]
-```
-
-### 5.3 Core 패키지 (타입 정의)
-
-```typescript
-// packages/core/src/types/subscription.ts
-export type Plan = 'basic' | 'pro'
-
-export type PlanLimits = {
-  basic: { dashboards: 3, widgets: 6, indicators: 20, dataYears: 3 }
-  pro: { dashboards: -1, widgets: -1, indicators: 40, dataYears: -1 }
-}
-
-// packages/core/src/types/chart.ts
-export type ChartType = 'timeSeries' | 'bar' | 'scatter' | 'radar' | 'radialBar'
-export type DataSource = 'KOSIS' | 'ECOS'
-```
-
-### 5.4 UI 패키지 (Shadcn/UI 통합)
-
-```typescript
-// packages/ui/src/components/Button.tsx
-"use client"
-import { cva } from "class-variance-authority"
-
-const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-sm font-medium",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-      }
-    }
-  }
-)
-```
-
-### 5.5 Charts 패키지 (성능 최적화)
-
-```typescript
-// packages/charts/src/hooks/useLTTBSampling.ts
-export const useLTTBSampling = (data: DataPoint[], threshold = 1000) => {
-  return useMemo(() => {
-    if (data.length <= threshold) return data
-    return lttbDownsampling(data, threshold)
-  }, [data, threshold])
-}
-
-// packages/charts/src/components/ChartRenderer.tsx
-export const ChartRenderer = memo(({ data, type, options }) => {
-  const sampledData = useLTTBSampling(data, 1000)
-  // 차트 렌더링 로직
-})
-```
-
-### 5.6 Dashboard 패키지 (react-grid-layout)
-
-```typescript
-// packages/dashboard/src/components/DashboardGrid.tsx
-const gridProps = {
-  cols: { lg: 12, md: 8, sm: 4 },
-  breakpoints: { lg: 1200, md: 768, sm: 0 },
-  
-  // E-Torch 성능 최적화
+// 편집 모드 디바운싱
+const gridLayoutProps = {
   onDragStart: () => setChartRenderingEnabled(false),
   onDragStop: debounce(() => setChartRenderingEnabled(true), 200),
   onResizeStop: debounce(() => setChartRenderingEnabled(true), 300)
 }
 ```
 
-### 5.7 Data-Sources 패키지 (어댑터 패턴)
+## 4. 모노레포 패키지 구조
 
-```typescript
-// packages/data-sources/src/adapters/BaseAdapter.ts
-export abstract class BaseAdapter {
-  abstract fetchData(indicator: string, period: string): Promise<DataPoint[]>
-  abstract getAvailableIndicators(): Indicator[]
-  abstract getSupportedPeriods(indicator: string): Period[]
-}
+### 4.1 패키지 의존성 (9개)
 
-// KOSIS: M,Q,A만 지원 / ECOS: D,M,Q,A 지원
-export class KOSISAdapter extends BaseAdapter {
-  getSupportedPeriods() { return ['M', 'Q', 'A'] }
+| 패키지 | 의존성 | 핵심 책임 |
+|--------|--------|----------|
+| **core** | 없음 | 타입, 상수 |
+| **utils** | 없음 | LTTB, 포맷터 |
+| **ui** | core, utils | Shadcn/UI |
+| **data-sources** | core, utils | KOSIS/ECOS 어댑터 |
+| **state** | core, utils, data-sources | 상태 관리 |
+| **charts** | core, ui, utils, data-sources | 5가지 차트 + 2가지 텍스트 |
+| **dashboard** | 모든 패키지 | react-grid-layout |
+| **server-api** | core, utils | API 핸들러 |
+| **eslint-config** | 없음 | Standard JS |
+
+### 4.2 Turborepo 설정
+
+```json
+// turbo.json
+{
+  "pipeline": {
+    "build": { "dependsOn": ["^build"] },
+    "dev": { "cache": false }
+  }
 }
 ```
 
-### 5.8 State 패키지 (상태 분리)
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - "apps/*"
+  - "packages/*"
+```
+
+## 5. 패키지별 책임 구분
+
+### 5.1 Core 패키지
 
 ```typescript
-// packages/state/src/stores/dashboard.ts - 클라이언트 상태
+// 구독 타입
+export type Plan = 'basic' | 'pro'
+export type PlanLimits = {
+  basic: { dashboards: 3, widgets: 6, indicators: 20 }
+  pro: { dashboards: -1, widgets: -1, indicators: 40 }
+}
+
+// 차트 타입
+export type ChartType = 'timeSeries' | 'bar' | 'scatter' | 'radar' | 'radialBar'
+export type TextType = 'custom' | 'dataText'
+```
+
+### 5.2 Charts 패키지 (성능 최적화)
+
+```typescript
+// LTTB 다운샘플링
+export const useLTTBSampling = (data: DataPoint[], threshold = 1000) => {
+  return useMemo(() => {
+    return data.length > threshold ? lttbDownsampling(data, threshold) : data
+  }, [data, threshold])
+}
+
+// 차트 렌더러
+export const ChartRenderer = memo(({ data, type, options }) => {
+  const sampledData = useLTTBSampling(data, 1000)
+  return <Chart data={sampledData} type={type} {...options} />
+})
+```
+
+### 5.3 State 패키지 (서버/클라이언트 분리)
+
+```typescript
+// 클라이언트 상태 (Zustand)
 export const useDashboardStore = create(
-  persist(
-    (set) => ({
-      editMode: false,
-      selectedWidget: null
-    }),
-    { name: 'dashboard-state' }
-  )
+  persist((set) => ({
+    editMode: false,
+    selectedWidget: null
+  }), { name: 'dashboard-state' })
 )
 
-// packages/state/src/hooks/useIndicators.ts - 서버 상태
+// 서버 상태 (TanStack Query)
 export const useIndicators = (source: DataSource) => {
   return useQuery({
     queryKey: ['indicators', source],
     queryFn: () => getIndicators(source),
-    staleTime: 24 * 60 * 60 * 1000 // 경제지표는 24시간 캐시
+    staleTime: 24 * 60 * 60 * 1000 // 24시간 캐시
   })
 }
 ```
 
-### 5.9 Utils 패키지 (경제지표 특화)
+### 5.4 Data-Sources 패키지 (어댑터 패턴)
 
 ```typescript
-// packages/utils/src/formatters.ts
-export const formatCurrency = (value: number, currency = 'KRW') => {
-  return new Intl.NumberFormat('ko-KR', {
-    style: 'currency',
-    currency
-  }).format(value)
+// 추상 어댑터
+export abstract class BaseAdapter {
+  abstract fetchData(indicator: string): Promise<DataPoint[]>
+  abstract getSupportedPeriods(): Period[]
 }
 
-export const formatPercentage = (value: number, decimals = 2) => {
-  return `${value.toFixed(decimals)}%`
+// KOSIS: M,Q,A / ECOS: D,M,Q,A
+export class KOSISAdapter extends BaseAdapter {
+  getSupportedPeriods() { return ['M', 'Q', 'A'] }
 }
-```
 
-### 5.10 Server-API 패키지 (Next.js 15)
-
-```typescript
-// packages/server-api/src/handlers/indicators.ts
-import { NextRequest } from 'next/server'
-
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
-  const source = searchParams.get('source') as DataSource
-  
-  // 구독 플랜 검증 (< 10ms)
-  const planLimits = await checkUserPlan(request)
-  const indicators = await getIndicators(source, planLimits)
-  
-  return Response.json(indicators)
-}
-```
-
-### 5.11 패키지 빌드 설정
-
-```json
-// packages/*/package.json 공통 설정
-{
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --watch"
-  },
-  "devDependencies": {
-    "tsup": "^8.0.0",
-    "typescript": "^5.5.0"
-  }
+export class ECOSAdapter extends BaseAdapter {
+  getSupportedPeriods() { return ['D', 'M', 'Q', 'A'] }
 }
 ```
 
@@ -949,44 +238,30 @@ export async function GET(request: NextRequest) {
 
 ### 6.1 Supabase Auth 설정
 
-| 설정 항목 | 값 | E-Torch 특화 |
-|-----------|-----|-------------|
-| **Supabase Auth** | v2 | SNS 로그인 전용 |
-| **지원 OAuth** | Google, Naver, Kakao | 회원가입 없음 |
+| 설정 | 값 | 용도 |
+|------|-----|------|
+| **OAuth 제공자** | Google, Naver, Kakao | SNS 로그인 전용 |
 | **JWT 만료** | 1시간 | 자동 갱신 |
 | **세션 유지** | 30일 | 브라우저 저장 |
 
-#### Supabase 클라이언트 설정
-
 ```typescript
-// lib/supabase.ts
-import { createBrowserClient } from '@supabase/ssr'
-
+// Supabase 클라이언트
 export const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   {
     auth: {
       flowType: 'pkce',
-      autoRefreshToken: true,
-      persistSession: true
+      autoRefreshToken: true
     }
   }
 )
 ```
 
-### 6.2 구독 플랜 권한 검증
-
-| 검증 유형 | 응답 시간 | 구현 방법 |
-|----------|----------|----------|
-| **클라이언트 캐시** | < 5ms | 5분 캐시 |
-| **서버 재검증** | < 10ms | JWT 클레임 |
-| **실시간 업데이트** | < 100ms | 웹훅 연동 |
-
-#### 권한 검증 훅
+### 6.2 권한 검증 (< 10ms)
 
 ```typescript
-// hooks/useAuth.ts
+// 권한 훅
 export const useAuth = () => {
   const { data: session } = useQuery({
     queryKey: ['auth-session'],
@@ -995,95 +270,35 @@ export const useAuth = () => {
   })
   
   const plan = session?.user?.user_metadata?.subscription_plan || 'basic'
-  
-  // Basic: KOSIS 12개+ECOS 8개, Pro: KOSIS 12개+ECOS 28개
-  return {
-    user: session?.user,
-    plan: plan as 'basic' | 'pro',
-    isAuthenticated: !!session?.user
-  }
+  return { user: session?.user, plan, isAuthenticated: !!session?.user }
 }
 ```
 
-### 6.3 SNS 로그인 구현
-
-#### OAuth 콜백 처리
-
-```typescript
-// app/auth/callback/route.ts
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const code = searchParams.get('code')
-  
-  if (code) {
-    const supabase = createRouteHandlerClient({ cookies })
-    await supabase.auth.exchangeCodeForSession(code)
-  }
-  
-  return NextResponse.redirect(new URL('/dashboard', request.url))
-}
-```
-
-#### 로그인 버튼 컴포넌트
-
-```typescript
-// components/auth/LoginButton.tsx
-export const LoginButton = ({ provider }: { provider: 'google' | 'naver' | 'kakao' }) => {
-  const handleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`
-      }
-    })
-  }
-  
-  return <Button onClick={handleLogin}>Login with {provider}</Button>
-}
-```
-
-### 6.4 미들웨어 인증 (권한 검증 < 10ms)
+### 6.3 미들웨어 (보호된 라우트)
 
 ```typescript
 // middleware.ts
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
-
 export async function middleware(request: NextRequest) {
   const supabase = createMiddlewareClient({ req: request, res: response })
   const { data: { session } } = await supabase.auth.getSession()
   
-  // 보호된 라우트 검증 (5ms 이내)
   if (request.nextUrl.pathname.startsWith('/dashboard') && !session) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
   
   return response
 }
-
-export const config = {
-  matcher: ['/dashboard/:path*', '/settings/:path*']
-}
 ```
 
-### 6.5 결제 연동 보안
-
-| 보안 요소 | 구현 방법 | E-Torch 설정 |
-|----------|----------|-------------|
-| **결제 웹훅** | 토스페이먼츠 서명 검증 | HMAC-SHA256 |
-| **구독 상태** | Supabase RLS 정책 | JWT 기반 |
-| **권한 업데이트** | 실시간 동기화 | 100ms 이내 |
-
-#### 결제 웹훅 처리
+### 6.4 토스페이먼츠 결제 연동
 
 ```typescript
-// app/api/webhooks/payments/route.ts
+// 결제 웹훅
 export async function POST(request: Request) {
   const signature = request.headers.get('x-toss-signature')
   const payload = await request.text()
   
-  // 서명 검증 (보안)
+  // 서명 검증
   const isValid = verifyTossSignature(payload, signature)
   if (!isValid) return new Response('Unauthorized', { status: 401 })
   
@@ -1097,215 +312,413 @@ export async function POST(request: Request) {
 
 ## 7. 차트 컴포넌트 설계
 
-차트 표시 및 편집 관련 컴포넌트는 E-Torch의 핵심 기능으로, 서버 컴포넌트와 클라이언트 컴포넌트의 조합으로 구현됩니다.
+### 7.1 차트 컴포넌트 구조
 
-### 7.1 차트 컴포넌트 계층 구조
+| 컴포넌트 | 유형 | 책임 | 연결 옵션 |
+|---------|------|-----|----------|
+| **ChartServerWrapper** | 서버 | 데이터 페칭, 메타데이터 | - |
+| **ChartRenderer** | 클라이언트 | 차트 렌더링, LTTB 적용 | 모든 옵션 |
+| **TimeSeriesChart** | 클라이언트 | 시계열 특화 | Panel, Tooltip, Legend, Axis, GraphStyles |
+| **BarChart** | 클라이언트 | 범주형 비교 | Panel, Tooltip, Legend, Axis |
+| **ScatterChart** | 클라이언트 | 상관관계 | Panel, Tooltip, Legend, Axis, ScatterOptions |
+| **RadarChart** | 클라이언트 | 다차원 비교 | Panel, Tooltip, Legend, RadarOptions |
+| **RadialBarChart** | 클라이언트 | 부분-전체 | Panel, Tooltip, Legend, RadialBarOptions |
 
-```mermaid
-flowchart TD
-    SSR[ChartServerWrapper] --> DataLoader[ChartDataLoader]
-    DataLoader --> ClientChart[ChartComponent]
-    ClientChart --> Renderer[ChartRenderer]
-    Renderer --> SpecializedCharts[Specialized Chart Components]
-    SpecializedCharts --> TimeSeries[TimeSeriesChart]
-    SpecializedCharts --> Bar[BarChart]
-    SpecializedCharts --> Scatter[ScatterChart]
-    SpecializedCharts --> Radar[RadarChart]
-    SpecializedCharts --> RadialBar[RadialBarChart]
+### 7.2 차트 성능 최적화
+
+```typescript
+// 차트 렌더러 (LTTB 적용)
+export const ChartRenderer = memo(({ data, type, options }) => {
+  const [chartEnabled, setChartEnabled] = useState(true)
+  const sampledData = useLTTBSampling(data, 1000)
+  
+  // 편집 중 렌더링 비활성화
+  useEffect(() => {
+    const disable = () => setChartEnabled(false)
+    const enable = debounce(() => setChartEnabled(true), 300)
     
-    Controls[ChartControls] --> ClientChart
+    window.addEventListener('chart-edit-start', disable)
+    window.addEventListener('chart-edit-end', enable)
     
-    classDef server fill:#ccffcc,stroke:#333,stroke-width:1px,color:#000
-    classDef client fill:#ffcccb,stroke:#333,stroke-width:1px,color:#000
-    
-    class SSR,DataLoader server
-    class ClientChart,Renderer,SpecializedCharts,TimeSeries,Bar,Scatter,Radar,RadialBar,Controls client
+    return () => {
+      window.removeEventListener('chart-edit-start', disable)
+      window.removeEventListener('chart-edit-end', enable)
+    }
+  }, [])
+  
+  if (!chartEnabled) return <ChartSkeleton />
+  return <Chart data={sampledData} type={type} {...options} />
+})
 ```
 
-#### 컴포넌트별 책임 정의
+### 7.3 텍스트 위젯 (2가지 유형)
 
-| 컴포넌트 | 유형 | 책임 | 연결된 옵션 컴포넌트 |
-|---------|------|-----|------------------|
-| **ChartServerWrapper** | 서버 | 서버 측 데이터 페칭, 초기 데이터 준비, 메타데이터 로드 | - |
-| **ChartDataLoader** | 서버 | 차트별 데이터 로드 최적화, 데이터 변환 | - |
-| **ChartComponent** | 클라이언트 | 차트 렌더링 상태 관리, 이벤트 핸들링, 서버 데이터 hydration | ChartControls, OptionsPanel |
-| **ChartRenderer** | 클라이언트 | 차트 타입에 따른 렌더링 로직 분기, 공통 렌더링 프로퍼티 관리 | - |
-| **TimeSeriesChart** | 클라이언트 | 시계열 데이터 특화 렌더링 | PanelOptions, TooltipOptions, LegendOptions, XAxis, YAxis, GraphStyles |
-| **BarChart** | 클라이언트 | 범주형 데이터 비교 시각화 | PanelOptions, TooltipOptions, LegendOptions, XAxis, YAxis |
-| **ScatterChart** | 클라이언트 | 상관관계 시각화 | PanelOptions, TooltipOptions, LegendOptions, XAxis, YAxis, ScatterOptions |
-| **RadarChart** | 클라이언트 | 다차원 데이터 비교 | PanelOptions, TooltipOptions, LegendOptions, RadarOptions |
-| **RadialBarChart** | 클라이언트 | 부분-전체 관계 시각화 | PanelOptions, TooltipOptions, LegendOptions, RadialBarOptions |
-| **ChartControls** | 클라이언트 | 차트 인터랙션 컨트롤 | - |
+```typescript
+// Text-사용자정의
+export const CustomTextWidget = ({ content, options }) => {
+  return (
+    <div className="prose" {...options}>
+      <ReactMarkdown>{content}</ReactMarkdown>
+    </div>
+  )
+}
 
-### 7.2 차트 에디터 컴포넌트
-
-```mermaid
-flowchart TD
-    A[ChartEditor] --> B[ChartPreview]
-    A --> C[OptionsPanel]
-    A --> D[DataSourcePanel]
-    
-    C --> C1[PanelOptions]
-    C --> C2[TooltipOptions]
-    C --> C3[LegendOptions]
-    C --> C4[AxisOptions]
-    C --> C5[StyleOptions]
-    
-    D --> D1[DataQueryCard]
-    D --> D2[TimeRangeSelector]
-    D --> D3[PeriodSelector]
+// Text-데이터기반  
+export const DataTextWidget = ({ dataSource, operation, format }) => {
+  const { data } = useQuery({
+    queryKey: ['data-text', dataSource],
+    queryFn: () => fetchIndicatorData(dataSource)
+  })
+  
+  const value = operations[operation](data)
+  return <div>{formatNumber(value, format)}</div>
+}
 ```
 
 ## 8. 대시보드 컴포넌트 설계
 
-대시보드 관련 컴포넌트는 레이아웃 관리와 위젯 상호작용에 초점을 맞추어 설계됩니다.
+### 8.1 대시보드 그리드 (react-grid-layout)
 
-### 8.1 대시보드 그리드 컴포넌트
-
-```mermaid
-flowchart TD
-    A[DashboardPage] --> B[DashboardHeader]
-    A --> C[DashboardGrid]
-    A --> D[DashboardControls]
+```typescript
+// DashboardGrid.tsx
+export const DashboardGrid = ({ widgets, editMode }) => {
+  const [layouts, setLayouts] = useState(getLayouts(widgets))
+  
+  const gridProps = {
+    className: "layout",
+    cols: { lg: 12, md: 8, sm: 4 },
+    breakpoints: { lg: 1200, md: 768, sm: 0 },
+    margin: [16, 16],
     
-    C --> C1[GridLayout]
-    C1 --> C2[GridItem]
-    C2 --> C3[ChartItem]
-    C2 --> C4[TextItem]
+    // E-Torch 최적화
+    onDragStart: () => dispatchEvent(new Event('chart-edit-start')),
+    onDragStop: debounce(() => dispatchEvent(new Event('chart-edit-end')), 200),
+    onResizeStart: () => dispatchEvent(new Event('chart-edit-start')),
+    onResizeStop: debounce(() => dispatchEvent(new Event('chart-edit-end')), 300),
     
-    D --> D1[TimeRangeControl]
-    D --> D2[RefreshControl]
-    D --> D3[ViewOptions]
+    onLayoutChange: (layout) => setLayouts(layout)
+  }
+  
+  return (
+    <ResponsiveGridLayout {...gridProps}>
+      {widgets.map(widget => (
+        <div key={widget.id} data-grid={widget.layout}>
+          <WidgetRenderer widget={widget} />
+        </div>
+      ))}
+    </ResponsiveGridLayout>
+  )
+}
 ```
 
-#### 주요 컴포넌트 책임 및 서버/클라이언트 구분
+### 8.2 대시보드 편집기
 
-- **DashboardPage** (서버 컴포넌트): 대시보드 페이지 구조 정의 및 초기 데이터 로드
-- **DashboardHeader** (서버 컴포넌트): 대시보드 제목, 설명, 메타 정보 표시
-- **DashboardGrid** (클라이언트 컴포넌트): react-grid-layout 기반 그리드 시스템 관리
-- **GridItem** (클라이언트 컴포넌트): 그리드 내 개별 위젯 아이템 래퍼
-- **ChartItem/TextItem** (클라이언트 컴포넌트): 위젯 유형별 특화 컴포넌트
-
-### 8.2 대시보드 편집기 컴포넌트
-
-```mermaid
-flowchart TD
-    A[DashboardEditor] --> B[EditorToolbar]
-    A --> C[DashboardGrid]
-    A --> D[WidgetSelector]
-    
-    B --> B1[SaveButton]
-    B --> B2[UndoRedoControls]
-    B --> B3[LayoutControls]
-    
-    D --> D1[ChartWidgets]
-    D --> D2[TextWidgets]
-    D --> D3[CustomWidgets]
+```typescript
+// DashboardEditor.tsx
+export const DashboardEditor = ({ dashboardId }) => {
+  const [editMode, setEditMode] = useEditMode()
+  const [selectedWidget, setSelectedWidget] = useState(null)
+  
+  return (
+    <div className="dashboard-editor">
+      <EditorToolbar 
+        onSave={saveDashboard}
+        onCancel={() => setEditMode(false)}
+      />
+      <DashboardGrid 
+        widgets={widgets}
+        editMode={editMode}
+        onWidgetSelect={setSelectedWidget}
+      />
+      {selectedWidget && (
+        <PropertyPanel widget={selectedWidget} />
+      )}
+    </div>
+  )
+}
 ```
 
 ## 9. 데이터 소스 컴포넌트 설계
 
-데이터 소스 관련 컴포넌트는 데이터 선택, 변환, 쿼리 구성에 초점을 맞추어 설계됩니다.
+### 9.1 데이터 쿼리 빌더
 
-### 9.1 데이터 쿼리 컴포넌트
-
-```mermaid
-flowchart TD
-    A[DataQueryBuilder] --> B[SourceSelector]
-    A --> C[IndicatorSelector]
-    A --> D[TransformControls]
-    
-    B --> B1[SourceList]
-    B --> B2[SourceInfo]
-    
-    C --> C1[SearchIndicator]
-    C --> C2[IndicatorTree]
-    C --> C3[RecentIndicators]
-    
-    D --> D1[DataPreview]
-    D --> D2[TransformOptions]
-    D --> D3[PeriodSelector]
+```typescript
+// DataQueryBuilder.tsx
+export const DataQueryBuilder = ({ onQueryChange }) => {
+  const [source, setSource] = useState<'KOSIS' | 'ECOS'>('KOSIS')
+  const [indicator, setIndicator] = useState('')
+  const [period, setPeriod] = useState('M')
+  
+  const { data: indicators } = useIndicators(source)
+  const supportedPeriods = getSupportedPeriods(source, indicator)
+  
+  // 구독 플랜 제한
+  const { plan } = useAuth()
+  const allowedIndicators = plan === 'basic' ? 
+    indicators?.slice(0, 20) : indicators
+  
+  return (
+    <div>
+      <SourceSelector value={source} onChange={setSource} />
+      <IndicatorSelector 
+        indicators={allowedIndicators}
+        value={indicator}
+        onChange={setIndicator}
+      />
+      <PeriodSelector 
+        periods={supportedPeriods}
+        value={period}
+        onChange={setPeriod}
+      />
+    </div>
+  )
+}
 ```
 
-## 10. 서버 액션 통합 패턴
+### 9.2 어댑터 패턴 구현
 
-Next.js 서버 액션을 활용하여 데이터 변경을 처리하는 패턴입니다:
-
-```tsx
-// app/actions/dashboard.ts (서버 액션)
-'use server'
-
-import { revalidatePath } from 'next/cache'
-import { saveDashboard } from '@/packages/server-api/dashboard'
-
-export async function saveDashboardAction(
-  dashboardId: string,
-  dashboardData: any
-) {
-  try {
-    const result = await saveDashboard(dashboardId, dashboardData)
-    revalidatePath(`/dashboard/${dashboardId}`)
-    return { success: true, data: result }
-  } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : '저장 중 오류가 발생했습니다.'
-    }
+```typescript
+// adapters/KOSISAdapter.ts
+export class KOSISAdapter implements DataAdapter {
+  async fetchData(indicator: string, options: QueryOptions) {
+    const response = await fetch(`/api/kosis/${indicator}`, {
+      method: 'POST',
+      body: JSON.stringify(options)
+    })
+    return this.transformResponse(await response.json())
+  }
+  
+  getSupportedPeriods() {
+    return ['M', 'Q', 'A'] // KOSIS는 월간, 분기, 연간만
+  }
+  
+  private transformResponse(data: any): DataPoint[] {
+    // KOSIS 응답을 표준 형식으로 변환
+    return data.map(item => ({
+      date: item.TIME,
+      value: parseFloat(item.DATA_VALUE),
+      metadata: { source: 'KOSIS' }
+    }))
   }
 }
 ```
 
-## 11. 접근성 통합 컴포넌트
+## 10. 서버 액션 통합
 
-E-Torch는 WCAG 2.1 AA 수준 준수를 목표로 접근성 컴포넌트를 통합합니다:
+### 10.1 대시보드 서버 액션
 
-- **SkipLink**: 키보드 사용자를 위한 메인 콘텐츠 바로가기 링크
-- **FocusTrap**: 모달 및 다이얼로그에서 포커스를 가두는 컴포넌트
-- **KeyboardNavMenu**: 키보드 방향키로 탐색 가능한 내비게이션 메뉴
-- **AccessibleChartTable**: 차트 데이터를 스크린 리더가 인식할 수 있는 테이블로 변환
-- **VisuallyHidden**: 시각적으로는 숨겨지지만 스크린 리더는 읽을 수 있는 텍스트
+```typescript
+// app/actions/dashboard.ts
+'use server'
 
-## 12. 컴포넌트 성능 최적화
+import { revalidatePath } from 'next/cache'
 
-### 12.1 코드 분할 및 지연 로딩
+export async function saveDashboardAction(dashboardId: string, data: any) {
+  try {
+    // 권한 검증
+    const session = await getServerSession()
+    if (!session) throw new Error('Unauthorized')
+    
+    // 구독 플랜 제한 확인
+    const planLimits = await getUserPlanLimits(session.user.id)
+    validateDashboardLimits(data, planLimits)
+    
+    const result = await saveDashboard(dashboardId, data)
+    revalidatePath(`/dashboard/${dashboardId}`)
+    
+    return { success: true, data: result }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
 
-```tsx
-// 차트 유형별 다이나믹 임포트
-import dynamic from 'next/dynamic'
+export async function createWidgetAction(dashboardId: string, widgetData: any) {
+  try {
+    const session = await getServerSession()
+    const planLimits = await getUserPlanLimits(session.user.id)
+    
+    // 위젯 수 제한 확인 (Basic: 6개, Pro: 무제한)
+    const currentWidgets = await getWidgetCount(dashboardId)
+    if (planLimits.widgets !== -1 && currentWidgets >= planLimits.widgets) {
+      throw new Error('Widget limit exceeded')
+    }
+    
+    const widget = await createWidget(dashboardId, widgetData)
+    revalidatePath(`/dashboard/${dashboardId}`)
+    
+    return { success: true, data: widget }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+```
 
-// 기본 차트 컴포넌트는 즉시 로드
-import { ChartProps, ChartType } from '@/packages/charts'
-import { ChartSkeleton } from '@/packages/ui/components'
+### 10.2 구독 관리 액션
 
-// 차트 유형별 동적 임포트 (필요시 로드)
-const TimeSeriesChart = dynamic(() => import('@/packages/charts/src/components/chart-types/TimeSeriesChart'), {
+```typescript
+// app/actions/subscription.ts
+'use server'
+
+export async function upgradeSubscriptionAction(planType: 'pro') {
+  try {
+    const session = await getServerSession()
+    if (!session) throw new Error('Unauthorized')
+    
+    // 토스페이먼츠 결제 세션 생성
+    const paymentSession = await createTossPayment({
+      amount: planType === 'pro' ? 9900 : 0,
+      orderId: generateOrderId(),
+      orderName: `E-Torch ${planType.toUpperCase()} 구독`,
+      customerEmail: session.user.email
+    })
+    
+    return { success: true, data: paymentSession }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+```
+
+## 11. 접근성 컴포넌트
+
+### 11.1 차트 접근성
+
+```typescript
+// AccessibleChart.tsx
+export const AccessibleChart = ({ data, type, title }) => {
+  const [showTable, setShowTable] = useState(false)
+  const chartDescription = generateChartDescription(data, type)
+  
+  return (
+    <div>
+      <div 
+        role="img" 
+        aria-label={chartDescription}
+        aria-describedby={`chart-desc-${id}`}
+      >
+        <Chart data={data} type={type} />
+      </div>
+      
+      <div id={`chart-desc-${id}`} className="sr-only">
+        {chartDescription}
+      </div>
+      
+      <button 
+        onClick={() => setShowTable(!showTable)}
+        aria-expanded={showTable}
+      >
+        {showTable ? '표 숨기기' : '데이터 표 보기'}
+      </button>
+      
+      {showTable && (
+        <table className="accessible-data-table">
+          <thead>
+            <tr>
+              <th>날짜</th>
+              <th>값</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((point, i) => (
+              <tr key={i}>
+                <td>{formatDate(point.date)}</td>
+                <td>{formatNumber(point.value)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  )
+}
+```
+
+### 11.2 키보드 네비게이션
+
+```typescript
+// KeyboardNav.tsx
+export const useKeyboardShortcuts = (editMode: boolean) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!editMode) return
+      
+      // Alt + 1: 메인 콘텐츠로 이동
+      if (e.altKey && e.key === '1') {
+        document.getElementById('main-content')?.focus()
+      }
+      
+      // Ctrl + Z: 실행취소
+      if (e.ctrlKey && e.key === 'z') {
+        undoLastAction()
+      }
+      
+      // Delete: 선택된 위젯 삭제
+      if (e.key === 'Delete' && selectedWidget) {
+        deleteWidget(selectedWidget.id)
+      }
+    }
+    
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [editMode, selectedWidget])
+}
+```
+
+## 12. 성능 최적화
+
+### 12.1 코드 분할
+
+```typescript
+// 차트 컴포넌트 동적 로딩
+const TimeSeriesChart = dynamic(() => 
+  import('@/packages/charts/TimeSeriesChart'), {
   loading: () => <ChartSkeleton type="timeSeries" />,
-  ssr: false // 클라이언트 사이드에서만 렌더링 (Recharts는 SSR 불가)
+  ssr: false // Recharts SSR 불가
+})
+
+const BarChart = dynamic(() => 
+  import('@/packages/charts/BarChart'), {
+  loading: () => <ChartSkeleton type="bar" />,
+  ssr: false
 })
 ```
 
-### 12.2 데이터 다운샘플링
+### 12.2 메모리 관리
 
-대량 시계열 데이터를 효율적으로 처리하기 위해 다운샘플링 전략을 사용합니다. 데이터 다운샘플링 알고리즘에 대한 상세 내용은 [`data-flow.md`](./data-flow.md) 문서의 데이터 변환 및 처리 파이프라인 섹션을 참조하십시오.
+```typescript
+// 차트 메모리 정리
+export const useChartMemory = (data: ChartData[]) => {
+  useEffect(() => {
+    return () => {
+      // 차트 인스턴스 정리
+      data.forEach(d => {
+        if (d.cleanup) d.cleanup()
+      })
+    }
+  }, [data])
+}
 
-### 12.3 React 19의 최적화 기능 활용
-
-React 19에서 제공하는 새로운 훅과 최적화 기능을 활용합니다:
-
-```tsx
-// useOptimistic 훅 활용
-'use client'
-
-import { useOptimistic } from 'react'
-import { useDashboardStore } from '@/packages/state'
-import { saveDashboardAction } from '@/app/actions/dashboard'
-
-export function TitleEditor({ dashboardId }: { dashboardId: string }) {
-  const title = useDashboardStore(state => 
-    state.dashboards.byId[dashboardId]?.title || ''
-  )
+// 위젯 언마운트 시 정리
+export const WidgetContainer = ({ widget }) => {
+  useEffect(() => {
+    return () => {
+      // 이벤트 리스너 정리
+      cleanupWidgetListeners(widget.id)
+      // 캐시 정리
+      clearWidgetCache(widget.id)
+    }
+  }, [widget.id])
   
-  const [optimisticTitle, updateOptimisticTitle] = useOptimistic(
+  return <Widget {...widget} />
+}
+```
+
+### 12.3 React 19 최적화
+
+```typescript
+// useOptimistic 활용
+export const DashboardTitle = ({ dashboardId, title }) => {
+  const [optimisticTitle, setOptimisticTitle] = useOptimistic(
     title,
     (state, newTitle: string) => newTitle
   )
@@ -1313,8 +726,8 @@ export function TitleEditor({ dashboardId }: { dashboardId: string }) {
   const updateTitle = async (formData: FormData) => {
     const newTitle = formData.get('title') as string
     
-    // 낙관적 UI 업데이트
-    updateOptimisticTitle(newTitle)
+    // 즉시 UI 업데이트
+    setOptimisticTitle(newTitle)
     
     // 서버에 저장
     await saveDashboardAction(dashboardId, { title: newTitle })
@@ -1322,19 +735,11 @@ export function TitleEditor({ dashboardId }: { dashboardId: string }) {
   
   return (
     <form action={updateTitle}>
-      <input
-        name="title"
+      <input 
+        name="title" 
         defaultValue={optimisticTitle}
-        className="border border-input bg-background px-3 py-2 rounded-md"
+        className="dashboard-title-input"
       />
-      <Button type="submit">저장</Button>
     </form>
   )
-}
 ```
-
-## 13. 결론
-
-E-Torch 아키텍처는 모듈성, 유지보수성, 확장성을 핵심 원칙으로 설계되었습니다. 9개의 특화된 패키지와 2개의 애플리케이션으로 구성된 모노레포 구조는 관심사 분리를 통해 각 모듈의 독립적인 개발과 테스트를 용이하게 합니다.
-
-특히 차트 렌더링, 대시보드 관리, 데이터 소스 연동, 상태 관리 등 핵심 기능들이 명확히 구분된 패키지로 분리되어 있어, 복잡한 경제지표 데이터 시각화와 분석을 위한 기술적 기반을 제공합니다. ESLint flat config 기반의 코드 품질 관리와 Next.js 15, React 19의 최신 기능을 활용한 인터페이스 구현은 높은 성능과 개발 생산성을 보장합니다.
