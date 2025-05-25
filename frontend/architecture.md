@@ -235,19 +235,19 @@ graph TD
 
 | 영역 | 기술 | 선정 이유 | 버전 |
 |------|------|----------|------|
-| **모노레포 관리** | Turborepo | 빌드 캐싱, 병렬 실행, 의존성 관리 기능 우수 | 2.0.0+ |
-| **패키지 관리** | pnpm | 디스크 공간 절약, 의존성 중복 설치 방지 | 8.0.0+ |
-| **프레임워크** | React + Next.js | App Router, 서버 컴포넌트 제공 | React 19, Next.js 15 |
-| **UI 프레임워크** | Shadcn/UI + Tailwind CSS | 커스터마이징 용이성, 생산성 향상 | Tailwind CSS 4 |
-| **상태 관리** | Zustand, Tanstack Query | 단순한 API, 성능 최적화, 상태 로직 분리 | Zustand 5, TQ 5 |
-| **차트 라이브러리** | Recharts | React 친화적, 유연한 커스터마이징 | 2.15.3+ |
-| **대시보드 레이아웃** | react-grid-layout | 드래그 앤 드롭, 리사이징 지원 | 1.5.1+ |
-| **타입 검사** | TypeScript | 타입 안정성, 개발 생산성 향상 | 5.5+ |
-| **폼 관리** | React Hook Form + Zod | 성능 최적화, 선언적 유효성 검사 | RHF 7, Zod 3 |
-| **코드 품질 관리** | ESLint | 일관된 코드 스타일, 오류 감지 | ESLint 9 (Standard 규칙) |
+| **모노레포 관리** | Turborepo | 빌드 캐싱, 병렬 실행, 의존성 관리 기능 우수 | 2.5.3 |
+| **패키지 관리** | pnpm | 디스크 공간 절약, 의존성 중복 설치 방지 | 10.11.0 |
+| **프레임워크** | React + Next.js | App Router, 서버 컴포넌트 제공 | React 19.1.0, Next.js 15.3.2 |
+| **UI 프레임워크** | Shadcn/UI + Tailwind CSS | 커스터마이징 용이성, 생산성 향상 | Tailwind CSS 4.1.7 |
+| **상태 관리** | Zustand, Tanstack Query | 단순한 API, 성능 최적화, 상태 로직 분리 | Zustand 5.0.5, Tanstack Query 5.77.0 |
+| **차트 라이브러리** | Recharts | React 친화적, 유연한 커스터마이징 | 2.15.3 |
+| **대시보드 레이아웃** | react-grid-layout | 드래그 앤 드롭, 리사이징 지원 | 1.5.1 |
+| **타입 검사** | TypeScript | 타입 안정성, 개발 생산성 향상 | 5.8.3 |
+| **폼 관리** | React Hook Form + Zod | 성능 최적화, 선언적 유효성 검사 | RHF 7.56.4, Zod 3.25.28 |
+| **코드 품질 관리** | ESLint | 일관된 코드 스타일, 오류 감지 | ESLint 9.27.0 (Standard 규칙) |
 | **테스트** | Vitest + Testing Library + Playwright | 단위/통합/E2E 테스트 도구 | Vitest 1, Playwright 1.40+ |
-| **문서화** | Storybook | 컴포넌트 문서화, 시각적 테스트 | 8.0+ |
-| **아이콘** | Lucide React | 가볍고 확장 가능한 아이콘 세트 | 1.0.0+ |
+| **문서화** | Storybook | 컴포넌트 문서화, 시각적 테스트 | 8.6.14 |
+| **아이콘** | Lucide React | 가볍고 확장 가능한 아이콘 세트 | 0.511.0 |
 | **폰트** | Inter, JetBrains Mono | 가독성 및 기술적 콘텐츠 표현에 최적화 | - |
 | **인증** | Supabase Auth | OAuth 지원, JWT 토큰 관리 | Supabase JS v2 |
 
