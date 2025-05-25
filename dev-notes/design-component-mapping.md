@@ -690,7 +690,7 @@ export function DashboardCard({ dashboard, onView, onEdit }) {
 
 ### 디자인 시스템 정의
 
-`design-system.md`와 `ui-requirements.md`에 정의된 차트 옵션:
+`design-system.md`와 `ui-ux-requirements.md`에 정의된 차트 옵션:
 
 ```
 차트 유형:
@@ -967,7 +967,7 @@ export function ChartEditor({ initialConfig = {}, onSave }) {
 
 ### 디자인 시스템 정의
 
-`design-system.md`와 `ui-requirements.md`에 정의된 대시보드 구성 요소:
+`design-system.md`와 `ui-ux-requirements.md`에 정의된 대시보드 구성 요소:
 
 ```
 대시보드 그리드:

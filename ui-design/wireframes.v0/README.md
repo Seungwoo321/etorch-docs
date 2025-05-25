@@ -40,5 +40,5 @@
 
 - [디자인 시스템](../design-system.md)
 - [사용자 흐름](../user-flows.md)
-- [UI 요구사항 명세](../ui-requirements.md)
+- [UI 요구사항 명세](../ui-ux-requirements.md)
 - [차트 컴포넌트 기능 명세서](../chart-feature-specs.md)

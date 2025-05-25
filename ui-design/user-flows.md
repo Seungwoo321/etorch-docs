@@ -34,7 +34,7 @@
 > 관련 문서:
 >
 > - [product-spec.md](../product-spec.md) - 서비스 기획서
-> - [ui-requirements.md](./ui-requirements.md) - UI 요구사항 명세서
+> - [ui-ux-requirements.md](./ui-ux-requirements.md) - UI/UX 요구사항 명세서
 > - [design-system.md](./design-system.md) - 디자인 시스템 가이드
 > - [architecture.md](../frontend/architecture.md) - 프론트엔드 아키텍처 설계
 
