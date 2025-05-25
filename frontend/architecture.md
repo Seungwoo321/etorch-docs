@@ -231,25 +231,155 @@ graph TD
 
 이 아키텍처는 경제지표 시각화의 특수성과 구독 모델의 복잡성을 모두 고려하여 설계되었으며, 성능과 확장성을 동시에 보장합니다.
 
-## 2. 기술 스택
+# 2. 기술 스택
 
-| 영역 | 기술 | 선정 이유 | 버전 |
-|------|------|----------|------|
-| **모노레포 관리** | Turborepo | 빌드 캐싱, 병렬 실행, 의존성 관리 기능 우수 | 2.5.3 |
-| **패키지 관리** | pnpm | 디스크 공간 절약, 의존성 중복 설치 방지 | 10.11.0 |
-| **프레임워크** | React + Next.js | App Router, 서버 컴포넌트 제공 | React 19.1.0, Next.js 15.3.2 |
-| **UI 프레임워크** | Shadcn/UI + Tailwind CSS | 커스터마이징 용이성, 생산성 향상 | Tailwind CSS 4.1.7 |
-| **상태 관리** | Zustand, Tanstack Query | 단순한 API, 성능 최적화, 상태 로직 분리 | Zustand 5.0.5, Tanstack Query 5.77.0 |
-| **차트 라이브러리** | Recharts | React 친화적, 유연한 커스터마이징 | 2.15.3 |
-| **대시보드 레이아웃** | react-grid-layout | 드래그 앤 드롭, 리사이징 지원 | 1.5.1 |
-| **타입 검사** | TypeScript | 타입 안정성, 개발 생산성 향상 | 5.8.3 |
-| **폼 관리** | React Hook Form + Zod | 성능 최적화, 선언적 유효성 검사 | RHF 7.56.4, Zod 3.25.28 |
-| **코드 품질 관리** | ESLint | 일관된 코드 스타일, 오류 감지 | ESLint 9.27.0 (Standard 규칙) |
-| **테스트** | Vitest + Testing Library + Playwright | 단위/통합/E2E 테스트 도구 | Vitest 1, Playwright 1.40+ |
-| **문서화** | Storybook | 컴포넌트 문서화, 시각적 테스트 | 8.6.14 |
-| **아이콘** | Lucide React | 가볍고 확장 가능한 아이콘 세트 | 0.511.0 |
-| **폰트** | Inter, JetBrains Mono | 가독성 및 기술적 콘텐츠 표현에 최적화 | - |
-| **인증** | Supabase Auth | OAuth 지원, JWT 토큰 관리 | Supabase JS v2 |
+## 2.1 핵심 기술 스택 (E-Torch 특화)
+
+| 영역 | 기술 | 버전 | E-Torch 특화 설정 |
+|------|------|------|------------------|
+| **모노레포** | Turborepo + pnpm | 2.5.3 + 10.11.0 | 9패키지 분할, 빌드 캐싱 |
+| **프레임워크** | Next.js + React | 15.3.2 + 19.1.0 | App Router, 경제지표 캐싱 24h |
+| **UI** | Tailwind CSS + Shadcn/UI | 4.1.7 + latest | CSS-first, OKLCH 색상 |
+| **상태관리** | Zustand + TanStack Query | 5.0.5 + 5.77.0 | 클라이언트/서버 상태 분리 |
+| **차트** | Recharts | 2.15.3 | 1000+ 포인트 LTTB 다운샘플링 |
+| **레이아웃** | react-grid-layout | 1.5.1 | 드래그 300ms 디바운싱 |
+| **인증** | Supabase Auth | v2 | SNS 로그인 3개 (구글/네이버/카카오) |
+| **폼/검증** | React Hook Form + Zod | 7.56.4 + 3.25.28 | 경제지표 스키마 검증 |
+| **테스트** | Vitest + Playwright | 1.x + 1.40+ | 차트 시각적 회귀 테스트 |
+
+## 2.2 E-Torch 특화 구현 설정
+
+### Tailwind CSS 4 (CSS-first)
+
+```css
+/* globals.css */
+@import "tailwindcss";
+
+@theme {
+  /* E-Torch 브랜드 색상 (OKLCH) */
+  --color-primary: oklch(0.2 0.15 240);
+  --color-secondary: oklch(0.5 0.2 230);
+  --color-tertiary: oklch(0.45 0.18 220);
+  
+  /* 반응형 브레이크포인트 */
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1200px;
+  --container-max-width: 1440px;
+  
+  /* 성능 최적화 값 */
+  --debounce-resize: 300ms;
+  --debounce-drag: 200ms;
+}
+
+/* OKLCH 미지원 브라우저 HSL 폴백 */
+@supports not (color: oklch(0 0 0)) {
+  :root {
+    --color-primary: hsl(225, 60%, 15%);
+    --color-secondary: hsl(225, 80%, 50%);
+    --color-tertiary: hsl(200, 80%, 45%);
+  }
+}
+```
+
+### 성능 임계값 및 최적화
+
+| 기능 | 임계값 | 최적화 방법 |
+|------|--------|------------|
+| **차트 렌더링** | 1000+ 포인트 | LTTB 다운샘플링 자동 적용 |
+| **편집 반응성** | 드래그 중 60fps | 차트 렌더링 비활성화 |
+| **메모리 관리** | 200MB/대시보드 | React.memo + 언마운트 정리 |
+| **권한 검증** | < 10ms | 클라이언트 캐시 5분 유지 |
+| **데이터 캐싱** | 경제지표 24시간 | TanStack Query staleTime |
+
+### 구독 모델 런타임 제어
+
+```typescript
+// packages/state/src/auth.ts
+const FEATURE_GATES = {
+  basic: {
+    indicators: 20,
+    dashboards: 3,
+    widgets: 6,
+    dataRange: '3years'
+  },
+  pro: {
+    indicators: 40,
+    dashboards: Infinity,
+    widgets: Infinity,
+    dataRange: 'all'
+  }
+} as const
+
+// 런타임 권한 검증 (10ms 이내)
+export const useFeatureGate = (feature: keyof typeof FEATURE_GATES.basic) => {
+  const { plan } = useAuth()
+  return useMemo(() => FEATURE_GATES[plan][feature], [plan, feature])
+}
+```
+
+### react-grid-layout 최적화 설정
+
+```typescript
+// packages/dashboard/src/components/DashboardGrid.tsx
+const gridLayoutProps = {
+  cols: { lg: 12, md: 8, sm: 4 },
+  breakpoints: { lg: 1200, md: 768, sm: 0 },
+  margin: [16, 16],
+  
+  // 성능 최적화
+  onDragStart: () => setChartRenderingEnabled(false),
+  onDragStop: debounce(() => setChartRenderingEnabled(true), 200),
+  onResizeStart: () => setChartRenderingEnabled(false),
+  onResizeStop: debounce(() => setChartRenderingEnabled(true), 300),
+}
+```
+
+### 경제지표 데이터 처리
+
+```typescript
+// packages/charts/src/utils/downsampling.ts
+export const applyLTTB = (data: DataPoint[], threshold = 1000) => {
+  if (data.length <= threshold) return data
+  return lttbDownsampling(data, threshold)
+}
+
+// 자동 다운샘플링 적용
+export const processChartData = (data: DataPoint[]) => {
+  return data.length > 1000 ? applyLTTB(data) : data
+}
+```
+
+## 2.3 개발 환경 설정
+
+### ESLint 설정 (Flat Config)
+
+```javascript
+// eslint.config.mjs
+import { nextJsConfig } from '@e-torch/eslint-config/next'
+
+export default [
+  ...nextJsConfig,
+  {
+    rules: {
+      // E-Torch 특화 규칙
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      'react-hooks/exhaustive-deps': 'error'
+    }
+  }
+]
+```
+
+### TypeScript 설정
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true
+  }
+}
+```
 
 ## 3. 아키텍처 계층 구조
 
