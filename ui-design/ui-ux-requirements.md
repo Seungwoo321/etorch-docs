@@ -525,10 +525,13 @@
 
 #### 3.6.2 구독 플랜 연동
 
-- **런타임 권한 검증**:
-  - 지표 선택 시 실시간 플랜 검증
-  - 기간 설정 시 플랜별 제한 적용
-  - Pro 전용 기능 접근 시 업그레이드 안내
+**런타임 권한 검증**:
+
+- 지표 선택 시 실시간 플랜 검증 (API 호출 전 클라이언트 검증 + 서버 재검증)
+- 기간 설정 시 플랜별 제한 적용 (날짜 선택기 비활성화 + 툴팁 안내)
+- Pro 전용 기능 접근 시 업그레이드 안내 (기능 버튼 클릭 시 모달 표시)
+- 플랜 상태 캐싱: 5분간 유지, 만료 시 자동 재검증
+- 오프라인 시: 마지막 확인된 플랜 상태 기준으로 제한 적용
 
 - **UI 상태 관리**:
   - 플랜별 비활성화 상태 시각적 표시
@@ -834,17 +837,31 @@
 }
 
 /* 브라우저 호환성을 위한 HSL 폴백 */
-@supports not (color: oklch(0 0 0)) {
+:root {
+  /* HSL 기본값 (모든 브라우저 지원) */
+  --primary: hsl(225, 60%, 15%);
+  --secondary: hsl(225, 80%, 50%);
+  --tertiary: hsl(200, 80%, 45%);
+}
+
+.dark {
+  --primary: hsl(225, 60%, 25%);
+  --secondary: hsl(225, 80%, 60%);
+  --tertiary: hsl(200, 80%, 55%);
+}
+
+/* OKLCH 지원 브라우저에서만 OKLCH 색상 적용 */
+@supports (color: oklch(0 0 0)) {
   :root {
-    --primary: hsl(225, 60%, 15%);       /* OKLCH 폴백 */
-    --secondary: hsl(225, 80%, 50%);
-    --tertiary: hsl(200, 80%, 45%);
+    --primary: oklch(0.2 0.15 240);
+    --secondary: oklch(0.5 0.2 230);
+    --tertiary: oklch(0.45 0.18 220);
   }
   
   .dark {
-    --primary: hsl(225, 60%, 25%);
-    --secondary: hsl(225, 80%, 60%);
-    --tertiary: hsl(200, 80%, 55%);
+    --primary: oklch(0.3 0.15 240);
+    --secondary: oklch(0.6 0.2 230);
+    --tertiary: oklch(0.55 0.18 220);
   }
 }
 ```
@@ -962,7 +979,7 @@
 
 | 제약사항 ID | 설명 | 최적화 방안 |
 |------------|------|------------|
-| L-DATA-001 | Time Series/Bar Chart: 단일 차트에 최대 10,000개 데이터 포인트 처리 가능 | 1,000개 초과 시 LTTB 다운샘플링 자동 적용 |
+| L-DATA-001 | Time Series/Bar Chart: 단일 차트에 최대 10,000개 데이터 포인트 처리 가능 (10,000개 처리 시 3초 이내) | 1,000개 초과 시 LTTB 다운샘플링 자동 적용 |
 | L-DATA-002 | Scatter Chart: 최대 5,000개 데이터 포인트 표시 가능, 초과 시 샘플링 | 성능과 시각적 명확성 균형 고려 |
 | L-DATA-003 | Radar Chart: 최대 20개 축 지원, 데이터 정규화 필수 | 경제지표 비교 분석 시 활용 |
 | L-DATA-004 | Radial Bar Chart: 최대 10개 항목 표시 가능 | 주요 지표 요약 표시용 |
@@ -1336,7 +1353,7 @@
 |---------|--------|------|-------------|----------|------------|
 | RL-005 | 터치 최적화 | 터치 인터페이스 적응 | 최소 44x44px 터치 타겟 | 8px 간격 유지 | TouchTarget |
 | RL-006 | 세로 스택 레이아웃 | 위젯 세로 배치 | 1열 구성 | 스크롤 최적화 | VerticalStack |
-| RL-007 | 모바일 편집 제한 | 복잡한 편집 기능 제한 | **위젯 드래그 이동만 지원, 크기 조절은 속성 패널에서** | 리사이즈는 풀스크린 모달에서 | MobileEditor |
+| RL-007 | 모바일 편집 제한 | 복잡한 편집 기능 제한 | **위젯 드래그 이동만 지원, 크기 조절은 속성 패널에서 (그리드 단위 슬라이더 또는 프리셋 크기 선택)** | 리사이즈는 풀스크린 모달에서 | MobileEditor |
 | RL-008 | 스와이프 네비게이션 | 좌우 스와이프 지원 | 대시보드 간 이동 | 터치 제스처 | SwipeGesture |
 | RL-009 | 풀스크린 모달 | 모바일 모달 최적화 | 전체 화면 활용 | 뒤로가기 버튼 | Sheet |
 
@@ -1561,15 +1578,15 @@ const gridLayoutProps = {
     setChartRenderingEnabled(false);
   },
   onResizeStop: debounce(() => {
-    // 차트 복잡도에 따른 적응적 디바운싱 시간 (기본 300ms, 범위 200-500ms)
+    // 300ms 후 차트 렌더링 재활성화 (리사이즈는 정확성 우선)
     setChartRenderingEnabled(true);
-  }, getAdaptiveDebounceTime()),
+  }, 300),
 
-  // 차트 복잡도에 따른 디바운싱 시간 계산
+  // 차트 복잡도에 따른 디바운싱 시간 계산 (리사이즈 전용)
   const getAdaptiveDebounceTime = () => {
     const dataPointCount = getCurrentWidgetDataPoints();
     if (dataPointCount > 5000) return 500; // 대용량 데이터
-    if (dataPointCount > 1000) return 300; // 중간 데이터
+    if (dataPointCount > 1000) return 300; // 중간 데이터  
     return 200; // 경량 데이터
   };
 
