@@ -383,64 +383,148 @@ export default [
 
 ## 3. 아키텍처 계층 구조
 
-E-Torch 프론트엔드 아키텍처는 여러 계층으로 구성되어 관심사를 명확히 분리합니다.
+### 3.1 핵심 설정
 
-```mermaid
-graph TD
-    subgraph 프레젠테이션 계층
-        UI([UI 컴포넌트])
-        Pages([페이지])
-        Layout([레이아웃])
-    end
-    
-    subgraph 애플리케이션 계층
-        Hooks([커스텀 훅])
-        Context([컨텍스트])
-    end
-    
-    subgraph 도메인 계층
-        State([상태 관리])
-        Service([서비스])
-    end
-    
-    subgraph 데이터 계층
-        API([API 클라이언트])
-        Cache([캐싱 레이어])
-        Storage([로컬 스토리지])
-    end
-    
-    UI --> Hooks
-    Pages --> Hooks
-    Pages --> Layout
-    Layout --> UI
-    Hooks --> State
-    Hooks --> Service
-    Context --> State
-    State --> API
-    State --> Storage
-    Service --> API
-    API --> Cache
-    
-    classDef client fill:#ffcccb,stroke:#333,stroke-width:1px,color:#000;
-    classDef shared fill:#ffffcc,stroke:#333,stroke-width:1px,color:#000;
-    classDef server fill:#ccffcc,stroke:#333,stroke-width:1px,color:#000;
-    
-    class UI,Context,State,Storage client;
-    class Hooks,Service shared;
-    class Pages,Layout,API,Cache server;
+#### Turborepo + pnpm 구성
+
+```json
+// turbo.json
+{
+  "pipeline": {
+    "build": { "dependsOn": ["^build"], "outputs": [".next/**", "dist/**"] },
+    "dev": { "cache": false, "persistent": true },
+    "lint": {},
+    "type-check": {}
+  }
+}
 ```
 
-### 3.1 서버/클라이언트 컴포넌트 분리 개요
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - "apps/*"
+  - "packages/*"
+```
 
-Next.js App Router 환경에서는 서버와 클라이언트 컴포넌트를 명확히 구분하여 활용합니다.
+### 3.2 패키지 의존성 (E-Torch 특화)
 
-서버/클라이언트 컴포넌트 주요 구분 원칙:
+| 패키지 | 직접 의존성 | 핵심 책임 |
+|--------|-------------|----------|
+| **core** | utils | 타입 정의, 상수 |
+| **ui** | core, utils | Shadcn/UI + CSS-first |
+| **charts** | core, ui, utils, data-sources | Recharts + 5가지 차트 |
+| **dashboard** | core, ui, charts, data-sources | react-grid-layout |
+| **data-sources** | core, utils | KOSIS/ECOS 어댑터 |
+| **state** | core, utils, data-sources | Zustand + TanStack Query |
+| **server-api** | core, utils | Next.js API 핸들러 |
 
-- 서버 컴포넌트: 데이터 페칭, 메타데이터 생성, 정적 UI 렌더링
-- 클라이언트 컴포넌트: 상호작용 UI, 상태 관리, 이벤트 핸들링
-- 하이브리드 패턴: 서버에서 데이터를 페칭하여 클라이언트 컴포넌트에 전달
+### 3.3 E-Torch 특화 패키지 설정
 
-상세 구현 패턴과 전략은 [`core-components.md`](./components/core-components.md) 문서를 참조하십시오.
+#### ESLint Config (Standard 기반)
+
+```javascript
+// packages/eslint-config/base.mjs
+import standardJs from '@seungwoo321/eslint-plugin-standard-js'
+import tseslint from 'typescript-eslint'
+
+export const config = [
+  {
+    ignores: ['apps/web/app/components/ui/*'] // Shadcn/UI 제외
+  },
+  {
+    files: ['**/*.{js,ts,jsx,tsx}'],
+    extends: [
+      ...standardJs.configs.recommended,
+      ...tseslint.configs.recommended
+    ]
+  }
+]
+```
+
+#### 차트 패키지 (성능 최적화)
+
+```typescript
+// packages/charts/src/components/ChartRenderer.tsx
+import { memo } from 'react'
+import { useLTTBSampling } from '@/hooks/useLTTBSampling'
+
+export const ChartRenderer = memo(({ data, type, options }) => {
+  const sampledData = useLTTBSampling(data, 1000) // 임계값
+  // 렌더링 로직
+})
+```
+
+#### 상태 패키지 (서버 상태 분리)
+
+```typescript
+// packages/state/src/stores/dashboard.ts
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+export const useDashboardStore = create(
+  persist(
+    (set) => ({
+      // 클라이언트 상태만
+      editMode: false,
+      selectedWidget: null
+    }),
+    { name: 'dashboard-state' }
+  )
+)
+```
+
+### 3.4 구독 모델 통합
+
+#### 권한 검증 (< 10ms 목표)
+
+```typescript
+// packages/core/src/types/subscription.ts
+export type PlanLimits = {
+  basic: { dashboards: 3, widgets: 6, indicators: 20, dataYears: 3 }
+  pro: { dashboards: -1, widgets: -1, indicators: 40, dataYears: -1 }
+}
+
+// 런타임 검증
+export const checkPlanLimit = (plan: Plan, resource: Resource) => {
+  return PLAN_LIMITS[plan][resource] === -1 || 
+         currentUsage[resource] < PLAN_LIMITS[plan][resource]
+}
+```
+
+### 3.5 성능 최적화 설정
+
+#### 메모리 관리 (200MB 제한)
+
+```typescript
+// packages/charts/src/hooks/useChartMemory.ts
+import { useEffect } from 'react'
+
+export const useChartMemory = (data: ChartData[]) => {
+  useEffect(() => {
+    return () => {
+      // 차트 데이터 정리
+      data.forEach(d => d.cleanup?.())
+    }
+  }, [])
+}
+```
+
+#### 코드 분할 (동적 임포트)
+
+```typescript
+// packages/charts/src/index.ts
+export const TimeSeriesChart = lazy(() => 
+  import('./components/TimeSeriesChart')
+)
+export const BarChart = lazy(() => 
+  import('./components/BarChart')
+)
+// 필요시에만 로드
+```
+
+---
+
+**핵심**: 의존성 순서 준수, E-Torch 특화 설정 적용, 성능 임계값 준수
 
 ## 4. 모노레포 패키지 구조 설계
 
