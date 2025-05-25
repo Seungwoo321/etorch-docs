@@ -942,33 +942,152 @@ export async function GET(request: NextRequest) {
 
 ## 6. 인증 아키텍처
 
-E-Torch는 Supabase를 활용한 인증 시스템을 구현합니다:
+### 6.1 Supabase Auth 설정
 
-```mermaid
-flowchart TD
-    A[인증 아키텍처] --> B[로그인 페이지]
-    B --> C[SNS 로그인]
-    C -->|OAuth 프로세스| D[콜백 처리]
-    D --> E[세션 관리]
-    E --> F[인증 상태]
-    
-    G[인증 미들웨어] --> H[요청 인터셉트]
-    H --> I{세션 검증}
-    I -->|유효| J[보호된 리소스 접근]
-    I -->|만료/없음| K[로그인 리다이렉트]
-    
-    L[인증 서비스] --> M[세션 관리]
-    M --> N[토큰 처리]
-    N --> O[API 인증]
+| 설정 항목 | 값 | E-Torch 특화 |
+|-----------|-----|-------------|
+| **Supabase Auth** | v2 | SNS 로그인 전용 |
+| **지원 OAuth** | Google, Naver, Kakao | 회원가입 없음 |
+| **JWT 만료** | 1시간 | 자동 갱신 |
+| **세션 유지** | 30일 | 브라우저 저장 |
+
+#### Supabase 클라이언트 설정
+
+```typescript
+// lib/supabase.ts
+import { createBrowserClient } from '@supabase/ssr'
+
+export const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  {
+    auth: {
+      flowType: 'pkce',
+      autoRefreshToken: true,
+      persistSession: true
+    }
+  }
+)
 ```
 
-인증 관련 핵심 컴포넌트:
+### 6.2 구독 플랜 권한 검증
 
-- Supabase 클라이언트 - JWT 기반 인증 처리
-- 세션 관리 - 로그인 상태 유지 및 관리
-- 인증 미들웨어 - 보호된 라우트에 대한 접근 제어
-- 인증 스토어 - 클라이언트 상태에서의 인증 정보 관리
-- OAuth 콜백 처리 - SNS 인증 후 리다이렉션 처리
+| 검증 유형 | 응답 시간 | 구현 방법 |
+|----------|----------|----------|
+| **클라이언트 캐시** | < 5ms | 5분 캐시 |
+| **서버 재검증** | < 10ms | JWT 클레임 |
+| **실시간 업데이트** | < 100ms | 웹훅 연동 |
+
+#### 권한 검증 훅
+
+```typescript
+// hooks/useAuth.ts
+export const useAuth = () => {
+  const { data: session } = useQuery({
+    queryKey: ['auth-session'],
+    queryFn: () => supabase.auth.getSession(),
+    staleTime: 5 * 60 * 1000 // 5분 캐시
+  })
+  
+  const plan = session?.user?.user_metadata?.subscription_plan || 'basic'
+  
+  return {
+    user: session?.user,
+    plan: plan as 'basic' | 'pro',
+    isAuthenticated: !!session?.user
+  }
+}
+```
+
+### 6.3 SNS 로그인 구현
+
+#### OAuth 콜백 처리
+
+```typescript
+// app/auth/callback/route.ts
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const code = searchParams.get('code')
+  
+  if (code) {
+    const supabase = createRouteHandlerClient({ cookies })
+    await supabase.auth.exchangeCodeForSession(code)
+  }
+  
+  return NextResponse.redirect(new URL('/dashboard', request.url))
+}
+```
+
+#### 로그인 버튼 컴포넌트
+
+```typescript
+// components/auth/LoginButton.tsx
+export const LoginButton = ({ provider }: { provider: 'google' | 'naver' | 'kakao' }) => {
+  const handleLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`
+      }
+    })
+  }
+  
+  return <Button onClick={handleLogin}>Login with {provider}</Button>
+}
+```
+
+### 6.4 미들웨어 인증 (권한 검증 < 10ms)
+
+```typescript
+// middleware.ts
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
+
+export async function middleware(request: NextRequest) {
+  const supabase = createMiddlewareClient({ req: request, res: response })
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  // 보호된 라우트 검증 (5ms 이내)
+  if (request.nextUrl.pathname.startsWith('/dashboard') && !session) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+  
+  return response
+}
+
+export const config = {
+  matcher: ['/dashboard/:path*', '/settings/:path*']
+}
+```
+
+### 6.5 결제 연동 보안
+
+| 보안 요소 | 구현 방법 | E-Torch 설정 |
+|----------|----------|-------------|
+| **결제 웹훅** | 토스페이먼츠 서명 검증 | HMAC-SHA256 |
+| **구독 상태** | Supabase RLS 정책 | JWT 기반 |
+| **권한 업데이트** | 실시간 동기화 | 100ms 이내 |
+
+#### 결제 웹훅 처리
+
+```typescript
+// app/api/webhooks/payments/route.ts
+export async function POST(request: Request) {
+  const signature = request.headers.get('x-toss-signature')
+  const payload = await request.text()
+  
+  // 서명 검증 (보안)
+  const isValid = verifyTossSignature(payload, signature)
+  if (!isValid) return new Response('Unauthorized', { status: 401 })
+  
+  // 구독 상태 업데이트
+  const { orderId, status } = JSON.parse(payload)
+  await updateSubscriptionStatus(orderId, status)
+  
+  return new Response('OK')
+}
+```
 
 ## 7. 차트 컴포넌트 설계
 
