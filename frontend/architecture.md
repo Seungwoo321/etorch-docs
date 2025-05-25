@@ -1,48 +1,235 @@
 # E-Torch 프론트엔드 아키텍처 설계 문서
 
-## 1. 개요
+## 1. 아키텍처 개요
 
-E-Torch 프로젝트의 프론트엔드 아키텍처는 모듈성, 재사용성, 확장성을 중심으로 구축되었습니다. 본 문서는 E-Torch의 주요 기능 구현에 필요한 핵심 컴포넌트들의 구조, 상호작용, 책임 범위를 정의하며, 특히 Next.js 15의 서버/클라이언트 컴포넌트 아키텍처와 React 19의 새로운 기능을 활용한 설계 패턴을 제시합니다.
+### 1.1 프론트엔드 아키텍처 목표
 
-### 1.1 프로젝트 목표
+E-Torch 프론트엔드는 경제지표 시각화 특성과 구독 모델을 고려한 확장 가능한 아키텍처를 목표로 합니다.
 
-- 다양한 출처의 경제지표 데이터를 통합 제공
-- 사용자 맞춤형 대시보드를 통한 경제지표 시각화 및 인사이트 도출
-- 전문가와 일반 사용자 모두를 위한 경제데이터 접근성 향상
-- 직관적이고 유연한 차트 컴포넌트와 에디터 기능 제공
+#### 핵심 기술적 목표
 
-### 1.2 설계 원칙
+- **복잡한 데이터 시각화 최적화**: 1,000+ 데이터 포인트 차트 렌더링 성능 보장
+- **실시간 대화형 편집**: react-grid-layout 기반 드래그 앤 드롭 편집기 구현
+- **구독 모델 런타임 제어**: 플랜별 기능 제한/활성화 실시간 적용
+- **다중 데이터 소스 통합**: KOSIS/ECOS API 응답 차이 흡수 및 정규화
+- **적응형 사용자 경험**: 전문가/일반 사용자별 UI 복잡도 동적 조절
+
+### 1.2 아키텍처 설계 원칙
 
 ```mermaid
 graph TD
-    A[E-Torch 설계 원칙] --> B[모듈성]
-    A --> C[확장성]
-    A --> D[재사용성]
-    A --> E[성능]
-    A --> F[접근성]
-    A --> G[서버/클라이언트 분리]
+    subgraph "프론트엔드 아키텍처 원칙"
+        A[성능 최적화] --> A1[차트 렌더링<br/>가상화/다운샘플링]
+        A --> A2[코드 분할<br/>동적 임포트]
+        A --> A3[메모리 관리<br/>편집 모드 최적화]
+        
+        B[확장성] --> B1[패키지 모듈화<br/>9개 독립 패키지]
+        B --> B2[차트 유형 확장<br/>플러그인 패턴]
+        B --> B3[데이터 소스 확장<br/>어댑터 패턴]
+        
+        C[상태 분리] --> C1[서버 상태<br/>TanStack Query]
+        C --> C2[클라이언트 상태<br/>Zustand]
+        C --> C3[편집 상태<br/>격리된 스토어]
+        
+        D[구독 모델 대응] --> D1[기능 게이팅<br/>런타임 검증]
+        D --> D2[UI 차별화<br/>조건부 렌더링]
+        D --> D3[데이터 접근 제어<br/>프록시 패턴]
+        
+        E[타입 안전성] --> E1[엄격한 타입<br/>TypeScript 5.5+]
+        E --> E2[스키마 검증<br/>Zod 통합]
+        E --> E3[API 계약<br/>타입 생성]
+        
+        F[경제지표 특화] --> F1[시계열 최적화<br/>LTTB 알고리즘]
+        F --> F2[정기 발표 대응<br/>캐시 전략]
+        F --> F3[다중 시리즈<br/>메모리 효율]
+    end
     
-    B --> B1[기능별 독립적 패키지화]
-    B --> B2[명확한 책임 경계 설정]
+    classDef performance fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef scalability fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef state fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef subscription fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef type fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef domain fill:#fff8e1,stroke:#f57f17,stroke-width:2px;
     
-    C --> C1[새로운 차트 유형 추가 용이성]
-    C --> C2[데이터 소스 확장 가능성]
-    C --> C3[플러그인 시스템 지원]
-    
-    D --> D1[공통 컴포넌트 추출]
-    D --> D2[일관된 UX 제공]
-    
-    E --> E1[대량 데이터 처리 최적화]
-    E --> E2[렌더링 성능 보장]
-    E --> E3[코드 분할 및 지연 로딩]
-    
-    F --> F1[WCAG 표준 준수]
-    F --> F2[키보드 내비게이션 지원]
-    
-    G --> G1[서버 컴포넌트 최적화]
-    G --> G2[클라이언트 상태 격리]
-    G --> G3[하이브리드 렌더링 패턴]
+    class A,A1,A2,A3 performance;
+    class B,B1,B2,B3 scalability;
+    class C,C1,C2,C3 state;
+    class D,D1,D2,D3 subscription;
+    class E,E1,E2,E3 type;
+    class F,F1,F2,F3 domain;
 ```
+
+### 1.3 아키텍처 제약사항 및 고려사항
+
+#### 기술적 제약사항
+
+| 제약사항 | 영향 범위 | 아키텍처 대응 |
+|---------|----------|-------------|
+| **차트 렌더링 성능** | 1,000+ 데이터 포인트 시 3초 이내 | LTTB 다운샘플링, 가상화 적용 |
+| **편집 모드 반응성** | 드래그 중 60fps 유지 | 차트 렌더링 비활성화, 300ms 디바운싱 |
+| **메모리 사용량** | 대시보드당 200MB 이하 | React.memo, 불필요한 상태 정리 |
+| **구독 플랜 검증** | 10ms 이내 권한 확인 | 클라이언트 캐시 + 서버 재검증 |
+
+#### 비즈니스 로직 제약사항
+
+```mermaid
+graph LR
+    subgraph "구독 플랜별 아키텍처 분기"
+        Basic[Basic 플랜] --> B1[20개 지표]
+        Basic --> B2[3년 데이터]
+        Basic --> B3[3개 대시보드]
+        Basic --> B4[6개 위젯/대시보드]
+        
+        Pro[Pro 플랜] --> P1[40개 지표]
+        Pro --> P2[전체 기간]
+        Pro --> P3[무제한 대시보드]
+        Pro --> P4[무제한 위젯]
+    end
+    
+    subgraph "프론트엔드 구현"
+        B1 --> UI1[지표 선택 제한]
+        B2 --> UI2[날짜 선택기 제한]
+        B3 --> UI3[생성 버튼 비활성화]
+        B4 --> UI4[위젯 추가 제한]
+        
+        P1 --> UI5[전체 지표 접근]
+        P2 --> UI6[전체 기간 선택]
+        P3 --> UI7[무제한 생성]
+        P4 --> UI8[무제한 추가]
+    end
+    
+    classDef basic fill:#ffebee,stroke:#c62828,stroke-width:2px;
+    classDef pro fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px;
+    classDef ui fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
+    
+    class Basic,B1,B2,B3,B4 basic;
+    class Pro,P1,P2,P3,P4 pro;
+    class UI1,UI2,UI3,UI4,UI5,UI6,UI7,UI8 ui;
+```
+
+### 1.4 데이터 흐름 아키텍처
+
+```mermaid
+graph TD
+    subgraph "데이터 소스 계층"
+        KOSIS[KOSIS API<br/>12개 지표]
+        ECOS[ECOS API<br/>28개 지표]
+        OECD[OECD API<br/>향후 확장]
+        
+        KOSIS -.->|M,Q,A 주기| Adapter1[KOSIS 어댑터]
+        ECOS -.->|D,M,Q,A 주기| Adapter2[ECOS 어댑터]
+        OECD -.->|비활성화| Adapter3[OECD 어댑터]
+    end
+    
+    subgraph "상태 관리 계층"
+        Adapter1 --> ServerAPI[server-api 패키지]
+        Adapter2 --> ServerAPI
+        Adapter3 --> ServerAPI
+        
+        ServerAPI --> TQ[TanStack Query<br/>서버 상태]
+        TQ --> DataSources[data-sources 패키지]
+        DataSources --> State[state 패키지<br/>Zustand]
+    end
+    
+    subgraph "프레젠테이션 계층"
+        State --> Charts[charts 패키지]
+        State --> Dashboard[dashboard 패키지]
+        Charts --> UI[ui 패키지]
+        Dashboard --> UI
+        
+        UI --> Web[apps/web<br/>Next.js 15]
+    end
+    
+    subgraph "사용자 계층"
+        Web --> Expert[전문 투자자<br/>복잡한 UI]
+        Web --> General[일반 투자자<br/>단순한 UI]
+    end
+    
+    classDef source fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+    classDef state fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px;
+    classDef ui fill:#e1f5fe,stroke:#0277bd,stroke-width:2px;
+    classDef user fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
+    
+    class KOSIS,ECOS,OECD,Adapter1,Adapter2,Adapter3 source;
+    class ServerAPI,TQ,DataSources,State state;
+    class Charts,Dashboard,UI,Web ui;
+    class Expert,General user;
+```
+
+### 1.5 성능 아키텍처 전략
+
+#### 차트 렌더링 최적화
+
+```mermaid
+graph TD
+    subgraph "데이터 처리 파이프라인"
+        Raw[원본 데이터] --> Check{포인트 수 확인}
+        Check -->|< 1000개| Direct[직접 렌더링]
+        Check -->|≥ 1000개| LTTB[LTTB 다운샘플링]
+        
+        LTTB --> Sampled[샘플링된 데이터]
+        Direct --> Render[차트 렌더링]
+        Sampled --> Render
+        
+        Render --> Cache[결과 캐싱<br/>15분]
+    end
+    
+    subgraph "편집 모드 최적화"
+        Edit[편집 시작] --> Disable[차트 렌더링 비활성화]
+        Disable --> Drag[드래그/리사이즈]
+        Drag --> Debounce[300ms 디바운싱]
+        Debounce --> Enable[차트 렌더링 재활성화]
+    end
+    
+    subgraph "메모리 관리"
+        Component[컴포넌트] --> Memo[React.memo]
+        Component --> Cleanup[언마운트 시 정리]
+        Component --> WeakMap[WeakMap 캐시]
+    end
+    
+    classDef process fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px;
+    classDef edit fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+    classDef memory fill:#e1f5fe,stroke:#0277bd,stroke-width:2px;
+    
+    class Raw,Check,Direct,LTTB,Sampled,Render,Cache process;
+    class Edit,Disable,Drag,Debounce,Enable edit;
+    class Component,Memo,Cleanup,WeakMap memory;
+```
+
+### 1.6 보안 및 인증 아키텍처
+
+```mermaid
+graph TD
+    subgraph "인증 플로우"
+        Login[SNS 로그인] --> OAuth[OAuth 인증]
+        OAuth --> Supabase[Supabase Auth]
+        Supabase --> JWT[JWT 토큰]
+        JWT --> Session[세션 관리]
+    end
+    
+    subgraph "구독 검증"
+        Session --> Middleware[인증 미들웨어]
+        Middleware --> PlanCheck[플랜 검증]
+        PlanCheck --> Cache[권한 캐시<br/>5분]
+        Cache --> UI[UI 제한 적용]
+    end
+    
+    subgraph "결제 보안"
+        Payment[결제 요청] --> Toss[토스페이먼츠]
+        Toss --> Webhook[웹훅 검증]
+        Webhook --> Update[구독 상태 업데이트]
+    end
+    
+    classDef auth fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px;
+    classDef plan fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+    classDef payment fill:#fce4ec,stroke:#c2185b,stroke-width:2px;
+    
+    class Login,OAuth,Supabase,JWT,Session auth;
+    class Middleware,PlanCheck,Cache,UI plan;
+    class Payment,Toss,Webhook,Update payment;
+```
+
+이 아키텍처는 경제지표 시각화의 특수성과 구독 모델의 복잡성을 모두 고려하여 설계되었으며, 성능과 확장성을 동시에 보장합니다.
 
 ## 2. 기술 스택
 
