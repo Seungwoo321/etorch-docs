@@ -1250,9 +1250,9 @@
 | 기능 ID | 기능명 | 설명 | 데스크톱 (1200px+) | 태블릿 (768px-1199px) | 모바일 (~767px) | UI 컴포넌트 |
 |---------|--------|------|-------------------|---------------------|-----------------|-----------|
 | DVL-007 | 그리드 컬럼 | 반응형 그리드 시스템 | 12컬럼 | 8컬럼 | 4컬럼 (세로 스택) | GridLayout |
-| DVL-008 | 위젯 최소 크기 | 차트 가독성 보장 | 300×200px | 250×180px | 100% 너비 | 그리드 제약 |
-| DVL-009 | 위젯 간격 | 위젯 사이 여백 | 16px | 12px | 8px | 그리드 마진 |
-| DVL-010 | 사이드 여백 | 화면 가장자리 여백 | 24px | 16px | 12px | 컨테이너 패딩 |
+| DVL-008 | 위젯 최소 크기 | 차트 가독성 보장 | 최소 300×200px (권장) | 최소 250×180px (권장) | 100% 너비 | 그리드 제약, 디자인 토큰 적용 |
+| DVL-009 | 위젯 간격 | 위젯 사이 여백 | spacing-lg (기본 16px) | spacing-md (기본 12px) | spacing-sm (기본 8px) | 그리드 마진, 토큰 기반 |
+| DVL-010 | 사이드 여백 | 화면 가장자리 여백 | container-padding-lg (기본 24px) | container-padding-md (기본 16px) | container-padding-sm (기본 12px) | 컨테이너 패딩, 토큰 기반 |
 | DVL-011 | 위젯 최대 크기 | 화면 활용 최적화 | 12x12 그리드 | 8x8 그리드 | 전체 너비 | 그리드 제약 |
 
 ### 7.3 대시보드 편집 레이아웃
@@ -1561,9 +1561,17 @@ const gridLayoutProps = {
     setChartRenderingEnabled(false);
   },
   onResizeStop: debounce(() => {
-    // 300ms 후 차트 렌더링 재활성화 (리사이즈는 차트 재계산 시간 고려)
+    // 차트 복잡도에 따른 적응적 지연 시간 (기본 300ms, 범위 200-500ms)
     setChartRenderingEnabled(true);
-  }, 300),
+  }, getAdaptiveDebounceTime()),
+
+  // 차트 복잡도에 따른 디바운싱 시간 계산
+  const getAdaptiveDebounceTime = () => {
+    const dataPointCount = getCurrentWidgetDataPoints();
+    if (dataPointCount > 5000) return 500; // 대용량 데이터
+    if (dataPointCount > 1000) return 300; // 중간 데이터
+    return 200; // 경량 데이터
+  };
 
 // 반응형 설정 적용
 const getResponsiveGridProps = (breakpoint: string) => ({
