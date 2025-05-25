@@ -667,65 +667,65 @@ flowchart TD
 
 ### 5.3 위젯 생성 및 편집 흐름
 
-```
+```mermaid
 flowchart TD
-    A[WidgetEditor 진입] --> B{위젯 유형 선택}
-    B -->|TimeSeries| TS[시계열 차트]
-    B -->|BarChart| BC[바 차트]
-    B -->|ScatterChart| SC[산점도 차트]
-    B -->|RadarChart| RC[레이더 차트]
-    B -->|RadialBarChart| RB[방사형 바 차트]
-    B -->|Text-사용자정의| TX1[텍스트 위젯 (사용자 정의)]
-    B -->|Text-데이터기반| TX2[텍스트 위젯 (데이터 기반)]
+    A[대시보드 에디터에서<br/>위젯 추가 클릭] --> B{위젯 유형 선택}
+    
+    B -->|Time Series| TS[시계열 차트]
+    B -->|Bar Chart| BC[바 차트]
+    B -->|Scatter Chart| SC[산점도 차트]
+    B -->|Radar Chart| RC[레이더 차트]
+    B -->|Radial Bar Chart| RB[방사형 바 차트]
+    B -->|사용자 정의 텍스트| TX1[텍스트 위젯]
+    B -->|데이터 기반 텍스트| TX2[텍스트 위젯]
 
     TS --> C[DataSourcePanel]
     BC --> C
     SC --> C
     RC --> C
     RB --> C
+    TX2 --> C
     
-    C --> D[SourceSelector]
-    D -->|KOSIS| F1[KOSIS 지표]
-    D -->|ECOS| F2[ECOS 지표]
-    D -->|OECD| F3[OECD 지표]
+    C --> D[데이터 소스 선택]
+    D -->|KOSIS| F1[KOSIS 지표 선택]
+    D -->|ECOS| F2[ECOS 지표 선택]
+    D -->|OECD| F3[OECD 지표 선택]
     
-    F1 --> G[IndicatorSelector]
+    F1 --> G[지표 및 변환 설정]
     F2 --> G
     F3 --> G
     
-    G --> H[TransformControls]
-    H --> I[ChartPreview]
+    G --> H{위젯 타입별 분기}
+    H -->|차트형| I[차트 미리보기]
+    H -->|텍스트형| J[텍스트 미리보기]
     
-    TX1 --> K[CustomContent 편집]
-    TX2 --> L[DataSource 설정]
-    L --> M[DataOperation 선택]
-    M --> N[TextPreview]
-    K --> N
+    TX1 --> K[사용자 정의 내용 입력]
+    K --> J
     
-    I --> O{차트 OptionsPanel 편집}
-    O -->|PanelOptions| P1[타이틀/설명 설정]
-    O -->|TooltipOptions| P2[툴팁 설정]
-    O -->|LegendOptions| P3[범례 설정]
-    O -->|AxisOptions| P4[X/Y축 설정]
-    O -->|StyleOptions| P5[스타일 설정]
+    I --> L{차트 옵션 편집}
+    L -->|Panel 옵션| M1[제목/설명 설정]
+    L -->|Tooltip 옵션| M2[툴팁 설정]  
+    L -->|Legend 옵션| M3[범례 설정]
+    L -->|Axis 옵션| M4[축 설정]
+    L -->|Style 옵션| M5[스타일 설정]
     
-    N --> Q{텍스트 OptionsPanel 편집}
-    Q -->|PanelOptions| R1[타이틀/설명 설정]
-    Q -->|TextOptions| R2[폰트/정렬/색상 설정]
-    Q -->|FormatOptions| R3[숫자 포맷/조건부 서식]
+    J --> N{텍스트 옵션 편집}
+    N -->|Panel 옵션| O1[제목/설명 설정]
+    N -->|Text 옵션| O2[폰트/정렬/색상 설정]
+    N -->|Format 옵션| O3[숫자 포맷/조건부 서식]
     
-    P1 --> S[변경사항 적용]
-    P2 --> S
-    P3 --> S
-    P4 --> S
-    P5 --> S
-    R1 --> S
-    R2 --> S
-    R3 --> S
+    M1 --> P[변경사항 적용]
+    M2 --> P
+    M3 --> P
+    M4 --> P
+    M5 --> P
+    O1 --> P
+    O2 --> P
+    O3 --> P
     
-    S --> T[위젯 저장]
-    T --> U[DashboardGrid에 추가]
-
+    P --> Q[위젯 저장]
+    Q --> R[대시보드 에디터로 복귀]
+    R --> S[대시보드 그리드에 추가]
 ```
 
 ## 6. UI/UX 설계
