@@ -528,317 +528,417 @@ export const BarChart = lazy(() =>
 
 ## 4. 모노레포 패키지 구조 설계
 
-E-Torch 프로젝트는 다음과 같은 패키지로 구성되어 있습니다:
+### 4.1 핵심 설정
 
-```mermaid
-flowchart TD
-    subgraph "루트 설정"
-        R1[turbo.json]
-        R2[package.json]
-        R3[pnpm-workspace.yaml]
-        R4[eslint.config.mjs]
-        R5[tsconfig.json]
-    end
-    
-    subgraph "애플리케이션"
-        Apps[apps/]
-        Apps --> Web[web]
-        Apps --> Storybook[storybook]
-    end
-    
-    subgraph "패키지"
-        Packages[packages/]
-        Packages --> EslintConfig[eslint-config]
-        Packages --> Core[core]
-        Packages --> UI[ui]
-        Packages --> Charts[charts]
-        Packages --> Dashboard[dashboard]
-        Packages --> DataSources[data-sources]
-        Packages --> Utils[utils]
-        Packages --> State[state]
-        Packages --> ServerAPI[server-api]
-    end
-    
-    classDef app fill:#f9f,stroke:#333,stroke-width:2px,color:#000;
-    classDef eslint fill:#ccccff,stroke:#333,stroke-width:2px,color:#000;
-    classDef base fill:#ffffcc,stroke:#333,stroke-width:2px,color:#000;
-    classDef ui fill:#ccffcc,stroke:#333,stroke-width:2px,color:#000;
-    classDef feature fill:#bbf,stroke:#33b,stroke-width:2px,color:#000;
-    classDef api fill:#ffcccc,stroke:#333,stroke-width:2px,color:#000;
-    
-    class Web,Storybook app;
-    class EslintConfig eslint;
-    class Core,Utils base;
-    class UI ui;
-    class Charts,Dashboard,DataSources feature;
-    class State,ServerAPI api;
+#### Turborepo + pnpm 구성
+
+```json
+// turbo.json
+{
+  "pipeline": {
+    "build": { "dependsOn": ["^build"], "outputs": [".next/**", "dist/**"] },
+    "dev": { "cache": false, "persistent": true },
+    "lint": {},
+    "type-check": {}
+  }
+}
 ```
 
-### 4.1 패키지별 책임 구분
-
-| 패키지 | 주요 책임 | 핵심 컴포넌트 |
-|-------|---------|-------------|
-| **eslint-config** | 코드 스타일 및 품질 규칙 | 기본 ESLint 설정, Next.js ESLint 설정 |
-| **core** | 타입 정의, 상수 관리 | 차트 타입, 대시보드 타입, 데이터 소스 타입, 커맨드 패턴 타입 |
-| **ui** | Shadcn/UI 기반 UI 컴포넌트 | 버튼, 카드, 다이얼로그, 접근성 컴포넌트, 레이아웃 컴포넌트 |
-| **charts** | 차트 관련 컴포넌트 | 시계열 차트, 바 차트, 스캐터 차트, 차트 에디터 |
-| **dashboard** | 대시보드 관련 컴포넌트 | 대시보드 그리드, 위젯, 대시보드 에디터 |
-| **data-sources** | 데이터 소스 연동 | 데이터 커넥터, 변환, 쿼리 컴포넌트 |
-| **utils** | 유틸리티 함수 | 포맷터, 벨리데이터, 헬퍼 함수 |
-| **state** | 상태 관리 | Zustand 스토어, TanStack Query 훅, 서비스 |
-| **server-api** | 서버 API 연동 | API 클라이언트, 서버 액션, 미들웨어 |
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - "apps/*"
+  - "packages/*"
+```
 
 ### 4.2 패키지 의존성 구조
 
-각 패키지 간의 의존성을 명확하게 정의하여 순환 의존성을 방지하고 패키지의 책임을 명확히 합니다.
+#### 9개 패키지 구조 (E-Torch 특화)
+
+| 패키지 | 직접 의존성 | 핵심 책임 | E-Torch 특화 |
+|--------|-------------|----------|------------|
+| **eslint-config** | - | 코드 품질 규칙 | Standard JS 기반 |
+| **core** | utils | 타입 정의, 상수 | 차트/구독 타입 |
+| **utils** | - | 공통 유틸리티 | LTTB 다운샘플링 |
+| **ui** | core, utils | Shadcn/UI 통합 | CSS-first 테마 |
+| **data-sources** | core, utils | API 어댑터 | KOSIS/ECOS 통합 |
+| **state** | core, utils, data-sources | 상태 관리 | 서버/클라이언트 분리 |
+| **charts** | core, ui, utils, data-sources, state | 차트 컴포넌트 | 5가지 차트 타입 |
+| **dashboard** | 모든 패키지 | 대시보드 관리 | react-grid-layout |
+| **server-api** | core, utils | API 핸들러 | Next.js 15 통합 |
+
+#### 패키지 의존성 그래프
 
 ```mermaid
-flowchart TD
+graph TD
+    subgraph "기반 계층"
+        eslint[eslint-config]
+        core[core]
+        utils[utils]
+    end
+    
+    subgraph "UI 계층" 
+        ui[ui]
+    end
+    
+    subgraph "데이터 계층"
+        data[data-sources]
+        api[server-api]
+        state[state]
+    end
+    
+    subgraph "기능 계층"
+        charts[charts]
+        dashboard[dashboard]
+    end
+    
     subgraph "애플리케이션"
-        Web[apps/web]
-        Docs[apps/storybook]
+        web[apps/web]
     end
     
-    subgraph "기반 패키지"
-        Core[packages/core]
-        Utils[packages/utils]
-        EslintConfig[packages/eslint-config]
-    end
+    %% 의존성
+    ui --> core
+    ui --> utils
     
-    subgraph "UI 패키지"
-        UI[packages/ui]
-    end
+    data --> core
+    data --> utils
     
-    subgraph "데이터 관련 패키지"
-        DataSources[packages/data-sources]
-        ServerAPI[packages/server-api]
-    end
+    api --> core
+    api --> utils
     
-    subgraph "상태 관리 패키지"
-        State[packages/state]
-    end
+    state --> core
+    state --> utils
+    state --> data
     
-    subgraph "기능 패키지"
-        Charts[packages/charts]
-        Dashboard[packages/dashboard]
-    end
+    charts --> core
+    charts --> ui
+    charts --> utils
+    charts --> data
+    charts --> state
     
-    %% 기본 의존성
-    Core --> Utils
+    dashboard --> charts
+    dashboard --> state
+    dashboard --> ui
     
-    %% UI 의존성
-    UI --> Core
-    UI --> Utils
+    web --> dashboard
+    web --> api
     
-    %% 데이터 관련 패키지 의존성
-    DataSources --> Core
-    DataSources --> Utils
-    ServerAPI --> Core
-    ServerAPI --> Utils
+    classDef base fill:#e8f5e8,stroke:#2e7d32;
+    classDef ui fill:#fff3e0,stroke:#f57c00;
+    classDef data fill:#e3f2fd,stroke:#1565c0;
+    classDef feature fill:#fce4ec,stroke:#c2185b;
+    classDef app fill:#f3e5f5,stroke:#7b1fa2;
     
-    %% 상태 관리 패키지 의존성
-    State --> Core
-    State --> Utils
-    State --> DataSources
-    
-    %% 기능 패키지 의존성
-    Charts --> Core
-    Charts --> UI
-    Charts --> Utils
-    Charts --> DataSources
-    Charts --> State
-    
-    Dashboard --> Core
-    Dashboard --> UI
-    Dashboard --> Utils
-    Dashboard --> Charts
-    Dashboard --> DataSources
-    Dashboard --> State
-    
-    %% 애플리케이션 의존성
-    Web --> Core
-    Web --> UI
-    Web --> Utils
-    Web --> Charts
-    Web --> Dashboard
-    Web --> DataSources
-    Web --> State
-    Web --> ServerAPI
-    Web --> EslintConfig
-    
-    Docs --> UI
-    Docs --> Charts
-    Docs --> Dashboard
-    
-    classDef app fill:#f9f,stroke:#333,stroke-width:2px,color:#000;
-    classDef base fill:#ffffcc,stroke:#333,stroke-width:2px,color:#000;
-    classDef ui fill:#ccffcc,stroke:#333,stroke-width:2px,color:#000;
-    classDef data fill:#ccccff,stroke:#333,stroke-width:2px,color:#000;
-    classDef state fill:#ffcccc,stroke:#333,stroke-width:2px,color:#000;
-    classDef feature fill:#bbf,stroke:#33b,stroke-width:2px,color:#000;
-    classDef eslint fill:#dddddd,stroke:#333,stroke-width:2px,color:#000;
-    
-    class Web,Docs app;
-    class Core,Utils base;
-    class UI ui;
-    class DataSources,ServerAPI data;
-    class State state;
-    class Charts,Dashboard feature;
-    class EslintConfig eslint;
+    class eslint,core,utils base;
+    class ui ui;
+    class data,api,state data;
+    class charts,dashboard feature;
+    class web app;
 ```
 
-### 4.3 UI 컴포넌트와 서버/클라이언트 통합 전략
+### 4.3 E-Torch 특화 패키지 설정
 
-Shadcn/UI는 기본적으로 클라이언트 컴포넌트로 제공되므로, 서버 컴포넌트에서 사용하기 위한 래퍼 패턴을 채택합니다. 상세 구현은 [`core-components.md`](./components/core-components.md#34-ui-컴포넌트-서버-래퍼-패턴) 문서를 참조하십시오.
-
-## 5. 패키지별 책임 구분
-
-### 5.1 `packages/eslint-config`
-
-`eslint-config` 패키지는 코드 스타일과 품질 관리를 위한 ESLint 설정을 담당합니다:
-
-- 기본 ESLint 설정(base.mjs): 모든 패키지에 적용되는 기본 린트 규칙
-- Next.js 특화 설정(next.mjs): Next.js 앱에 특화된 린트 규칙
-- Standard JS/JSX 규칙 통합
-- TypeScript ESLint 규칙
-- React Hooks 규칙
-
-ESLint 설정 구성:
-
-```javascript
-// 프로젝트 루트의 eslint.config.mjs
-import { defineConfig } from 'eslint/config'
-import { config } from '@e-torch/eslint-config/base'
-
-export default defineConfig([
-  {
-    ignores: ['apps/**', 'packages/**']
-  },
-  ...config
-])
-```
+#### ESLint Config (Standard 기반)
 
 ```javascript
 // packages/eslint-config/base.mjs
 import standardJs from '@seungwoo321/eslint-plugin-standard-js'
-import standardJsx from '@seungwoo321/eslint-plugin-standard-jsx'
 import tseslint from 'typescript-eslint'
 
 export const config = [
   {
-    ignores: ['apps/*/node_modules/*', 'packages/*/node_modules/*', 'node_modules/*', 'apps/web/app/components/ui/*']
+    ignores: ['apps/web/app/components/ui/*'] // Shadcn/UI 제외
   },
   {
-    files: ['**/*.{js,mjs,cjs,ts,mts,jsx,tsx}'],
+    files: ['**/*.{js,ts,jsx,tsx}'],
     extends: [
       ...standardJs.configs.recommended,
-      ...standardJsx.configs.recommended,
-      ...tseslint.configs.recommended,
-      ...tseslint.configs.stylistic,
-    ],
+      ...tseslint.configs.recommended
+    ]
   }
 ]
 ```
+
+#### Charts 패키지 (성능 최적화)
+
+```typescript
+// packages/charts/src/components/ChartRenderer.tsx
+import { memo } from 'react'
+import { useLTTBSampling } from '@/hooks/useLTTBSampling'
+
+export const ChartRenderer = memo(({ data, type, options }) => {
+  const sampledData = useLTTBSampling(data, 1000) // 임계값
+  return <Chart data={sampledData} type={type} {...options} />
+})
+```
+
+#### State 패키지 (서버 상태 분리)
+
+```typescript
+// packages/state/src/stores/dashboard.ts
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+export const useDashboardStore = create(
+  persist(
+    (set) => ({
+      // 클라이언트 상태만
+      editMode: false,
+      selectedWidget: null
+    }),
+    { name: 'dashboard-state' }
+  )
+)
+```
+
+#### 구독 모델 통합 (< 10ms 목표)
+
+```typescript
+// packages/core/src/types/subscription.ts
+export type PlanLimits = {
+  basic: { dashboards: 3, widgets: 6, indicators: 20, dataYears: 3 }
+  pro: { dashboards: -1, widgets: -1, indicators: 40, dataYears: -1 }
+}
+
+// 런타임 검증
+export const checkPlanLimit = (plan: Plan, resource: Resource) => {
+  return PLAN_LIMITS[plan][resource] === -1 || 
+         currentUsage[resource] < PLAN_LIMITS[plan][resource]
+}
+```
+
+#### 성능 최적화 설정
+
+메모리 관리 (200MB 제한):
+
+```typescript
+// packages/charts/src/hooks/useChartMemory.ts
+import { useEffect } from 'react'
+
+export const useChartMemory = (data: ChartData[]) => {
+  useEffect(() => {
+    return () => {
+      // 차트 데이터 정리
+      data.forEach(d => d.cleanup?.())
+    }
+  }, [])
+}
+```
+
+코드 분할 (동적 임포트):
+
+```typescript
+// packages/charts/src/index.ts
+export const TimeSeriesChart = lazy(() => 
+  import('./components/TimeSeriesChart')
+)
+export const BarChart = lazy(() => 
+  import('./components/BarChart')
+)
+// 필요시에만 로드
+```
+
+---
+
+**핵심**: 의존성 순서 준수, E-Torch 특화 설정 적용, 성능 임계값 준수
+
+## 5. 패키지별 책임 구분
+
+### 5.1 패키지 개요
+
+| 패키지 | 핵심 책임 | E-Torch 특화 설정 | 의존성 |
+|--------|-----------|------------------|--------|
+| **eslint-config** | 코드 품질 규칙 | Standard JS + TSESLint | 없음 |
+| **core** | 타입 정의, 상수 | 구독 모델 타입, 차트 타입 | 없음 |
+| **ui** | 기본 UI 컴포넌트 | Shadcn/UI + CSS-first | core, utils |
+| **charts** | 차트 렌더링 | 5가지 차트 + LTTB | core, ui, utils, data-sources |
+| **dashboard** | 대시보드 관리 | react-grid-layout + 위젯 | core, ui, charts, data-sources |
+| **data-sources** | 데이터 연동 | KOSIS/ECOS 어댑터 | core, utils |
+| **utils** | 유틸리티 함수 | 경제지표 포맷터 | 없음 |
+| **state** | 상태 관리 | Zustand + TanStack Query | core, utils, data-sources |
+| **server-api** | API 연동 | Next.js 15 API 핸들러 | core, utils |
+
+### 5.2 ESLint Config 패키지
 
 ```javascript
-// packages/eslint-config/next.mjs
-import { config as baseConfig } from './base.mjs'
-import pluginNext from "@next/eslint-plugin-next"
-import pluginReactHooks from "eslint-plugin-react-hooks"
-import tseslint from "typescript-eslint"
+// packages/eslint-config/base.mjs
+import standardJs from '@seungwoo321/eslint-plugin-standard-js'
+import tseslint from 'typescript-eslint'
 
-export const nextJsConfig = [
-  ...baseConfig,
-  tseslint.configs.recommended,
+export const config = [
   {
-    plugins: {
-      "@next/next": pluginNext,
-    },
-    rules: {
-      ...pluginNext.configs.recommended.rules,
-      ...pluginNext.configs["core-web-vitals"].rules,
-    },
+    ignores: ['apps/web/app/components/ui/*'] // Shadcn/UI 제외
   },
   {
-    plugins: {
-      "react-hooks": pluginReactHooks,
-    },
-    settings: { react: { version: "detect" } },
-    rules: {
-      ...pluginReactHooks.configs.recommended.rules,
-      "react/react-in-jsx-scope": "off",
-      "react/prop-types": "off"
-    }
+    files: ['**/*.{js,ts,jsx,tsx}'],
+    extends: [
+      ...standardJs.configs.recommended,
+      ...tseslint.configs.recommended
+    ]
   }
 ]
 ```
 
-### 5.2 `packages/core`
+### 5.3 Core 패키지 (타입 정의)
 
-`core` 패키지는 공통 타입과 인터페이스 정의:
+```typescript
+// packages/core/src/types/subscription.ts
+export type Plan = 'basic' | 'pro'
 
-- 다른 패키지에 의존하지 않음
-- 공통 타입, 상수, 인터페이스 정의
-- 모든 패키지에서 사용하는 기본 구조 제공
+export type PlanLimits = {
+  basic: { dashboards: 3, widgets: 6, indicators: 20, dataYears: 3 }
+  pro: { dashboards: -1, widgets: -1, indicators: 40, dataYears: -1 }
+}
 
-### 5.3 `packages/ui`
+// packages/core/src/types/chart.ts
+export type ChartType = 'timeSeries' | 'bar' | 'scatter' | 'radar' | 'radialBar'
+export type DataSource = 'KOSIS' | 'ECOS'
+```
 
-`ui` 패키지는 기본 UI 컴포넌트만 담당합니다:
+### 5.4 UI 패키지 (Shadcn/UI 통합)
 
-- 재사용 가능한 기본 컴포넌트 제공
-- Shadcn/UI 기반 컴포넌트 통합
-- 클라이언트 컴포넌트와 서버 래퍼 관리
-- 도메인 로직 포함하지 않음
+```typescript
+// packages/ui/src/components/Button.tsx
+"use client"
+import { cva } from "class-variance-authority"
 
-### 5.4 `packages/charts`
+const buttonVariants = cva(
+  "inline-flex items-center justify-center rounded-md text-sm font-medium",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+      }
+    }
+  }
+)
+```
 
-`charts` 패키지는 차트 관련 모든 기능 담당:
+### 5.5 Charts 패키지 (성능 최적화)
 
-- 차트 컴포넌트 구현
-- 차트 렌더링 로직
-- 차트 에디터 기능
-- 차트별 옵션 관리
+```typescript
+// packages/charts/src/hooks/useLTTBSampling.ts
+export const useLTTBSampling = (data: DataPoint[], threshold = 1000) => {
+  return useMemo(() => {
+    if (data.length <= threshold) return data
+    return lttbDownsampling(data, threshold)
+  }, [data, threshold])
+}
 
-### 5.5 `packages/dashboard`
+// packages/charts/src/components/ChartRenderer.tsx
+export const ChartRenderer = memo(({ data, type, options }) => {
+  const sampledData = useLTTBSampling(data, 1000)
+  // 차트 렌더링 로직
+})
+```
 
-`dashboard` 패키지는 대시보드 관련 모든 기능 담당:
+### 5.6 Dashboard 패키지 (react-grid-layout)
 
-- 대시보드 컴포넌트 구현
-- 대시보드 그리드 시스템
-- 대시보드 CRUD 기능
-- 레이아웃 관리 기능
+```typescript
+// packages/dashboard/src/components/DashboardGrid.tsx
+const gridProps = {
+  cols: { lg: 12, md: 8, sm: 4 },
+  breakpoints: { lg: 1200, md: 768, sm: 0 },
+  
+  // E-Torch 성능 최적화
+  onDragStart: () => setChartRenderingEnabled(false),
+  onDragStop: debounce(() => setChartRenderingEnabled(true), 200),
+  onResizeStop: debounce(() => setChartRenderingEnabled(true), 300)
+}
+```
 
-### 5.6 `packages/data-sources`
+### 5.7 Data-Sources 패키지 (어댑터 패턴)
 
-`data-sources` 패키지는 데이터 통합 담당:
+```typescript
+// packages/data-sources/src/adapters/BaseAdapter.ts
+export abstract class BaseAdapter {
+  abstract fetchData(indicator: string, period: string): Promise<DataPoint[]>
+  abstract getAvailableIndicators(): Indicator[]
+  abstract getSupportedPeriods(indicator: string): Period[]
+}
 
-- 다양한 경제지표 데이터 소스 연결
-- 데이터 정규화 및 변환
-- 쿼리 관리 기능
+// KOSIS: M,Q,A만 지원 / ECOS: D,M,Q,A 지원
+export class KOSISAdapter extends BaseAdapter {
+  getSupportedPeriods() { return ['M', 'Q', 'A'] }
+}
+```
 
-### 5.7 `packages/utils`
+### 5.8 State 패키지 (상태 분리)
 
-`utils` 패키지는 공통 유틸리티 제공:
+```typescript
+// packages/state/src/stores/dashboard.ts - 클라이언트 상태
+export const useDashboardStore = create(
+  persist(
+    (set) => ({
+      editMode: false,
+      selectedWidget: null
+    }),
+    { name: 'dashboard-state' }
+  )
+)
 
-- 데이터 포맷팅
-- 유효성 검사
-- 헬퍼 함수
+// packages/state/src/hooks/useIndicators.ts - 서버 상태
+export const useIndicators = (source: DataSource) => {
+  return useQuery({
+    queryKey: ['indicators', source],
+    queryFn: () => getIndicators(source),
+    staleTime: 24 * 60 * 60 * 1000 // 경제지표는 24시간 캐시
+  })
+}
+```
 
-### 5.8 `packages/state`
+### 5.9 Utils 패키지 (경제지표 특화)
 
-`state` 패키지는 상태 관리 담당:
+```typescript
+// packages/utils/src/formatters.ts
+export const formatCurrency = (value: number, currency = 'KRW') => {
+  return new Intl.NumberFormat('ko-KR', {
+    style: 'currency',
+    currency
+  }).format(value)
+}
 
-- Zustand 기반 클라이언트 상태
-- Tanstack Query 기반 서버 상태
-- 상태 관리 패턴 통합
+export const formatPercentage = (value: number, decimals = 2) => {
+  return `${value.toFixed(decimals)}%`
+}
+```
 
-### 5.9 `packages/server-api`
+### 5.10 Server-API 패키지 (Next.js 15)
 
-`server-api` 패키지는 서버 API 연동 담당:
+```typescript
+// packages/server-api/src/handlers/indicators.ts
+import { NextRequest } from 'next/server'
 
-- API 경로 핸들러
-- 서버 액션 구현
-- 미들웨어 관리
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const source = searchParams.get('source') as DataSource
+  
+  // 구독 플랜 검증 (< 10ms)
+  const planLimits = await checkUserPlan(request)
+  const indicators = await getIndicators(source, planLimits)
+  
+  return Response.json(indicators)
+}
+```
+
+### 5.11 패키지 빌드 설정
+
+```json
+// packages/*/package.json 공통 설정
+{
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0"
+  }
+}
+```
 
 ## 6. 인증 아키텍처
 
