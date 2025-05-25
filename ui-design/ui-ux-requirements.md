@@ -50,7 +50,7 @@
 - **시리즈**: 차트 내 표시되는 데이터 집합
 - **주기**: 데이터의 수집 주기(일간, 월간, 분기, 연간)
 - **MVP 지표**: 무료 플랜에서 제공하는 핵심 20개 경제지표 (KOSIS 12개, ECOS 8개)
-- **Pro 지표**: 유료 플랜에서 추가 제공하는 20개 경제지표 (전체 40개 지표)
+- **Pro 지표**: 유료 플랜에서 제공하는 전체 40개 경제지표 (Basic 20개 + Pro 추가 20개)
 
 #### 사용자 집단 정의
 
@@ -212,7 +212,7 @@
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
-| TO-001 | Tooltip Mode | 툴팁 표시 방식 | 선택 | default | default, active, hidden | Time Series, Bar Chart, Scatter Chart, Radar Chart, Radial Bar Chart |
+| TO-001 | Tooltip Mode | 툴팁 표시 방식 | 선택 | default | default, active, hidden | TimeSeries, BarChart, ScatterChart, RadarChart, RadialBarChart |
 | TO-002 | Max Width | 툴팁의 최대 너비 | 숫자 | 160 | 60-500px | Time Series, Bar Chart, Scatter Chart, Radar Chart, Radial Bar Chart |
 | TO-003 | Cursor Style | 커서 스타일 설정 | 선택 | solid | solid, dash | Time Series, Bar Chart, Scatter Chart |
 | TO-004 | Dash Pattern | dash 선택 시 대시 패턴 | 문자열 | "2,2" | 형식: "숫자,숫자" | Time Series |
@@ -445,7 +445,7 @@
   - Panel Options
   - Tooltip Options
   - Legend Options
-  - Radial Bar Chart Options
+  - RadialBarChart Options  
   - 데이터 소스 설정
 
 #### 3.4.6 Text (사용자 정의)
@@ -1262,10 +1262,10 @@
 | 기능 ID | 기능명 | 설명 | 데스크톱 (1200px+) | 태블릿 (768px-1199px) | 모바일 (~767px) | UI 컴포넌트 |
 |---------|--------|------|-------------------|---------------------|-----------------|------------|
 | DEL-001 | 편집 툴바 컨테이너 | 상단 편집 도구 영역 | 높이 **64px** | 높이 **56px** (아이콘 축소) | **상하 2줄 분할** | Toolbar |
-| DEL-002 | 위젯 추가 버튼 | 새 위젯 생성 드롭다운 | 좌측 시작, 너비 100px | 좌측 시작, 너비 80px | 첫째 줄 좌측 | DropdownMenu |
+| DEL-002 | 위젯 추가 버튼 | 새 위젯 생성 드롭다운 | 좌측 시작, 너비 120px | 좌측 시작, 너비 100px | 첫째 줄 좌측, 너비 80px | DropdownMenu |
 | DEL-003 | 레이아웃 도구 | 자동 정렬, 실행취소/재실행 | 위젯 추가 우측 | 아이콘만 표시 | 첫째 줄 우측 | ButtonGroup |
 | DEL-004 | 편집 상태 표시 | "편집 중..." 인디케이터 | 중앙 영역 | 중앙 영역 | 둘째 줄 좌측 | StatusIndicator |
-| DEL-005 | 저장/취소 버튼 | 편집 완료 액션 | 우측 끝, 각 60px | 우측 끝, 각 50px | 둘째 줄 우측 | ButtonGroup |
+| DEL-005 | 저장/취소 버튼 | 편집 완료 액션 | 우측 끝, 각 80px | 우측 끝, 각 70px | 둘째 줄 우측, 각 60px | ButtonGroup |
 
 #### 7.3.2 편집 영역 레이아웃
 
