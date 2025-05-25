@@ -231,9 +231,9 @@ graph TD
 
 이 아키텍처는 경제지표 시각화의 특수성과 구독 모델의 복잡성을 모두 고려하여 설계되었으며, 성능과 확장성을 동시에 보장합니다.
 
-# 2. 기술 스택
+## 2. 기술 스택
 
-## 2.1 핵심 기술 스택 (E-Torch 특화)
+### 2.1 핵심 기술 스택 (E-Torch 특화)
 
 | 영역 | 기술 | 버전 | E-Torch 특화 설정 |
 |------|------|------|------------------|
@@ -247,9 +247,9 @@ graph TD
 | **폼/검증** | React Hook Form + Zod | 7.56.4 + 3.25.28 | 경제지표 스키마 검증 |
 | **테스트** | Vitest + Playwright | 1.x + 1.40+ | 차트 시각적 회귀 테스트 |
 
-## 2.2 E-Torch 특화 구현 설정
+### 2.2 E-Torch 특화 구현 설정
 
-### Tailwind CSS 4 (CSS-first)
+#### Tailwind CSS 4 (CSS-first)
 
 ```css
 /* globals.css */
@@ -281,7 +281,7 @@ graph TD
 }
 ```
 
-### 성능 임계값 및 최적화
+#### 성능 임계값 및 최적화
 
 | 기능 | 임계값 | 최적화 방법 |
 |------|--------|------------|
@@ -291,7 +291,7 @@ graph TD
 | **권한 검증** | < 10ms | 클라이언트 캐시 5분 유지 |
 | **데이터 캐싱** | 경제지표 24시간 | TanStack Query staleTime |
 
-### 구독 모델 런타임 제어
+#### 구독 모델 런타임 제어
 
 ```typescript
 // packages/state/src/auth.ts
@@ -317,7 +317,7 @@ export const useFeatureGate = (feature: keyof typeof FEATURE_GATES.basic) => {
 }
 ```
 
-### react-grid-layout 최적화 설정
+#### react-grid-layout 최적화 설정
 
 ```typescript
 // packages/dashboard/src/components/DashboardGrid.tsx
@@ -334,7 +334,7 @@ const gridLayoutProps = {
 }
 ```
 
-### 경제지표 데이터 처리
+#### 경제지표 데이터 처리
 
 ```typescript
 // packages/charts/src/utils/downsampling.ts
@@ -349,9 +349,9 @@ export const processChartData = (data: DataPoint[]) => {
 }
 ```
 
-## 2.3 개발 환경 설정
+### 2.3 개발 환경 설정
 
-### ESLint 설정 (Flat Config)
+#### ESLint 설정 (Flat Config)
 
 ```javascript
 // eslint.config.mjs
@@ -369,7 +369,7 @@ export default [
 ]
 ```
 
-### TypeScript 설정
+#### TypeScript 설정
 
 ```json
 {
