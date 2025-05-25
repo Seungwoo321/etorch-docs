@@ -195,11 +195,11 @@
 | NS-007 | 구독 갱신 알림 | **구독 갱신 예정 알림 (7일 전)** | 자동 | 활성화 | **Pro 구독자만 해당** | 이메일, 인앱 알림 |
 | NS-008 | 플랜 제한 알림 | **무료 플랜 제한 도달 알림** | 자동 | 활성화 | **Basic 사용자만 해당** | 배너, 모달 |
 
-## 3. 위젯 컴포넌트 상세 기능 명세
+# 3. 위젯 컴포넌트 상세 기능 명세
 
-### 3.1 공통 옵션 컴포넌트
+## 3.1 공통 옵션 컴포넌트
 
-#### 3.1.1 Panel Options
+### 3.1.1 Panel Options
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
@@ -207,26 +207,26 @@
 | PO-002 | Description | 제목 아래에 작은 글자로 표시되는 설명 텍스트 | 텍스트 | 빈 문자열 | 최대 200자 | 모든 컴포넌트 |
 | PO-003 | 백그라운드 투명 여부 | 패널 배경의 투명도 설정 | 불리언 | false | true/false | 모든 컴포넌트 |
 
-#### 3.1.2 Tooltip Options
+### 3.1.2 Tooltip Options
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
-| TO-001 | Tooltip Mode | 툴팁 표시 방식 | 선택 | default | default, active, hidden | Time Series, Bar Chart, Pie Chart, Scatter Chart, Radar Chart, Radial Bar Chart |
-| TO-002 | Max Width | 툴팁의 최대 너비 | 숫자 | 160 | 60-500px | Time Series, Bar Chart, Pie Chart, Scatter Chart, Radar Chart, Radial Bar Chart |
+| TO-001 | Tooltip Mode | 툴팁 표시 방식 | 선택 | default | default, active, hidden | Time Series, Bar Chart, Scatter Chart, Radar Chart, Radial Bar Chart |
+| TO-002 | Max Width | 툴팁의 최대 너비 | 숫자 | 160 | 60-500px | Time Series, Bar Chart, Scatter Chart, Radar Chart, Radial Bar Chart |
 | TO-003 | Cursor Style | 커서 스타일 설정 | 선택 | solid | solid, dash | Time Series, Bar Chart, Scatter Chart |
 | TO-004 | Dash Pattern | dash 선택 시 대시 패턴 | 문자열 | "2,2" | 형식: "숫자,숫자" | Time Series |
 | TO-005 | Cursor Width | 커서의 두께 | 숫자 | 2 | 1-10px | Time Series |
 
-#### 3.1.3 Legend Options
+### 3.1.3 Legend Options
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
-| LG-001 | Visibility | 범례 표시 여부 | 불리언 | true | true/false | Time Series, Bar Chart, Pie Chart, Scatter Chart, Radar Chart, Radial Bar Chart |
-| LG-002 | Layout | 범례 레이아웃 방향 | 선택 | horizontal | horizontal, vertical | Time Series, Bar Chart, Pie Chart, Scatter Chart, Radar Chart, Radial Bar Chart |
-| LG-003 | Horizontal Align | 수평 정렬 방식 | 선택 | left | left, center, right | Time Series, Bar Chart, Pie Chart, Scatter Chart, Radar Chart, Radial Bar Chart |
-| LG-004 | Vertical Align | 수직 정렬 방식 | 선택 | bottom | top, middle, bottom | Time Series, Bar Chart, Pie Chart, Scatter Chart, Radar Chart, Radial Bar Chart |
+| LG-001 | Visibility | 범례 표시 여부 | 불리언 | true | true/false | Time Series, Bar Chart, Scatter Chart, Radar Chart, Radial Bar Chart |
+| LG-002 | Layout | 범례 레이아웃 방향 | 선택 | horizontal | horizontal, vertical | Time Series, Bar Chart, Scatter Chart, Radar Chart, Radial Bar Chart |
+| LG-003 | Horizontal Align | 수평 정렬 방식 | 선택 | left | left, center, right | Time Series, Bar Chart, Scatter Chart, Radar Chart, Radial Bar Chart |
+| LG-004 | Vertical Align | 수직 정렬 방식 | 선택 | bottom | top, middle, bottom | Time Series, Bar Chart, Scatter Chart, Radar Chart, Radial Bar Chart |
 
-#### 3.1.4 X-Axis Options
+### 3.1.4 X-Axis Options
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
@@ -241,7 +241,7 @@
 | XA-009 | Show Tick | 눈금 표시 여부 | 불리언 | true | true/false | Time Series, Bar Chart, Scatter Chart |
 | XA-010 | Tick Size | 눈금 크기 | 숫자 | 6 | 0-20px | Time Series, Bar Chart, Scatter Chart |
 
-#### 3.1.5 Y-Axis Options (Primary)
+### 3.1.5 Y-Axis Options (Primary)
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
@@ -257,7 +257,7 @@
 | YA-010 | Tick Size | 눈금 크기 | 숫자 | 6 | 0-20px | Time Series, Bar Chart, Scatter Chart |
 | YA-011 | Label Position | 축 레이블 위치 | 선택 | insideLeft | insideLeft, insideTopLeft, insideBottomLeft | Time Series, Bar Chart, Scatter Chart |
 
-#### 3.1.6 Y-Axis Options (Secondary)
+### 3.1.6 Y-Axis Options (Secondary)
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
@@ -273,9 +273,9 @@
 | YAS-010 | Tick Size | 눈금 크기 | 숫자 | 6 | 0-20px | Time Series |
 | YAS-011 | Label Position | 축 레이블 위치 | 선택 | insideRight | insideRight, insideTopRight, insideBottomRight | Time Series |
 
-### 3.2 위젯별 전용 옵션 컴포넌트
+## 3.2 위젯별 전용 옵션 컴포넌트
 
-#### 3.2.1 Graph Styles (Time Series)
+### 3.2.1 Graph Styles (Time Series)
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
@@ -284,7 +284,7 @@
 | GS-003 | Global Fill Opacity | 전체 채우기 투명도 기본값 | 숫자 | 35 | 0-100% | Time Series |
 | GS-004 | Series Override | 시리즈별 스타일 개별 설정 | 시리즈 선택기 | - | 추가된 시리즈만 | Time Series |
 
-#### 3.2.2 Bar Styles (BarChart)
+### 3.2.2 Bar Styles (BarChart)
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
@@ -292,7 +292,7 @@
 | BS-002 | Global Bar Width | 전체 바 너비 기본값 | 숫자 | 20 | 5-100px | BarChart |
 | BS-003 | Series Override | 시리즈별 스타일 개별 설정 | 시리즈 선택기 | - | 추가된 시리즈만 | BarChart |
 
-#### 3.2.3 Scatter Chart Options
+### 3.2.3 Scatter Chart Options
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
@@ -303,7 +303,7 @@
 | SC-005 | Regression Type | 회귀선 유형 | 선택 | linear | linear, polynomial, exponential | Scatter Chart |
 | SC-006 | XY Label | XY 좌표 레이블 표시 | 불리언 | false | true/false | Scatter Chart |
 
-#### 3.2.4 Radar Chart Options
+### 3.2.4 Radar Chart Options
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
@@ -314,7 +314,7 @@
 | RC-005 | Show Data Points | 데이터 포인트 표시 | 불리언 | true | true/false | Radar Chart |
 | RC-006 | Normalize Data | 데이터 정규화 | 불리언 | true | true/false | Radar Chart |
 
-#### 3.2.5 Radial Bar Chart Options
+### 3.2.5 Radial Bar Chart Options
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
@@ -329,7 +329,7 @@
 | RB-009 | Use Gradient | 그라데이션 사용 여부 | 불리언 | false | true/false | Radial Bar Chart |
 | RB-010 | Gradient Colors | 그라데이션 색상 범위 | 색상 배열 | ["#8884d8", "#82ca9d"] | 유효한 색상 코드 | Radial Bar Chart |
 
-#### 3.2.6 Text Widget Options
+### 3.2.6 Text Widget Options
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|----------------|
@@ -344,28 +344,28 @@
 | TX-009 | Text Align | 텍스트 정렬 | 선택 | left | left, center, right, justify | Text 공통 |
 | TX-010 | Text Color | 텍스트 색상 | 색상 선택기 | "#000000" | 유효한 색상 코드 | Text 공통 |
 
-### 3.3 데이터 소스 설정
+## 3.3 데이터 소스 설정
 
-#### 3.3.1 데이터 소스 적용 위젯
+### 3.3.1 데이터 소스 적용 위젯
 
 - **다중 시리즈 지원**: TimeSeries, BarChart, ScatterChart, RadarChart, RadialBarChart
 - **단일 데이터 소스**: Text-데이터기반 (시리즈 식별자 불필요)
 - **데이터 소스 미적용**: Text-사용자정의 (데이터 소스 불필요)
 
-#### 3.3.2 전체 위젯 공통 설정
+### 3.3.2 전체 위젯 공통 설정
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
-| CS-001 | 조회 기간 설정 | 차트에 표시할 데이터의 기간 범위 | 날짜 범위 | 최근 1년 | 유효한 날짜 범위 | 모든 차트 컴포넌트 |
-| CS-002 | 조회 주기 선택 | 데이터 주기 | 선택 | 월간(M) | 일간(D), 월간(M), 분기(Q), 연간(A) | 모든 차트 컴포넌트 |
+| CS-001 | 조회 기간 설정 | 차트에 표시할 데이터의 기간 범위 | 날짜 범위 | 최근 1년 | **Basic: 최근 3년, Pro: 전체 기간** | 모든 차트 컴포넌트 |
+| CS-002 | 조회 주기 선택 | 데이터 주기 | 선택 | 월간(M) | **KOSIS: M,Q,A / ECOS: D,M,Q,A / OECD: TBD** | 모든 차트 컴포넌트 |
 
-#### 3.3.3 지표별 데이터 소스 설정
+### 3.3.3 지표별 데이터 소스 설정
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
-| DS-001 | 데이터 출처 | 데이터 제공 출처 | 선택 | KOSIS | KOSIS, ECOS, OECD | 모든 차트 컴포넌트 |
-| DS-002 | 지표 코드 | 조회할 지표 코드 | 텍스트 | 빈 문자열 | 유효한 지표 코드 | 모든 차트 컴포넌트 |
-| DS-003 | 지표 검색 | 지표명/코드로 검색 | 검색 입력 | 빈 문자열 | - | 모든 차트 컴포넌트 |
+| DS-001 | 데이터 출처 | 데이터 제공 출처 | 선택 | KOSIS | **KOSIS, ECOS (현재 지원) / OECD (향후 확장)** | 모든 차트 컴포넌트 |
+| DS-002 | 지표 코드 | 조회할 지표 코드 | 텍스트 | 빈 문자열 | **Basic: MVP 20개 지표, Pro: 전체 40개 지표** | 모든 차트 컴포넌트 |
+| DS-003 | 지표 검색 | 지표명/코드로 검색 | 검색 입력 | 빈 문자열 | **구독 플랜별 검색 결과 필터링** | 모든 차트 컴포넌트 |
 | DS-004 | 시리즈 이름 | 차트에 표시될 시리즈 이름 | 텍스트 | 지표명 | 최대 30자 | 모든 차트 컴포넌트 |
 | DS-005 | 시리즈 색상 | 차트에 표시될 시리즈 색상 | 색상 선택기 | 자동 할당 | 유효한 색상 코드 | 모든 차트 컴포넌트 |
 | DS-006 | Y축 선택 | 시리즈가 표시될 Y축 (주/보조) | 선택 | Primary | Primary, Secondary | Time Series, BarChart, ScatterChart |
@@ -374,26 +374,26 @@
 | DS-009 | 시리즈 제거 | 현재 시리즈 제거 | 버튼 | - | - | 모든 차트 컴포넌트 |
 | DS-010 | 데이터 시차 | 시계열 데이터 시차 적용 | 숫자 | 0 | -12 ~ 12 (개월/분기/년) | Scatter Chart, Time Series |
 
-#### 3.3.4 시리즈 추가 기능
+### 3.3.4 시리즈 추가 기능
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
 | AS-001 | 시리즈 추가 | 새로운 데이터 시리즈 추가 | 버튼 | - | 최대 5개 시리즈 | 모든 차트 컴포넌트 |
 
-#### 3.3.5 기간별 비교 설정
+### 3.3.5 기간별 비교 설정 (Pro 플랜 전용)
 
 | 기능 ID | 기능명 | 설명 | 입력 유형 | 기본값 | 제약조건 | 적용 가능 위젯 |
 |---------|--------|------|-----------|--------|----------|-------------------|
-| CP-001 | 비교 활성화 | 기간 비교 기능 활성화 | 불리언 | false | true/false | Time Series, Bar Chart |
+| CP-001 | 비교 활성화 | 기간 비교 기능 활성화 | 불리언 | false | **Pro 플랜만 사용 가능** | Time Series, Bar Chart |
 | CP-002 | 비교 기간 유형 | 비교할 기간 유형 | 선택 | 전년동기 | 전년동기, 이전기간, 사용자정의 | Time Series, Bar Chart |
 | CP-003 | 사용자 정의 기간 | 사용자 정의 비교 기간 | 날짜 범위 | - | 유효한 날짜 범위 | Time Series, Bar Chart |
 | CP-004 | 비교 시각화 방식 | 비교 결과 표시 방법 | 선택 | 중첩 | 중첩, 나란히, 차이값 | Time Series, Bar Chart |
 | CP-005 | 기준기간 스타일 | 기준기간 시각화 스타일 | 복합 | { color: "#1f77b4", lineStyle: "solid" } | 색상, 선 스타일 등 | Time Series |
 | CP-006 | 비교기간 스타일 | 비교기간 시각화 스타일 | 복합 | { color: "#ff7f0e", lineStyle: "dashed" } | 색상, 선 스타일 등 | Time Series |
 
-### 3.4 위젯 유형별 활성화 옵션 영역
+## 3.4 위젯 유형별 활성화 옵션 영역
 
-#### 3.4.1 TimeSeries
+### 3.4.1 TimeSeries
 
 - **활성화 옵션 영역**:
   - Panel Options
@@ -403,9 +403,10 @@
   - Y-Axis Options (Primary)
   - Y-Axis Options (Secondary)
   - Graph Styles (Time Series) - 시리즈별 스타일 매핑 및 전역 설정
-  - 데이터 소스 설정 - 순수 데이터 연결만
+  - 데이터 소스 설정
+  - 기간별 비교 설정 (Pro 전용)
 
-#### 3.4.2 BarChart
+### 3.4.2 BarChart
 
 - **활성화 옵션 영역**:
   - Panel Options
@@ -415,8 +416,9 @@
   - Y-Axis Options (Primary)
   - Bar Styles (BarChart) - 시리즈별 스타일 매핑
   - 데이터 소스 설정
+  - 기간별 비교 설정 (Pro 전용)
 
-#### 3.4.3 ScatterChart
+### 3.4.3 ScatterChart
 
 - **활성화 옵션 영역**:
   - Panel Options
@@ -427,7 +429,7 @@
   - Scatter Chart Options
   - 데이터 소스 설정
 
-#### 3.4.4 RadarChart
+### 3.4.4 RadarChart
 
 - **활성화 옵션 영역**:
   - Panel Options
@@ -436,7 +438,7 @@
   - Radar Chart Options
   - 데이터 소스 설정
 
-#### 3.4.5 RadialBarChart
+### 3.4.5 RadialBarChart
 
 - **활성화 옵션 영역**:
   - Panel Options
@@ -445,22 +447,22 @@
   - Radial Bar Chart Options
   - 데이터 소스 설정
 
-#### 3.4.6 Text (사용자 정의)
+### 3.4.6 Text (사용자 정의)
 
 - **활성화 옵션 영역**:
   - Panel Options
-  - Text Component Options (사용자 정의 모드)
+  - Text Widget Options (사용자 정의 모드)
 
-#### 3.4.7 Text (데이터 기반)
+### 3.4.7 Text (데이터 기반)
 
 - **활성화 옵션 영역**:
   - Panel Options
-  - Text Component Options (데이터 기반 모드)
+  - Text Widget Options (데이터 기반 모드)
   - 데이터 소스 설정
 
-### 3.5 옵션 관계 및 의존성 규칙
+## 3.5 옵션 관계 및 의존성 규칙
 
-#### 3.5.1 위젯 유형에 따른 옵션 활성화 규칙
+### 3.5.1 위젯 유형에 따른 옵션 활성화 규칙
 
 | 위젯 유형 | 규칙 ID | 규칙 설명 |
 |--------------|---------|----------|
@@ -472,18 +474,28 @@
 | Time Series | R-TS-005 | 데이터 시리즈의 개별 스타일(DS-007)은 해당 시리즈에만 적용됨 |
 | BarChart | R-BC-001 | 시리즈별 바 스타일 매핑(BS-001)에 따라 개별 시리즈 스타일 적용 |
 
-#### 3.5.2 데이터 소스 의존성 규칙
+### 3.5.2 데이터 소스 의존성 규칙
 
 | 규칙 ID | 규칙 설명 |
 |---------|----------|
 | R-DS-001 | 지표 코드(DS-002)는 선택된 데이터 출처(DS-001)에 따라 유효한 코드만 선택 가능 |
 | R-DS-002 | 주기 선택(CS-002)은 선택된 모든 지표 코드가 지원하는 주기만 활성화 |
-| R-DS-003 | KOSIS 출처 지표는 M, Q, A 주기만 지원, ECOS는 모든 주기(D, M, Q, A) 지원 |
+| R-DS-003 | **KOSIS: M,Q,A만 지원 / ECOS: D,M,Q,A 지원 / OECD: 향후 확장 시 정의** |
 | R-DS-004 | 일간(D) 데이터는 최대 1년 기간만 조회 가능, 다른 주기는 더 긴 기간 지원 |
 | R-DS-005 | 조회 주기(CS-002)와 기간(CS-001)은 차트의 모든 시리즈에 공통 적용됨 |
 | R-DS-006 | 시리즈 추가 시 상단의 공통 설정(조회 기간, 조회 주기)은 모든 시리즈에 동일하게 적용됨 |
 
-#### 3.5.3 스타일-데이터 연결 의존성 규칙
+### 3.5.3 구독 플랜 의존성 규칙
+
+| 규칙 ID | 규칙 설명 |
+|---------|----------|
+| R-SUB-001 | **Basic 플랜: MVP 20개 지표만 접근 가능, 최근 3년 데이터만 조회** |
+| R-SUB-002 | **Pro 플랜: 전체 40개 지표 접근 가능, 전체 기간 데이터 조회** |
+| R-SUB-003 | **기간별 비교 기능(CP-001~006)은 Pro 플랜만 사용 가능** |
+| R-SUB-004 | **OECD 데이터 소스는 현재 개발 중으로 모든 플랜에서 비활성화** |
+| R-SUB-005 | **지표 검색(DS-003) 시 구독 플랜에 따라 검색 결과 필터링** |
+
+### 3.5.4 스타일-데이터 연결 의존성 규칙
 
 | 규칙 ID | 규칙 설명 |
 |---------|----------|
@@ -491,6 +503,48 @@
 | R-ST-002 | 시리즈 추가/삭제 시 옵션 패널의 스타일 매핑도 자동 동기화됨 |
 | R-ST-003 | TimeSeries에서 시리즈별 그래프 스타일(GS-001)은 해당 시리즈 식별자와 연결됨 |
 | R-ST-004 | Text-데이터기반 위젯은 단일 데이터 소스만 사용하므로 시리즈 식별자 불필요 |
+
+## 3.6 기술적 구현 고려사항
+
+### 3.6.1 Recharts 라이브러리 기반 구현
+
+- **차트 컴포넌트 매핑**:
+  - TimeSeries → LineChart, AreaChart, BarChart (혼합 가능)
+  - BarChart → BarChart
+  - ScatterChart → ScatterChart
+  - RadarChart → RadarChart
+  - RadialBarChart → RadialBarChart
+
+- **옵션 호환성**: 모든 차트 옵션은 Recharts 2.15.3+ 버전에서 지원되는 속성 기반
+
+- **성능 최적화**:
+  - 옵션 변경 시 차트 재렌더링 최소화
+  - React.memo 기반 불필요한 리렌더링 방지
+  - 대용량 데이터 처리 시 가상화 적용
+
+### 3.6.2 구독 플랜 연동
+
+- **런타임 권한 검증**:
+  - 지표 선택 시 실시간 플랜 검증
+  - 기간 설정 시 플랜별 제한 적용
+  - Pro 전용 기능 접근 시 업그레이드 안내
+
+- **UI 상태 관리**:
+  - 플랜별 비활성화 상태 시각적 표시
+  - 제한 도달 시 명확한 안내 메시지
+  - 업그레이드 유도 UX 통합
+
+### 3.6.3 확장성 고려
+
+- **OECD 데이터 소스**:
+  - UI 구조상 준비되어 있으나 현재 비활성화
+  - 향후 활성화 시 기존 코드 수정 최소화
+  - 주기 정보 등은 추후 정의
+
+- **새로운 차트 유형**:
+  - 옵션 컴포넌트 구조 재사용 가능
+  - 위젯 유형별 활성화 규칙 확장 용이
+  - 데이터 소스 설정 구조 공통화
 
 ## 4. UI/UX 공통 요구사항
 
