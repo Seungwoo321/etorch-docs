@@ -75,11 +75,62 @@
 
 ### 3.2 데이터 소스 제약사항
 
+| 데이터 소스 | 현재 상태 | 지원 주기 | 제한사항 | UI 표시 |
+|------------|----------|----------|----------|--------|
+| **KOSIS** | ✅ 완전 지원 | M, Q, A | 무제한 기간 | 기본 선택 |
+| **ECOS** | ✅ 완전 지원 | D, M, Q, A | 일별은 1년만 | 주기별 제한 |
+| **OECD** | 🚧 향후 확장 | 미정 | 현재 비활성화 | 비활성화 + 툴팁 |
+
 ```typescript
-const DATA_SOURCE_CONSTRAINTS = {
-  KOSIS: { supportedPeriods: ['M', 'Q', 'A'], maxHistory: 'unlimited' },
-  ECOS: { supportedPeriods: ['D', 'M', 'Q', 'A'], dailyLimit: '1year' }
+// 데이터 소스 설정 (현재 + 향후)
+export const DATA_SOURCE_CONFIG = {
+  KOSIS: {
+    id: 'kosis',
+    name: '통계청 KOSIS',
+    status: 'active',
+    supportedPeriods: ['M', 'Q', 'A'] as const,
+    maxHistoryYears: null, // 무제한
+    apiEndpoint: '/api/kosis',
+    indicatorCount: { basic: 12, pro: 12 }
+  },
+  ECOS: {
+    id: 'ecos', 
+    name: '한국은행 ECOS',
+    status: 'active',
+    supportedPeriods: ['D', 'M', 'Q', 'A'] as const,
+    maxHistoryYears: { D: 1, M: null, Q: null, A: null }, // 일별만 1년 제한
+    apiEndpoint: '/api/ecos',
+    indicatorCount: { basic: 8, pro: 28 }
+  },
+  OECD: {
+    id: 'oecd',
+    name: 'OECD 통계',
+    status: 'planned', // 현재 미지원
+    supportedPeriods: [], // 향후 정의
+    maxHistoryYears: null,
+    apiEndpoint: '/api/oecd', // 준비만
+    indicatorCount: { basic: 0, pro: 0 },
+    plannedRelease: '2025-Q3' // 예상 출시일
+  }
 } as const
+
+// UI에서 사용할 데이터 소스 필터링
+export const getAvailableDataSources = () => {
+  return Object.entries(DATA_SOURCE_CONFIG)
+    .filter(([_, config]) => config.status === 'active')
+    .map(([key, config]) => ({ key, ...config }))
+}
+
+// 지표 검색 시 소스별 필터링
+export const getIndicatorsBySource = (source: keyof typeof DATA_SOURCE_CONFIG, plan: 'basic' | 'pro') => {
+  const config = DATA_SOURCE_CONFIG[source]
+  if (config.status !== 'active') return []
+  
+  const maxCount = config.indicatorCount[plan]
+  return indicators.filter(indicator => 
+    indicator.source === source
+  ).slice(0, maxCount)
+}
 ```
 
 ### 3.3 7가지 위젯 시스템
@@ -121,7 +172,40 @@ core (타입, 상수)
 
 ## 5. 성능 최적화
 
-### 5.1 react-grid-layout 최적화
+### 5.1 핵심 성능 목표
+
+| 지표 | 목표값 | 측정 방법 | 구현 방법 |
+|------|--------|----------|----------|
+| **LCP** | < 2.5초 | Web Vitals API | 스켈레톤 UI + 지연 로딩 |
+| **FID** | < 100ms | Web Vitals API | debounce 300ms/200ms |
+| **CLS** | < 0.1 | Web Vitals API | 스켈레톤 UI 크기 고정 |
+| **INP** | < 200ms | Web Vitals API | 편집 중 차트 렌더링 비활성화 |
+| **차트 렌더링** | < 2초 | Performance API | LTTB 1000+ 임계값 |
+| **대시보드 로딩** | < 2초 | 사용자 타이밍 | Suspense + 점진적 로딩 |
+| **단일 지표 조회** | < 500ms | API 응답 모니터링 | SWR 캐싱 15분 |
+| **메모리 사용량** | < 200MB | Performance API | 위젯 언마운트 시 정리 |
+
+```typescript
+// 성능 임계값 상수
+export const PERFORMANCE_THRESHOLDS = {
+  LCP: 2500,     // ms
+  FID: 100,      // ms  
+  CLS: 0.1,      // score
+  CHART_RENDER: 2000, // ms
+  DASHBOARD_LOAD: 2000, // ms
+  API_RESPONSE: 500,    // ms
+  MEMORY_LIMIT: 200,    // MB
+} as const
+
+// 디바운싱 시간
+export const DEBOUNCE_TIMES = {
+  DRAG: 200,    // ms - 빠른 반응성
+  RESIZE: 300,  // ms - 정확성 우선
+  SEARCH: 300,  // ms - 검색 입력
+} as const
+```
+
+### 5.2 react-grid-layout 최적화
 
 | 설정 | 값 | 목적 |
 |------|----|----|
@@ -130,7 +214,7 @@ core (타입, 상수)
 | 터치 타겟 | 44×44px | 모바일 최적화 |
 | 그리드 컬럼 | 12/8/4 (데스크톱/태블릿/모바일) | 반응형 |
 
-### 5.2 차트 렌더링 최적화
+### 5.3 차트 렌더링 최적화
 
 | 조건 | 임계값 | 최적화 방법 |
 |------|--------|------------|
@@ -157,14 +241,40 @@ export const useAuthWithCache = () => {
 
 ### 6.2 플랜별 제한
 
-| 기능 | Basic | Pro |
-|------|-------|-----|
-| 대시보드 | 3개 | 무제한 |
-| 위젯 | 6개/대시보드 | 무제한 |
-| 지표 | 20개 (MVP) | 40개 (전체) |
-| 데이터 기간 | 최근 3년 | 전체 기간 |
-| 워터마크 | 표시 | 제거 가능 |
-| 대시보드 복사 | 불가 | 가능 |
+| 기능 | Basic (무료) | Pro (유료) | 기술 구현 |
+|------|-------------|-----------|----------|
+| **대시보드 수** | 3개 | 무제한 | DB 제약 + UI 진행바 |
+| **위젯 수** | 6개/대시보드 | 무제한 | react-grid-layout 제한 |
+| **경제지표** | 20개 (MVP) | 40개 (전체) | API 권한 검증 |
+| **데이터 기간** | 최근 3년 | 전체 기간 | DatePicker 비활성화 |
+| **워터마크** | "E-Torch로 제작됨" | 제거 가능 | CSS 오버레이 |
+| **대시보드 복사** | 불가 | 가능 | 버튼 비활성화 |
+| **임베드 코드** | 불가 | 가능 | Pro 전용 기능 |
+| **내보내기 품질** | 워터마크 포함 | 고해상도 | Canvas 렌더링 설정 |
+
+```typescript
+// 권한 검증 상수
+export const PLAN_LIMITS = {
+  basic: {
+    dashboards: 3,
+    widgets: 6,
+    indicators: 20,
+    dataYears: 3,
+    watermark: true,
+    copyDashboard: false,
+    embedCode: false
+  },
+  pro: {
+    dashboards: Infinity,
+    widgets: Infinity,
+    indicators: 40,
+    dataYears: Infinity,
+    watermark: false,
+    copyDashboard: true,
+    embedCode: true
+  }
+} as const
+```
 
 ### 6.3 토스페이먼츠 결제
 
@@ -180,10 +290,70 @@ paymentWidget.renderPaymentMethods('#payment-methods', {
 
 ### 7.1 워터마크 시스템
 
-| 플랜 | 워터마크 | 내보내기 품질 |
-|------|---------|-------------|
-| Basic | "E-Torch로 제작됨" 우하단 | 0.8 품질 |
-| Pro | 제거 가능 | 1.0 품질 고해상도 |
+| 플랜 | 워터마크 표시 | 내보내기 | 구현 위치 |
+|------|--------------|----------|----------|
+| **Basic** | "E-Torch로 제작됨" 우하단 고정 | 포함 | CSS 오버레이 |
+| **Pro** | 제거 가능 옵션 | 제거 가능 | 조건부 렌더링 |
+
+```typescript
+// 워터마크 컴포넌트
+interface WatermarkProps {
+  show: boolean
+  onExport?: boolean // 내보내기 시에만 표시
+}
+
+const Watermark = ({ show, onExport = false }: WatermarkProps) => {
+  if (!show) return null
+  
+  return (
+    <div 
+      className={cn(
+        "absolute bottom-2 right-2 z-50",
+        "bg-black/10 px-2 py-1 rounded text-xs text-gray-600",
+        onExport && "print:block", // 내보내기 시에만 출력
+        !onExport && "print:hidden" // 일반 화면에서는 숨김
+      )}
+    >
+      E-Torch로 제작됨
+    </div>
+  )
+}
+
+// 사용 예시
+const DashboardView = () => {
+  const { plan } = useSubscription()
+  const showWatermark = plan === 'basic'
+  
+  return (
+    <div className="relative">
+      {/* 대시보드 콘텐츠 */}
+      <DashboardGrid />
+      
+      {/* 워터마크 */}
+      <Watermark show={showWatermark} />
+    </div>
+  )
+}
+
+// 내보내기 시 워터마크 설정
+export const exportDashboard = async (format: 'png' | 'pdf') => {
+  const { plan } = useSubscription()
+  const includeWatermark = plan === 'basic'
+  
+  const canvas = await html2canvas(dashboardRef.current, {
+    // Basic 플랜: 워터마크 포함, 0.8 품질
+    // Pro 플랜: 워터마크 제거 가능, 1.0 품질
+    scale: plan === 'pro' ? 2 : 1.6, // 고해상도
+    useCORS: true,
+    backgroundColor: '#ffffff'
+  })
+  
+  // Pro 플랜에서 워터마크 제거 옵션 제공
+  if (plan === 'pro' && !includeWatermark) {
+    // 워터마크 없는 버전으로 내보내기
+  }
+}
+```
 
 ### 7.2 WCAG 2.1 AA 접근성
 
@@ -212,6 +382,41 @@ paymentWidget.renderPaymentMethods('#payment-methods', {
 | 데스크톱 1200px+ | 12컬럼 | 300×200px | 드래그 + 리사이즈 |
 | 태블릿 768-1199px | 8컬럼 | 250×180px | 드래그 + 리사이즈 |
 | 모바일 ~767px | 4컬럼 | 100% 너비 | 드래그만 |
+
+### 8.3 모바일 편집 제한사항
+
+| 화면 크기 | 드래그 | 리사이즈 | 구현 방법 |
+|----------|-------|---------|----------|
+| **데스크톱 1200px+** | ✅ 지원 | ✅ 핸들 | react-grid-layout 기본 |
+| **태블릿 768-1199px** | ✅ 지원 | ✅ 핸들 | 터치 최적화 핸들 |
+| **모바일 ~767px** | ✅ 지원 | ❌ 속성 패널만 | 풀스크린 모달 |
+
+```typescript
+// 모바일 편집 제한 구현
+const useResponsiveGridProps = () => {
+  const isMobile = useMediaQuery("(max-width: 767px)")
+  
+  return {
+    isDraggable: true, // 모든 화면에서 드래그 지원
+    isResizable: !isMobile, // 모바일에서만 리사이즈 비활성화
+    
+    // 모바일용 대체 리사이즈 (속성 패널)
+    ...(isMobile && {
+      onLayoutChange: (layout) => {
+        // 모바일에서는 드래그로만 위치 변경
+        // 크기는 속성 패널의 프리셋에서만 변경
+      }
+    })
+  }
+}
+
+// 모바일 속성 패널 - 크기 조절 프리셋
+const MOBILE_WIDGET_SIZES = {
+  small: { w: 4, h: 2 },   // 4컬럼 전체 너비
+  medium: { w: 4, h: 3 },  // 높이만 증가
+  large: { w: 4, h: 4 },   // 정사각형
+} as const
+```
 
 ## 9. 개발 도구 설정
 
