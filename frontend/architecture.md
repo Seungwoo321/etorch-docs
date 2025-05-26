@@ -111,11 +111,11 @@ export const DATA_SOURCE_CONFIG = {
   OECD: {
     id: 'oecd',
     name: 'OECD 통계',
-    status: 'planned',           // 명확히 향후 확장 예정
+    status: 'inactive',          // 현재 완전 비활성화
     supportedPeriods: ['M', 'Q', 'A'], // 계획된 주기
     indicatorCount: { basic: 0, pro: 0 }, // 현재 미제공
     plannedRelease: '2025-Q3',   // 출시 예정일
-    note: '현재 비활성화, UI에서 선택 불가'
+    note: '향후 확장 예정, 현재 UI에서 비활성화'
   }
 } as const
 
@@ -496,6 +496,10 @@ export const PLAN_LIMITS = {
     embedCode: false,
     exportScale: 1.6
   },
+  'pro-trial': {              // 기획서 SM-007: 7일 무료 체험
+    ...PLAN_LIMITS.pro,
+    trialDays: 7
+  },
   pro: {
     dashboards: Infinity,
     widgets: Infinity,
@@ -508,6 +512,27 @@ export const PLAN_LIMITS = {
     exportScale: 2.0
   }
 } as const
+```
+
+#### 6.2.1 프로모션 기능 (기획서 SM-007, SM-008)
+
+| 기능 | 기획서 명시 내용 | 구현 위치 | 기술적 제약 |
+|------|----------------|----------|------------|
+| **7일 무료 체험** | "Pro 플랜 전용, 신규 사용자만 가능" | 클라이언트 권한 체크 | 만료 시 자동 Basic 전환 |
+| **첫 달 50% 할인** | "신규 유료 구독 시 할인" | 결제 금액 계산 로직 | E-Torch 서버에서 할인 계산 |
+
+```typescript
+// 신규 가입 할인 적용
+export const calculateDiscountedPrice = (plan: 'monthly' | 'yearly', isFirstTime: boolean) => {
+  const basePrice = plan === 'monthly' ? 9900 : 99000
+  const discount = isFirstTime ? 0.5 : 0 // 50% 할인
+  
+  return {
+    originalPrice: basePrice,
+    discountedPrice: Math.floor(basePrice * (1 - discount)),
+    discount: discount * 100 // 퍼센트
+  }
+}
 ```
 
 ### 6.3 **토스페이먼츠 SDK v2 통합**
@@ -552,6 +577,34 @@ export async function processSubscriptionPayment(billingKey: string, customerKey
   })
   
   return payment.json()
+}
+
+// 7일 무료 체험 시스템
+export const ProTrialManager = () => {
+  const { user } = useAuth()
+  const [trialStatus, setTrialStatus] = useState<'eligible' | 'active' | 'expired' | 'used'>('eligible')
+  
+  const startProTrial = async () => {
+    if (trialStatus !== 'eligible') return
+    
+    await supabase
+      .from('user_subscriptions')
+      .upsert({
+        user_id: user.id,
+        plan: 'pro-trial',
+        trial_start: new Date(),
+        trial_end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7일 후
+        status: 'trial_active'
+      })
+    
+    setTrialStatus('active')
+  }
+  
+  return (
+    <Button onClick={startProTrial} disabled={trialStatus !== 'eligible'}>
+      {trialStatus === 'eligible' ? '7일 무료 체험 시작' : '이미 체험 완료'}
+    </Button>
+  )
 }
 ```
 
@@ -687,9 +740,18 @@ export const AuthErrorBoundary = ({ children }: PropsWithChildren) => {
 }
 ```
 
-## 8. **타입 안전성 시스템**
+## 8. 알림 시스템 (기획서 NS-007)
 
-### 8.1 위젯 타입 시스템
+### 8.1 구독 관련 알림
+
+| 알림 유형 | 기획서 명시 내용 | 구현 방법 |
+|----------|----------------|----------|
+| **구독 갱신 예정 알림** | "7일 전, Pro 구독자만 해당" | 이메일 + 인앱 알림 |
+| **결제 성공/실패 알림** | 기본 알림 시스템 | 토스트 + 이메일 |
+
+## 9. **타입 안전성 시스템**
+
+### 9.1 위젯 타입 시스템
 
 ```typescript
 // 위젯 타입별 Props 타입 안전성
@@ -739,7 +801,7 @@ export interface DataSourceConfig<T extends DataSourceType> {
 }
 ```
 
-### 8.2 런타임 타입 검증
+### 9.2 런타임 타입 검증
 
 ```typescript
 // Zod를 활용한 런타임 검증
@@ -771,9 +833,9 @@ export const validateApiResponse = <T>(schema: z.ZodSchema<T>) =>
   }
 ```
 
-## 9. 워터마크 + 접근성
+## 10. 워터마크 + 접근성
 
-### 9.1 워터마크 시스템
+### 10.1 워터마크 시스템
 
 ```typescript
 interface WatermarkProps {
@@ -827,7 +889,7 @@ export const exportDashboard = async (format: 'png' | 'pdf') => {
 }
 ```
 
-### 9.2 WCAG 2.1 AA 접근성
+### 10.2 WCAG 2.1 AA 접근성
 
 | 요구사항 | 구현 방법 | 검증 도구 | 패키지 위치 |
 |----------|----------|----------|------------|
@@ -873,9 +935,9 @@ export const AccessibleChart = ({
 }
 ```
 
-## 10. 모바일 최적화
+## 11. 모바일 최적화
 
-### 10.1 편집 기능 제한사항
+### 11.1 편집 기능 제한사항
 
 | 화면 크기 | 드래그 | 리사이즈 | 크기 조절 방법 | 구현 방식 |
 |----------|-------|---------|-------------|----------|
@@ -934,7 +996,7 @@ const MobileWidgetSizeSelector = ({ currentSize, onChange }) => (
 )
 ```
 
-### 10.2 터치 인터페이스 최적화
+### 11.2 터치 인터페이스 최적화
 
 | 설정 | 값 | 적용 범위 | CSS 구현 |
 |------|----|---------|---------|
@@ -943,9 +1005,9 @@ const MobileWidgetSizeSelector = ({ currentSize, onChange }) => (
 | 드래그 핸들 | 48×48px | 위젯 이동 핸들 | w-12 h-12 |
 | 스와이프 감지 | 100px 이동 | 대시보드 네비게이션 | 터치 이벤트 |
 
-## 11. 개발 도구 설정
+## 12. 개발 도구 설정
 
-### 11.1 ESLint 접근성 + 성능 규칙
+### 12.1 ESLint 접근성 + 성능 규칙
 
 ```json
 {
@@ -963,7 +1025,7 @@ const MobileWidgetSizeSelector = ({ currentSize, onChange }) => (
 }
 ```
 
-### 11.2 성능 모니터링
+### 12.2 성능 모니터링
 
 | 지표 | 목표값 | 경고 임계값 | 에러 임계값 | 자동 대응 |
 |------|--------|------------|-----------|----------|
