@@ -202,13 +202,23 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 // 지원 언어 목록
 const locales = ['ko', 'en'];
 const defaultLocale = 'ko';
-
-// 공개 라우트 (인증 불필요)
 const publicRoutes = ['/login', '/callback', '/accessibility'];
 
-// 언어 감지 함수
+// 미들웨어 체인 타입 정의
+type MiddlewareFunction = (
+  request: NextRequest,
+  context: MiddlewareContext
+) => Promise<NextResponse | null>;
+
+interface MiddlewareContext {
+  locale: string;
+  pathname: string;
+  pathWithoutLocale: string;
+  session?: any;
+}
+
+// 언어 감지 함수 (기존과 동일)
 function getLocale(request: NextRequest): string {
-  // URL에서 언어 추출 시도
   const pathname = request.nextUrl.pathname;
   const pathnameLocale = locales.find(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
@@ -216,7 +226,6 @@ function getLocale(request: NextRequest): string {
   
   if (pathnameLocale) return pathnameLocale;
   
-  // Accept-Language 헤더 기반 언어 감지
   const negotiatorHeaders: Record<string, string> = {};
   request.headers.forEach((value, key) => (negotiatorHeaders[key] = value));
 
@@ -224,7 +233,7 @@ function getLocale(request: NextRequest): string {
   return match(languages, locales, defaultLocale);
 }
 
-// JWT 토큰 로컬 검증 (성능 최적화)
+// JWT 토큰 검증 함수 (기존과 동일)
 function isValidJWT(token: string): boolean {
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
@@ -234,46 +243,58 @@ function isValidJWT(token: string): boolean {
   }
 }
 
-export async function middleware(request: NextRequest) {
+// 1. 언어 처리 미들웨어
+const languageMiddleware: MiddlewareFunction = async (request, context) => {
   const pathname = request.nextUrl.pathname;
   
-  // 1. 언어 처리
+  // 언어가 없는 경로는 감지된 언어로 리디렉션
   const pathnameIsMissingLocale = locales.every(
     (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
   );
 
-  // 언어가 없는 경로는 감지된 언어로 리디렉션
   if (pathnameIsMissingLocale) {
     const locale = getLocale(request);
     const newUrl = new URL(`/${locale}${pathname}`, request.url);
     return NextResponse.redirect(newUrl);
   }
   
-  // 현재 언어 추출
-  const currentLocale = pathname.split('/')[1];
+  // 컨텍스트 업데이트
+  context.locale = pathname.split('/')[1];
+  context.pathname = pathname;
+  context.pathWithoutLocale = pathname.replace(`/${context.locale}`, '');
   
-  // 2. API 라우트는 패스
+  return null; // 다음 미들웨어로 계속
+};
+
+// 2. 라우트 필터링 미들웨어
+const routeFilterMiddleware: MiddlewareFunction = async (request, context) => {
+  const { pathname } = context;
+  
+  // API 라우트는 패스
   if (pathname.startsWith('/api/')) {
     return NextResponse.next();
   }
   
-  // 3. 정적 파일은 패스
+  // 정적 파일은 패스
   if (pathname.includes('.')) {
     return NextResponse.next();
   }
   
-  // 4. 공개 라우트 확인
-  const pathWithoutLocale = pathname.replace(`/${currentLocale}`, '');
-  if (publicRoutes.some(route => pathWithoutLocale.startsWith(route))) {
+  // 공개 라우트 확인
+  if (publicRoutes.some(route => context.pathWithoutLocale.startsWith(route))) {
     return NextResponse.next();
   }
   
-  // 5. 인증 확인 (최적화된 방식)
+  return null; // 다음 미들웨어로 계속
+};
+
+// 3. 인증 미들웨어
+const authMiddleware: MiddlewareFunction = async (request, context) => {
   const token = request.cookies.get('supabase-auth-token')?.value;
   
   // JWT 토큰 로컬 검증 우선 (성능 최적화)
   if (token && isValidJWT(token)) {
-    return NextResponse.next();
+    return null; // 인증 성공, 다음 미들웨어로
   }
   
   // 필요시에만 Supabase 세션 검증
@@ -283,13 +304,23 @@ export async function middleware(request: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession();
   
   if (!session) {
-    const loginUrl = new URL(`/${currentLocale}/login`, request.url);
-    loginUrl.searchParams.set('redirectTo', pathname);
+    const loginUrl = new URL(`/${context.locale}/login`, request.url);
+    loginUrl.searchParams.set('redirectTo', context.pathname);
     return NextResponse.redirect(loginUrl);
   }
   
-  // 6. 구독 플랜별 접근 제한
-  const userPlan = session.user.app_metadata?.subscription_plan || 'basic';
+  // 세션을 컨텍스트에 저장
+  context.session = session;
+  return null; // 다음 미들웨어로 계속
+};
+
+// 4. 구독 플랜 검증 미들웨어
+const subscriptionMiddleware: MiddlewareFunction = async (request, context) => {
+  if (!context.session) {
+    return null; // 세션이 없으면 패스 (이전 미들웨어에서 처리됨)
+  }
+  
+  const userPlan = context.session.user.app_metadata?.subscription_plan || 'basic';
   
   // Pro 전용 기능 보호
   const proOnlyRoutes = [
@@ -298,22 +329,57 @@ export async function middleware(request: NextRequest) {
     '/widget-editor/[id]/advanced'
   ];
   
-  const routePattern = pathWithoutLocale;
-  if (proOnlyRoutes.some(route => routePattern.match(route.replace('[id]', '\\w+')))) {
-    if (userPlan !== 'pro') {
-      return NextResponse.redirect(new URL(`/${currentLocale}/subscription/upgrade`, request.url));
+  const routePattern = context.pathWithoutLocale;
+  const isProOnlyRoute = proOnlyRoutes.some(route => 
+    routePattern.match(route.replace('[id]', '\\w+'))
+  );
+  
+  if (isProOnlyRoute && userPlan !== 'pro') {
+    return NextResponse.redirect(
+      new URL(`/${context.locale}/subscription/upgrade`, request.url)
+    );
+  }
+  
+  return null; // 모든 검증 통과
+};
+
+// 미들웨어 체인 실행 함수
+async function runMiddlewareChain(
+  request: NextRequest,
+  middlewares: MiddlewareFunction[]
+): Promise<NextResponse> {
+  const context: MiddlewareContext = {
+    locale: '',
+    pathname: '',
+    pathWithoutLocale: '',
+  };
+  
+  for (const middleware of middlewares) {
+    const result = await middleware(request, context);
+    if (result) {
+      return result; // 미들웨어에서 응답을 반환하면 체인 종료
     }
   }
   
-  return res;
+  return NextResponse.next(); // 모든 미들웨어 통과
+}
+
+// 메인 미들웨어 함수
+export async function middleware(request: NextRequest) {
+  const middlewareChain = [
+    languageMiddleware,
+    routeFilterMiddleware,
+    authMiddleware,
+    subscriptionMiddleware,
+  ];
+  
+  return runMiddlewareChain(request, middlewareChain);
 }
 
 export const config = {
   matcher: [
     // Skip all internal paths (_next)
     '/((?!_next/static|_next/image|favicon.ico).*)',
-    // Optional: only run on root (/) URL
-    // '/'
   ],
 };
 ```
