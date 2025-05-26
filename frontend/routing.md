@@ -126,6 +126,9 @@ app/
 │   ├── profile/notifications/ # 알림 설정 페이지
 │   └── layout.tsx        # 프로필 레이아웃
 │
+├── accessibility/        # 통합 접근성 지원 페이지
+│   └── page.tsx          # 키보드 도움말, 스크린 리더 가이드, 고대비 모드를 탭으로 통합
+│
 ├── layout.tsx            # 루트 레이아웃
 └── page.tsx              # 홈페이지
 ```
@@ -138,10 +141,9 @@ app/
 # 기본 라우팅 구조에 다음과 같은 확장 패턴 추가
 
 app/
-├── @modal/               # 인터셉트 라우트 (모달용)
-│   ├── dashboard/[id]/   # 대시보드 모달 표시
-│   ├── widget/[id]/      # 위젯 모달 표시
-│   └── subscription/upgrade/ # 업그레이드 모달
+├── @modal/               # 인터셉트 라우트 (선별적 모달용)
+│   ├── dashboard/[id]/   # 대시보드 미리보기 모달 (높은 사용 빈도)
+│   └── subscription/upgrade/ # 업그레이드 모달 (컨텍스트 유지 필요)
 │
 ├── (dashboard)/          
 │   └── @tabs/            # 병렬 라우트 (대시보드 탭용)
@@ -156,10 +158,10 @@ app/
 │   │   └── @datasource/  # 데이터 소스 패널 (병렬 라우트)
 │   └── preview/          # 위젯 미리보기 페이지
 │
-└── (accessibility)/      # 접근성 지원
-    ├── keyboard-help/    # 키보드 단축키 도움말
-    ├── screen-reader/    # 스크린 리더 가이드
-    └── high-contrast/    # 고대비 모드 설정
+└── [locale]/             # 국제화 대응 (향후 확장)
+    ├── (dashboard)/
+    ├── (auth)/
+    └── middleware.ts     # 언어 감지 및 리디렉션
 ```
 
 ### 4.3 라우팅 유형 매핑 테이블
@@ -173,10 +175,10 @@ app/
 | `/widget-editor/[id]`, `/widget/[id]` | 기본 | 동적 라우트 | 상 (MVP) | Basic: 기본 옵션, Pro: 고급 옵션 |
 | `/subscription/*` | 기본 | 일반 라우트 | 상 (MVP) | 없음 |
 | `/profile/*` | 기본 | 일반 라우트 | 중 | 없음 |
+| `/accessibility` | 기본 | 일반 라우트 | 중 | 없음 |
 | `@modal/dashboard/[id]` | 확장 | 인터셉트 라우트 | 중 | 없음 |
-| `@modal/widget/[id]` | 확장 | 인터셉트 라우트 | 중 | 없음 |
 | `@tabs/*` | 확장 | 병렬 라우트 | 하 | 없음 |
-| `/accessibility/*` | 확장 | 일반 라우트 | 하 | 없음 |
+| `[locale]/*` | 확장 | 국제화 라우트 | 하 | 없음 |
 
 ## 5. 페이지별 라우트 설계
 
@@ -222,6 +224,12 @@ app/
 | `/profile/settings` | 사용자 설정 | Authenticated | 서버 + 클라이언트 폼 | 프로필 편집 |
 | `/profile/notifications` | 알림 설정 | Authenticated | 서버 + 클라이언트 토글 | 구독 갱신 알림 |
 
+### 5.6 접근성 지원 페이지
+
+| 라우트 | 설명 | 권한 | 컴포넌트 타입 | 기능 |
+|-------|------|------|--------------|------|
+| `/accessibility` | 통합 접근성 지원 | Public | 서버 + 클라이언트 탭 | 키보드 도움말, 스크린 리더 가이드, 고대비 모드 |
+
 ## 6. 레이아웃 구조
 
 E-Torch는 계층적 레이아웃 구조를 사용하여 일관된 사용자 경험을 제공합니다:
@@ -233,6 +241,7 @@ flowchart TD
     Root --> Widget[WidgetLayout]
     Root --> Subscription[SubscriptionLayout]
     Root --> Profile[ProfileLayout]
+    Root --> Accessibility[AccessibilityLayout]
     
     Auth --> Login[로그인 페이지]
     Auth --> Callback[콜백 페이지]
@@ -252,6 +261,8 @@ flowchart TD
     
     Profile --> Settings[설정 페이지]
     Profile --> Notifications[알림 페이지]
+    
+    Accessibility --> AccessibilityPage[통합 접근성 페이지]
 ```
 
 ### 6.1 레이아웃 책임 분리
@@ -260,12 +271,13 @@ flowchart TD
 
 | 레이아웃 | 책임 |
 |---------|-----|
-| **RootLayout** | 전역 CSS/폰트(Inter, JetBrains_Mono), 테마 제공자, 메타데이터, OKLCH 색상 시스템 |
+| **RootLayout** | 전역 CSS/폰트(Inter, JetBrains_Mono), 테마 제공자, 메타데이터, OKLCH 색상 시스템, 전역 에러 바운더리 |
 | **AuthLayout** | 최소 디자인, 로고 및 설명, 중앙 정렬 컨테이너 |
 | **DashboardLayout** | 사이드 내비게이션, 상단 헤더, 메인 콘텐츠 영역, 구독 상태 표시 |
 | **WidgetLayout** | 상단 헤더, 전체 화면 콘텐츠, 백 버튼, 저장 상태 |
 | **SubscriptionLayout** | 결제 보안 헤더, 진행 상태 표시, 토스페이먼츠 스크립트 로드 |
 | **ProfileLayout** | 사이드 내비게이션, 상단 헤더, 메인 콘텐츠 영역 |
+| **AccessibilityLayout** | 접근성 최적화 헤더, 탭 네비게이션, 고대비 모드 지원 |
 
 ## 7. 동적 라우팅 전략
 
@@ -321,14 +333,16 @@ E-Torch의 네비게이션 시스템은 다음과 같은 주요 컴포넌트로 
 
 라우트 보호는 다층적 접근으로 구현됩니다:
 
-1. **미들웨어 보호**:
-   - Supabase JWT 토큰 유효성 검증
+1. **최적화된 미들웨어 보호**:
+   - JWT 토큰 로컬 검증 우선
+   - 필요시에만 Supabase 세션 검증
    - 구독 플랜별 접근 제한
    - 인증 필요 시 리다이렉션
 
 ```tsx
 // middleware.ts
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+import { isValidJWT, getCachedSession } from '@/lib/auth-utils';
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -338,11 +352,23 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // Supabase 클라이언트 초기화
+  // JWT 토큰 로컬 검증 우선
+  const token = request.cookies.get('supabase-auth-token')?.value;
+  if (token && isValidJWT(token)) {
+    // 토큰이 유효하면 바로 통과 (성능 최적화)
+    return NextResponse.next();
+  }
+  
+  // 세션 캐시 확인
+  const cachedSession = await getCachedSession(request);
+  if (cachedSession?.isValid) {
+    return NextResponse.next();
+  }
+  
+  // 필요시에만 Supabase 세션 검증
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req: request, res });
   
-  // 세션 검증
   const { data: { session } } = await supabase.auth.getSession();
   
   if (!session) {
@@ -380,6 +406,50 @@ export async function middleware(request: NextRequest) {
    - AuthGuard 컴포넌트
    - 세션 상태 검사
    - 로딩 상태 처리
+
+### 8.3 구독 플랜 검증 최적화
+
+구독 플랜 검증 로직을 커스텀 훅으로 중앙화하여 중복을 제거합니다:
+
+```tsx
+// hooks/useSubscriptionGuard.ts
+import { useAuth } from '@/lib/auth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+export function useSubscriptionGuard(requiredPlan: 'basic' | 'pro' = 'basic') {
+  const { user, plan, isLoading } = useAuth();
+  const router = useRouter();
+  
+  useEffect(() => {
+    if (!isLoading && plan && !hasAccess(plan, requiredPlan)) {
+      router.push('/subscription/upgrade');
+    }
+  }, [plan, requiredPlan, isLoading, router]);
+  
+  const hasAccess = (currentPlan: string, required: string) => {
+    if (required === 'basic') return true;
+    if (required === 'pro') return currentPlan === 'pro';
+    return false;
+  };
+  
+  return { 
+    canAccess: hasAccess(plan, requiredPlan), 
+    isLoading,
+    needsUpgrade: !hasAccess(plan, requiredPlan)
+  };
+}
+
+// 사용 예시
+export function ProFeatureComponent() {
+  const { canAccess, isLoading, needsUpgrade } = useSubscriptionGuard('pro');
+  
+  if (isLoading) return <LoadingSpinner />;
+  if (needsUpgrade) return <UpgradePrompt />;
+  
+  return <ProFeatureContent />;
+}
+```
 
 ## 9. API 라우팅 구조
 
@@ -482,9 +552,9 @@ export function SaveButton({ dashboardId, onSave }) {
 }
 ```
 
-### 10.2 모달 라우팅 구조
+### 10.2 선별적 모달 라우팅 구조
 
-모달 라우팅은 인터셉트 라우트를 사용하여 구현합니다:
+높은 사용 빈도와 컨텍스트 유지가 중요한 경우에만 인터셉트 라우트를 적용합니다:
 
 ```
 app/
@@ -492,8 +562,10 @@ app/
 │   └── page.tsx         # 일반 대시보드 페이지
 │
 └── @modal/
-    └── dashboard/[id]/
-        └── page.tsx     # 모달로 표시되는 대시보드 페이지
+    ├── dashboard/[id]/
+    │   └── page.tsx     # 대시보드 미리보기 모달 (높은 사용 빈도)
+    └── subscription/upgrade/
+        └── page.tsx     # 업그레이드 모달 (컨텍스트 유지 중요)
 ```
 
 ```tsx
@@ -554,7 +626,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ko" className={`${inter.variable} ${jetBrainsMono.variable}`}>
       <body>
-        {children}
+        <GlobalErrorBoundary>
+          {children}
+        </GlobalErrorBoundary>
       </body>
     </html>
   );
@@ -610,12 +684,13 @@ flowchart LR
     E --> F
 ```
 
-### 12.2 라우팅 관련 서버 액션 패턴
+### 12.2 개선된 서버 액션 패턴
 
 - **폼 제출 처리**: 사용자 입력 검증 및 데이터베이스 저장 (`/dashboard/new`, `/dashboard/edit`)
 - **구독 플랜 검증**: 플랜별 제한 확인 및 업그레이드 유도
 - **캐시 무효화**: 관련 페이지의 캐시 자동 무효화 (`revalidatePath`)
 - **리디렉션**: 액션 완료 후 적절한 페이지로 이동 (`redirect`)
+- **향상된 에러 처리**: 구체적 에러 타입별 처리 및 로깅
 
 ```tsx
 // app/actions/dashboard.ts
@@ -625,6 +700,8 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { saveDashboard } from '@/e-torch/server-api/dashboard';
 import { getCurrentUser } from '@/e-torch/server-api/auth';
+import { ValidationError, QuotaExceededError } from '@/lib/errors';
+import { logger } from '@/lib/logger';
 
 export async function saveDashboardAction(formData: FormData | Record<string, any>) {
   const user = await getCurrentUser();
@@ -656,9 +733,30 @@ export async function saveDashboardAction(formData: FormData | Record<string, an
     
     return { success: true, data: result };
   } catch (error) {
+    // 구체적 에러 타입별 처리
+    if (error instanceof ValidationError) {
+      return { 
+        success: false, 
+        error: '입력값을 확인해주세요', 
+        field: error.field,
+        details: error.details
+      };
+    }
+    
+    if (error instanceof QuotaExceededError) {
+      redirect('/subscription/upgrade?reason=quota_exceeded');
+    }
+    
+    // 로깅 및 모니터링
+    logger.error('Dashboard save failed', { 
+      error: error.message, 
+      userId: user.id,
+      dashboardData: dashboardData 
+    });
+    
     return { 
       success: false, 
-      error: error instanceof Error ? error.message : '저장 실패'
+      error: '일시적 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     };
   }
 }
@@ -673,25 +771,161 @@ export async function saveDashboardAction(formData: FormData | Record<string, an
 export async function createWidgetAction(widgetData: any) {
   const user = await getCurrentUser();
   
-  // Basic 플랜 위젯 개수 제한
-  if (user.plan === 'basic') {
-    const widgetCount = await getUserWidgetCount(user.id, widgetData.dashboardId);
-    if (widgetCount >= 6) {
-      redirect('/subscription/upgrade?reason=widget_limit');
+  try {
+    // Basic 플랜 위젯 개수 제한
+    if (user.plan === 'basic') {
+      const widgetCount = await getUserWidgetCount(user.id, widgetData.dashboardId);
+      if (widgetCount >= 6) {
+        redirect('/subscription/upgrade?reason=widget_limit');
+      }
     }
+    
+    // 위젯 생성 로직
+    const result = await createWidget(widgetData);
+    
+    revalidatePath(`/dashboard/${widgetData.dashboardId}/edit`);
+    return { success: true, data: result };
+  } catch (error) {
+    logger.error('Widget creation failed', { 
+      error: error.message, 
+      userId: user.id,
+      widgetData 
+    });
+    
+    return { 
+      success: false, 
+      error: '위젯 생성에 실패했습니다.' 
+    };
   }
-  
-  // 위젯 생성 로직
-  const result = await createWidget(widgetData);
-  
-  revalidatePath(`/dashboard/${widgetData.dashboardId}/edit`);
-  return { success: true, data: result };
 }
 ```
 
-## 13. 성능 최적화 라우팅 전략
+## 13. 에러 처리 및 로딩 최적화
 
-### 13.1 로딩 및 에러 처리
+### 13.1 표준화된 에러 처리 시스템
+
+```tsx
+// app/error-boundary.tsx
+'use client';
+
+import { useEffect } from 'react';
+import { logger } from '@/lib/logger';
+
+type ErrorType = 'SUBSCRIPTION_REQUIRED' | 'NETWORK_ERROR' | 'VALIDATION_ERROR' | 'UNKNOWN';
+
+function classifyError(error: Error): ErrorType {
+  if (error.message.includes('subscription')) return 'SUBSCRIPTION_REQUIRED';
+  if (error.message.includes('network') || error.name === 'NetworkError') return 'NETWORK_ERROR';
+  if (error.name === 'ValidationError') return 'VALIDATION_ERROR';
+  return 'UNKNOWN';
+}
+
+export function GlobalErrorBoundary({ 
+  error, 
+  reset 
+}: { 
+  error: Error & { digest?: string }; 
+  reset: () => void; 
+}) {
+  const errorType = classifyError(error);
+  
+  useEffect(() => {
+    // 에러 로깅
+    logger.error('Global error boundary triggered', {
+      error: error.message,
+      stack: error.stack,
+      digest: error.digest,
+      type: errorType
+    });
+  }, [error, errorType]);
+  
+  const renderErrorContent = () => {
+    switch (errorType) {
+      case 'SUBSCRIPTION_REQUIRED':
+        return (
+          <div className="text-center p-6">
+            <h2 className="text-2xl font-bold mb-4">업그레이드가 필요합니다</h2>
+            <p className="text-muted-foreground mb-6">
+              이 기능을 사용하려면 Pro 플랜으로 업그레이드하세요.
+            </p>
+            <a 
+              href="/subscription/upgrade" 
+              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Pro 플랜 보기
+            </a>
+          </div>
+        );
+      
+      case 'NETWORK_ERROR':
+        return (
+          <div className="text-center p-6">
+            <h2 className="text-2xl font-bold mb-4">연결 오류</h2>
+            <p className="text-muted-foreground mb-6">
+              네트워크 연결을 확인하고 다시 시도해주세요.
+            </p>
+            <button 
+              onClick={reset}
+              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              다시 시도
+            </button>
+          </div>
+        );
+      
+      case 'VALIDATION_ERROR':
+        return (
+          <div className="text-center p-6">
+            <h2 className="text-2xl font-bold mb-4">입력 오류</h2>
+            <p className="text-muted-foreground mb-6">
+              입력값을 확인하고 다시 시도해주세요.
+            </p>
+            <button 
+              onClick={reset}
+              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              돌아가기
+            </button>
+          </div>
+        );
+      
+      default:
+        return (
+          <div className="text-center p-6">
+            <h2 className="text-2xl font-bold mb-4">오류가 발생했습니다</h2>
+            <p className="text-muted-foreground mb-6">
+              일시적인 오류입니다. 잠시 후 다시 시도해주세요.
+            </p>
+            <div className="space-x-4">
+              <button 
+                onClick={reset}
+                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                다시 시도
+              </button>
+              <a 
+                href="/dashboard"
+                className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+              >
+                홈으로 이동
+              </a>
+            </div>
+          </div>
+        );
+    }
+  };
+  
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="max-w-md w-full">
+        {renderErrorContent()}
+      </div>
+    </div>
+  );
+}
+```
+
+### 13.2 로딩 및 에러 처리 구조
 
 ```
 app/
@@ -711,33 +945,87 @@ app/
 │       ├── loading.tsx     # 위젯 에디터 로딩
 │       └── error.tsx       # 위젯 에디터 에러
 │
-└── (subscription)/
-    └── subscription/
-        ├── loading.tsx      # 구독 페이지 로딩
-        └── error.tsx        # 구독 페이지 에러
+├── (subscription)/
+│   └── subscription/
+│       ├── loading.tsx      # 구독 페이지 로딩
+│       └── error.tsx        # 구독 페이지 에러
+│
+└── error-boundary.tsx      # 전역 에러 바운더리
 ```
 
-### 13.2 캐싱 전략
+### 13.3 캐싱 전략
 
-- **정적 생성**: 공개 대시보드 탐색 페이지
+- **정적 생성**: 공개 대시보드 탐색 페이지, 접근성 페이지
 - **ISR**: 경제지표 데이터 (30분 간격)
 - **동적 렌더링**: 개인 대시보드, 위젯 에디터
 - **부분 사전 렌더링**: 대시보드 목록 페이지
 
 ## 14. 접근성 라우팅 패턴
 
-### 14.1 접근성 지원 라우팅
+### 14.1 통합 접근성 지원 구조
 
-```
-app/
-├── (accessibility)/       # 접근성 지원 라우트 그룹
-│   ├── keyboard-help/     # 키보드 단축키 도움말
-│   │   └── page.tsx
-│   ├── screen-reader/     # 스크린 리더 가이드
-│   │   └── page.tsx
-│   ├── high-contrast/     # 고대비 모드 설정
-│   │   └── page.tsx
-│   └── layout.tsx
+```tsx
+// app/accessibility/page.tsx
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+export default function AccessibilityPage() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">접근성 지원</h1>
+      
+      <Tabs defaultValue="keyboard" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="keyboard">키보드 네비게이션</TabsTrigger>
+          <TabsTrigger value="screen-reader">스크린 리더</TabsTrigger>
+          <TabsTrigger value="high-contrast">고대비 모드</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="keyboard" className="mt-6">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-semibold">키보드 단축키</h2>
+            <div className="grid gap-4">
+              <div className="flex justify-between items-center p-3 border rounded">
+                <span>메인 콘텐츠로 이동</span>
+                <kbd className="px-2 py-1 bg-muted rounded text-sm">Alt + 1</kbd>
+              </div>
+              <div className="flex justify-between items-center p-3 border rounded">
+                <span>네비게이션으로 이동</span>
+                <kbd className="px-2 py-1 bg-muted rounded text-sm">Alt + 2</kbd>
+              </div>
+              <div className="flex justify-between items-center p-3 border rounded">
+                <span>대시보드 편집 모드</span>
+                <kbd className="px-2 py-1 bg-muted rounded text-sm">E</kbd>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="screen-reader" className="mt-6">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-semibold">스크린 리더 지원</h2>
+            <p>E-Torch는 다음 스크린 리더와 호환됩니다:</p>
+            <ul className="list-disc list-inside space-y-2">
+              <li>NVDA (Windows)</li>
+              <li>JAWS (Windows)</li>
+              <li>VoiceOver (macOS, iOS)</li>
+              <li>TalkBack (Android)</li>
+            </ul>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="high-contrast" className="mt-6">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-semibold">고대비 모드</h2>
+            <p>시각적 접근성을 위한 고대비 모드를 지원합니다.</p>
+            <button className="px-4 py-2 bg-primary text-primary-foreground rounded">
+              고대비 모드 활성화
+            </button>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
 ```
 
 ### 14.2 Skip Navigation 패턴
@@ -748,20 +1036,147 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ko">
       <body>
-        <a href="#main-content" className="sr-only focus:not-sr-only">
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 z-50 bg-primary text-primary-foreground px-4 py-2">
           메인 콘텐츠로 건너뛰기
         </a>
-        <a href="#navigation" className="sr-only focus:not-sr-only">
+        <a href="#navigation" className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-20 z-50 bg-primary text-primary-foreground px-4 py-2">
           네비게이션으로 건너뛰기
         </a>
-        {children}
+        <GlobalErrorBoundary>
+          {children}
+        </GlobalErrorBoundary>
       </body>
     </html>
   );
 }
 ```
 
-## 15. 결론
+## 15. 국제화 대응 구조 (향후 확장)
+
+### 15.1 다국어 라우팅 준비
+
+향후 영어 지원을 위한 국제화 라우팅 구조를 확장 계획에 포함합니다:
+
+```
+app/
+├── [locale]/             # 국제화 대응 (향후 확장)
+│   ├── (dashboard)/
+│   │   ├── dashboard/
+│   │   └── layout.tsx
+│   ├── (auth)/
+│   │   ├── login/
+│   │   └── layout.tsx
+│   └── layout.tsx
+│
+└── middleware.ts         # 언어 감지 및 리디렉션
+```
+
+```tsx
+// middleware.ts (국제화 대응 부분)
+import { match } from '@formatjs/intl-localematcher';
+import Negotiator from 'negotiator';
+
+function getLocale(request: NextRequest): string {
+  const negotiatorHeaders: Record<string, string> = {};
+  request.headers.forEach((value, key) => (negotiatorHeaders[key] = value));
+
+  const locales = ['ko', 'en'];
+  const languages = new Negotiator({ headers: negotiatorHeaders }).languages();
+
+  return match(languages, locales, 'ko');
+}
+
+export async function middleware(request: NextRequest) {
+  // 국제화 처리 (향후 활성화)
+  /*
+  const pathname = request.nextUrl.pathname;
+  const pathnameIsMissingLocale = locales.every(
+    (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
+  );
+
+  if (pathnameIsMissingLocale) {
+    const locale = getLocale(request);
+    return NextResponse.redirect(
+      new URL(`/${locale}${pathname.startsWith('/') ? '' : '/'}${pathname}`, request.url)
+    );
+  }
+  */
+  
+  // 현재는 인증 및 구독 검증만 수행
+  // ... 기존 미들웨어 로직
+}
+```
+
+## 16. 성능 최적화 라우팅 전략
+
+### 16.1 캐싱 및 성능 최적화
+
+```tsx
+// app/(dashboard)/dashboard/[id]/page.tsx
+import { unstable_cache } from 'next/cache';
+
+// 대시보드 데이터 캐싱
+const getCachedDashboard = unstable_cache(
+  async (id: string) => {
+    return await fetchDashboardById(id);
+  },
+  ['dashboard'],
+  {
+    tags: [`dashboard-${id}`],
+    revalidate: 3600, // 1시간 캐시
+  }
+);
+
+export default async function DashboardPage({ params }: { params: { id: string } }) {
+  const dashboard = await getCachedDashboard(params.id);
+  
+  if (!dashboard) {
+    return notFound();
+  }
+  
+  return <DashboardServerWrapper dashboardId={params.id} initialData={dashboard} />;
+}
+
+// 캐시 무효화
+export async function invalidateDashboardCache(id: string) {
+  revalidateTag(`dashboard-${id}`);
+}
+```
+
+### 16.2 사용자 인식 성능 최적화
+
+```tsx
+// components/DashboardCard.tsx
+import Link from 'next/link';
+import { Suspense } from 'react';
+
+export function DashboardCard({ dashboard }) {
+  return (
+    <Link 
+      href={`/dashboard/${dashboard.id}`}
+      prefetch={true} // 호버 시 프리페치
+      className="block"
+    >
+      <div className="rounded-lg border bg-card shadow-sm hover:bg-muted/50 transition-colors">
+        <Suspense fallback={<DashboardCardSkeleton />}>
+          <DashboardCardContent dashboard={dashboard} />
+        </Suspense>
+      </div>
+    </Link>
+  );
+}
+
+function DashboardCardSkeleton() {
+  return (
+    <div className="p-4 animate-pulse">
+      <div className="h-6 bg-muted rounded mb-2"></div>
+      <div className="h-4 bg-muted rounded w-3/4"></div>
+    </div>
+  );
+}
+```
+
+## 17. 결론
 
 E-Torch의 라우팅 구조는 Next.js 15 App Router의 최신 기능을 활용하여 사용자 중심의 직관적인 인터페이스를 제공합니다. 주요 특징은 다음과 같습니다:
 
@@ -769,11 +1184,14 @@ E-Torch의 라우팅 구조는 Next.js 15 App Router의 최신 기능을 활용�
 - **기능별 라우트 그룹화**: 코드 구조의 명확한 조직화
 - **서버/클라이언트 분리**: 성능과 사용자 경험 최적화
 - **동적 라우팅**: 대시보드와 위젯에 대한 유연한 접근
-- **구독 플랜별 라우트 보호**: 다층적 인증 및 권한 검증
+- **최적화된 구독 플랜별 라우트 보호**: 성능을 고려한 다층적 인증 및 권한 검증
 - **토스페이먼츠 연동**: 완전한 결제 시스템 라우팅
 - **메타데이터 최적화**: SEO 및 소셜 공유 최적화
-- **서버 액션**: 클라이언트-서버 통신 간소화
-- **접근성 지원**: WCAG 2.1 AA 수준 접근성 라우팅
+- **개선된 서버 액션**: 향상된 에러 처리와 타입 안전성을 갖춘 클라이언트-서버 통신
+- **표준화된 에러 처리**: 일관된 에러 처리 및 사용자 경험
+- **통합 접근성 지원**: WCAG 2.1 AA 수준 접근성을 효율적으로 제공
+- **선별적 모달 라우팅**: 사용 빈도를 고려한 실용적 인터셉트 라우트 적용
 - **경제지표 특화**: KOSIS, ECOS 데이터 소스별 최적화
+- **확장 가능한 구조**: 향후 국제화 및 새로운 기능 추가를 고려한 설계
 
-이 구조는 E-Torch의 복잡한 기능을 직관적으로 접근 가능하게 만들며, 향후 기능 추가 시에도 확장 가능한 견고한 기반을 제공합니다.
+이 구조는 E-Torch의 복잡한 기능을 직관적으로 접근 가능하게 만들며, 향후 기능 추가 시에도 확장 가능한 견고한 기반을 제공합니다. 특히 성능 최적화, 에러 처리 표준화, 접근성 통합을 통해 더욱 안정적이고 사용자 친화적인 서비스를 구현할 수 있습니다.
