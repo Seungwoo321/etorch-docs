@@ -166,10 +166,7 @@ app/
 │   │       └── analytics/ # 대시보드 분석 탭
 │   │
 │   └── (widget)/              
-│       ├── widget-editor/[id]/
-│       │   ├── @preview/ # 미리보기 패널 (병렬 라우트)
-│       │   ├── @options/ # 옵션 패널 (병렬 라우트)
-│       │   └── @datasource/ # 데이터 소스 패널 (병렬 라우트)
+│       ├── widget-editor/[id]/page.tsx  # 통합 에디터 페이지
 │       └── preview/      # 위젯 미리보기 페이지
 │
 └── dictionaries/         # 다국어 사전 파일
