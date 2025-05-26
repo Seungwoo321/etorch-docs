@@ -123,6 +123,10 @@ app/
 │   │   │   ├── success/  # 결제 성공
 │   │   │   ├── fail/     # 결제 실패
 │   │   │   └── cancel/   # 결제 취소
+│   │   ├── subscription/limit-reached/ # Basic 플랜 제한 도달 안내
+│   │   │   ├── dashboard/    # 대시보드 한도 도달 안내
+│   │   │   ├── widget/       # 위젯 한도 도달 안내
+│   │   │   └── data-period/  # 데이터 기간 제한 안내
 │   │   └── layout.tsx    # 구독 레이아웃
 │   │
 │   ├── (profile)/        # 사용자 프로필 관련 라우트 그룹
@@ -173,7 +177,7 @@ app/
     └── en.json
 ```
 
-### 4.3 라우팅 유형 매핑 테이블 (국제화 적용)
+### 4.3 라우팅 유형 매핑 테이블
 
 | 경로 | 한국어 URL | 영어 URL | 라우팅 패턴 | 구현 우선순위 | 구독 플랜 제한 |
 |-----|-----------|---------|-----------|-------------|-------------|
@@ -187,6 +191,7 @@ app/
 | 접근성 | `/ko/accessibility` | `/en/accessibility` | 일반 라우트 | 중 | 없음 |
 | 모달 | `/ko/@modal/dashboard/[id]` | `/en/@modal/dashboard/[id]` | 인터셉트 라우트 | 중 | 없음 |
 | 탭 | `/ko/@tabs/*` | `/en/@tabs/*` | 병렬 라우트 | 하 | 없음 |
+| 제한 도달 안내 | `/ko/subscription/limit-reached/*` | `/en/subscription/limit-reached/*` | 일반 라우트 | 상 (MVP) | Basic 플랜만 해당 |
 
 ## 5. 국제화 미들웨어 구현
 
@@ -335,9 +340,19 @@ const subscriptionMiddleware: MiddlewareFunction = async (request, context) => {
   );
   
   if (isProOnlyRoute && userPlan !== 'pro') {
+    // 제한 유형별 단계적 안내 페이지로 리디렉션
+    const limitType = getLimitTypeFromRoute(context.pathWithoutLocale);
     return NextResponse.redirect(
-      new URL(`/${context.locale}/subscription/upgrade`, request.url)
+      new URL(`/${context.locale}/subscription/limit-reached/${limitType}?redirectTo=${encodeURIComponent(context.pathname)}`, request.url)
     );
+  }
+
+  // 제한 유형 판별 함수 추가
+  function getLimitTypeFromRoute(route: string): string {
+    if (route.includes('/dashboard/') && route.includes('/new')) return 'dashboard';
+    if (route.includes('/widget-editor/')) return 'widget';
+    if (route.includes('/data') || route.includes('/period')) return 'data-period';
+    return 'general';
   }
   
   return null; // 모든 검증 통과
@@ -412,6 +427,24 @@ export const config = {
     "dashboard_limit": "대시보드 생성 한도에 도달했습니다.",
     "widget_limit": "위젯 생성 한도에 도달했습니다.",
     "network_error": "네트워크 연결을 확인해주세요."
+  },
+  "limit_reached": {
+    "dashboard": {
+      "title": "대시보드 생성 한도에 도달했습니다",
+      "current_usage": "현재 {{current}}/{{limit}}개 사용 중",
+      "pro_benefit": "Pro 플랜으로 무제한 대시보드를 만들어보세요",
+      "upgrade_now": "지금 업그레이드하기"
+    },
+    "widget": {
+      "title": "위젯 추가 한도에 도달했습니다", 
+      "current_usage": "이 대시보드에서 {{current}}/{{limit}}개 사용 중",
+      "pro_benefit": "Pro 플랜으로 원하는 만큼 위젯을 추가하세요"
+    },
+    "data_period": {
+      "title": "데이터 조회 기간이 제한되어 있습니다",
+      "current_limit": "Basic 플랜은 최근 3년 데이터만 조회 가능",
+      "pro_benefit": "Pro 플랜으로 전체 기간 데이터를 분석하세요"
+    }
   }
 }
 
@@ -440,6 +473,15 @@ export const config = {
     "dashboard_limit": "Dashboard creation limit reached.",
     "widget_limit": "Widget creation limit reached.",
     "network_error": "Please check your network connection."
+  },
+  "limit_reached": {
+    "dashboard": {
+      "title": "Dashboard Creation Limit Reached",
+      "current_usage": "Currently using {{current}}/{{limit}} dashboards",
+      "pro_benefit": "Create unlimited dashboards with Pro plan",
+      "upgrade_now": "Upgrade Now"
+    }
+    // ... 영어 번역
   }
 }
 
@@ -522,6 +564,9 @@ export function useDictionary() {
 | 결제 성공 | `/ko/subscription/payment/success` | `/en/subscription/payment/success` | Public | 서버 컴포넌트 | 결과 처리 |
 | 결제 실패 | `/ko/subscription/payment/fail` | `/en/subscription/payment/fail` | Public | 서버 컴포넌트 | 에러 처리 |
 | 결제 취소 | `/ko/subscription/payment/cancel` | `/en/subscription/payment/cancel` | Public | 서버 컴포넌트 | 취소 처리 |
+| 대시보드 한도 | `/ko/subscription/limit-reached/dashboard` | `/en/subscription/limit-reached/dashboard` | Authenticated | 서버 + 클라이언트 | 현재 사용량 표시, Pro 혜택 비교, 업그레이드 유도 |
+| 위젯 한도 | `/ko/subscription/limit-reached/widget` | `/en/subscription/limit-reached/widget` | Authenticated | 서버 + 클라이언트 | 위젯 한도 설명, 무제한 혜택 강조 |
+| 데이터 기간 제한 | `/ko/subscription/limit-reached/data-period` | `/en/subscription/limit-reached/data-period` | Authenticated | 서버 + 클라이언트 | 3년 vs 전체 기간 비교, 장기 분석 가치 설명 |
 
 ### 6.5 프로필 관련 페이지
 
@@ -573,7 +618,7 @@ flowchart TD
     Accessibility --> AccessibilityPage[통합 접근성 페이지]
 ```
 
-### 7.1 레이아웃 책임 분리 (국제화 고려)
+### 7.1 레이아웃 책임 분리
 
 각 레이아웃은 명확한 책임을 갖는 구조로 설계되어 있습니다:
 
@@ -588,7 +633,7 @@ flowchart TD
 | **ProfileLayout** | 사이드 내비게이션, 상단 헤더, 메인 콘텐츠 영역, **언어 설정 UI** |
 | **AccessibilityLayout** | 접근성 최적화 헤더, 탭 네비게이션, 고대비 모드 지원, **언어별 접근성 가이드** |
 
-## 8. 동적 라우팅 전략 (국제화 적용)
+## 8. 동적 라우팅 전략
 
 ### 8.1 대시보드 및 위젯 ID 라우팅 패턴
 
@@ -663,7 +708,7 @@ export async function generateMetadata({
 }
 ```
 
-### 8.2 동적 라우트 접근 제어 패턴 (다국어)
+### 8.2 동적 라우트 접근 제어 패턴
 
 ```mermaid
 flowchart TD
@@ -678,9 +723,9 @@ flowchart TD
     G -->|접근 가능| J[언어별 페이지 렌더링]
 ```
 
-## 9. 네비게이션 및 라우트 보호 (국제화)
+## 9. 네비게이션 및 라우트 보호
 
-### 9.1 네비게이션 컴포넌트 구조 (다국어)
+### 9.1 네비게이션 컴포넌트 구조
 
 E-Torch의 네비게이션 시스템은 다음과 같은 주요 컴포넌트로 구성됩니다:
 
@@ -938,7 +983,7 @@ export async function GET(
 }
 ```
 
-## 11. 클라이언트 측 네비게이션 최적화 (국제화)
+## 11. 클라이언트 측 네비게이션 최적화
 
 ### 11.1 효율적인 언어별 네비게이션 패턴
 
@@ -979,7 +1024,7 @@ export function LocalizedLink({
   );
 }
 
-// components/DashboardCard.tsx (국제화 적용)
+// components/DashboardCard.tsx
 import { LocalizedLink } from './LocalizedLink';
 import { useDictionary } from '@/hooks/use-dictionary';
 
@@ -1057,7 +1102,7 @@ export function SaveButton({ dashboardId, onSave }) {
 }
 ```
 
-## 12. 메타데이터 전략 (국제화)
+## 12. 메타데이터 전략
 
 ### 12.1 언어별 메타데이터 계층 구조
 
@@ -1220,7 +1265,7 @@ export async function generateMetadata({
 }
 ```
 
-## 13. 서버 액션 활용 전략 (국제화)
+## 13. 서버 액션 활용 전략
 
 ### 13.1 다국어 서버 액션 워크플로우
 
@@ -1274,7 +1319,8 @@ export async function saveDashboardAction(
   if (user.plan === 'basic') {
     const dashboardCount = await getUserDashboardCount(user.id);
     if (dashboardCount >= 3) {
-      redirect(`/${locale}/subscription/upgrade?reason=dashboard_limit`);
+      // 단계적 안내 페이지로 먼저 리디렉션
+      redirect(`/${locale}/subscription/limit-reached/dashboard?current=${dashboardCount}&limit=3`);
     }
   }
   
@@ -1392,12 +1438,12 @@ export async function createWidgetAction(
 }
 ```
 
-## 14. 에러 처리 및 로딩 최적화 (국제화)
+## 14. 에러 처리 및 로딩 최적화
 
 ### 14.1 다국어 에러 처리 시스템
 
 ```tsx
-// types/errors.ts (다국어 지원)
+// types/errors.ts
 export interface LocalizedError {
   type: ErrorType;
   code: ErrorCode;
@@ -1408,7 +1454,7 @@ export interface LocalizedError {
   context?: Record<string, any>;
 }
 
-// utils/error-classifier.ts (다국어 지원)
+// utils/error-classifier.ts
 import { LocalizedError, ErrorType, ErrorCode } from '@/types/errors';
 
 export function classifyLocalizedError(
@@ -1621,7 +1667,7 @@ app/[locale]/
 └── error.tsx               # 언어별 전역 에러
 ```
 
-## 15. 접근성 라우팅 패턴 (국제화)
+## 15. 접근성 라우팅 패턴
 
 ### 15.1 다국어 통합 접근성 지원 구조
 
@@ -1751,7 +1797,7 @@ export default async function LocaleLayout({
 }
 ```
 
-## 16. 성능 최적화 라우팅 전략 (국제화)
+## 16. 성능 최적화 라우팅 전략
 
 ### 16.1 언어별 캐싱 및 성능 최적화
 
