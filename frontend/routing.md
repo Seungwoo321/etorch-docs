@@ -2,7 +2,7 @@
 
 ## 1. 개요
 
-E-Torch는 Next.js App Router를 활용하여 직관적이고 체계적인 라우팅 구조를 구현합니다. 이 문서는 E-Torch의 라우팅 아키텍처, 페이지 구성, 라우트 그룹, 레이아웃, 그리고 내비게이션 전략을 설명합니다.
+E-Torch는 Next.js 15 App Router를 활용하여 직관적이고 체계적인 라우팅 구조를 구현합니다. 이 문서는 E-Torch의 라우팅 아키텍처, 페이지 구성, 라우트 그룹, 레이아웃, 그리고 내비게이션 전략을 설명합니다.
 
 ## 2. Next.js 15 App Router 활용 전략
 
@@ -44,7 +44,8 @@ E-Torch의 라우팅 구조는 `architecture.md`에 정의된 모노레포 패�
 graph TD
     Root[app/] --> Auth["(auth)/"]
     Root --> Dashboard["(dashboard)/"]
-    Root --> Chart["(chart)/"]
+    Root --> Widget["(widget)/"]
+    Root --> Subscription["(subscription)/"]
     Root --> Profile["(profile)/"]
     Root --> API["api/"]
     Root --> Layout["layout.tsx"]
@@ -61,19 +62,25 @@ graph TD
     Dashboard --> Dash5["explore/"]
     Dashboard --> DashLayout["layout.tsx"]
     
-    Chart --> Chart1["chart-editor/[id]/"]
-    Chart --> Chart2["chart/[id]/"]
-    Chart --> ChartLayout["layout.tsx"]
+    Widget --> Widget1["widget-editor/[id]/"]
+    Widget --> Widget2["widget/[id]/"]
+    Widget --> WidgetLayout["layout.tsx"]
+    
+    Subscription --> Sub1["subscription/upgrade/"]
+    Subscription --> Sub2["subscription/billing/"]
+    Subscription --> Sub3["subscription/trial/"]
+    Subscription --> Sub4["subscription/payment/"]
+    Subscription --> SubLayout["layout.tsx"]
     
     Profile --> Prof1["profile/settings/"]
-    Profile --> Prof2["profile/subscription/"]
-    Profile --> Prof3["profile/notifications/"]
+    Profile --> Prof2["profile/notifications/"]
     Profile --> ProfLayout["layout.tsx"]
     
     API --> API1["auth/"]
     API --> API2["charts/"]
     API --> API3["dashboards/"]
     API --> API4["data-sources/"]
+    API --> API5["payments/"]
 ```
 
 ## 4. 기본 및 확장 라우팅 구조
@@ -87,8 +94,8 @@ E-Torch의 라우팅 구조는 **기본 라우팅**과 **확장 라우팅**으�
 ```
 app/
 ├── (auth)/               # 인증 관련 라우트 그룹
-│   ├── login/            # 로그인 페이지
-│   ├── callback/         # 소셜 로그인 콜백 처리
+│   ├── login/            # SNS 로그인 페이지 (Google, Naver, Kakao)
+│   ├── callback/         # OAuth 콜백 처리
 │   └── layout.tsx        # 인증 레이아웃
 │
 ├── (dashboard)/          # 대시보드 관련 라우트 그룹
@@ -96,17 +103,27 @@ app/
 │   ├── dashboard/[id]/   # 개별 대시보드 상세 페이지
 │   ├── dashboard/new/    # 새 대시보드 생성 페이지
 │   ├── dashboard/[id]/edit/ # 대시보드 편집 페이지
-│   ├── explore/          # 대시보드 탐색/발견 페이지
+│   ├── explore/          # 공개 대시보드 탐색/발견 페이지
 │   └── layout.tsx        # 대시보드 레이아웃
 │
-├── (chart)/              # 차트 관련 라우트 그룹
-│   ├── chart-editor/[id]/ # 차트 에디터 페이지
-│   ├── chart/[id]/       # 개별 차트 상세 페이지
-│   └── layout.tsx        # 차트 레이아웃
+├── (widget)/             # 위젯 관련 라우트 그룹
+│   ├── widget-editor/[id]/ # 위젯 에디터 페이지 (5가지 차트형 + 2가지 텍스트형)
+│   ├── widget/[id]/      # 개별 위젯 상세 페이지
+│   └── layout.tsx        # 위젯 레이아웃
+│
+├── (subscription)/       # 구독 관련 라우트 그룹
+│   ├── subscription/upgrade/ # Pro 플랜 업그레이드
+│   ├── subscription/billing/ # 결제 내역 및 빌링 관리
+│   ├── subscription/trial/   # 7일 무료 체험
+│   ├── subscription/payment/ # 토스페이먼츠 결제 처리
+│   │   ├── success/      # 결제 성공
+│   │   ├── fail/         # 결제 실패
+│   │   └── cancel/       # 결제 취소
+│   └── layout.tsx        # 구독 레이아웃
 │
 ├── (profile)/            # 사용자 프로필 관련 라우트 그룹
 │   ├── profile/settings/ # 프로필 설정 페이지
-│   ├── profile/subscription/ # 구독 관리 페이지
+│   ├── profile/notifications/ # 알림 설정 페이지
 │   └── layout.tsx        # 프로필 레이아웃
 │
 ├── layout.tsx            # 루트 레이아웃
@@ -118,74 +135,92 @@ app/
 확장 라우팅 구조는 향상된 사용자 경험을 위한 고급 라우팅 패턴을 포함합니다. 이는 기본 기능 구현 후 점진적으로 추가됩니다.
 
 ```
-# 기본 라우팅.0 구조에 다음과 같은 확장 패턴 추가
+# 기본 라우팅 구조에 다음과 같은 확장 패턴 추가
 
 app/
 ├── @modal/               # 인터셉트 라우트 (모달용)
 │   ├── dashboard/[id]/   # 대시보드 모달 표시
-│   └── chart/[id]/       # 차트 모달 표시
+│   ├── widget/[id]/      # 위젯 모달 표시
+│   └── subscription/upgrade/ # 업그레이드 모달
 │
 ├── (dashboard)/          
-│   └── @dashboard/       # 병렬 라우트 (대시보드 부가 정보용)
+│   └── @tabs/            # 병렬 라우트 (대시보드 탭용)
 │       ├── info/         # 대시보드 정보 탭
-│       └── share/        # 대시보드 공유 탭
+│       ├── share/        # 대시보드 공유 탭
+│       └── analytics/    # 대시보드 분석 탭
 │
-├── (chart)/              
-│   └── preview/          # 차트 미리보기 페이지
+├── (widget)/              
+│   ├── widget-editor/[id]/
+│   │   ├── @preview/     # 미리보기 패널 (병렬 라우트)
+│   │   ├── @options/     # 옵션 패널 (병렬 라우트)
+│   │   └── @datasource/  # 데이터 소스 패널 (병렬 라우트)
+│   └── preview/          # 위젯 미리보기 페이지
 │
-└── (profile)/             
-    └── notifications/    # 알림 설정 페이지
+└── (accessibility)/      # 접근성 지원
+    ├── keyboard-help/    # 키보드 단축키 도움말
+    ├── screen-reader/    # 스크린 리더 가이드
+    └── high-contrast/    # 고대비 모드 설정
 ```
 
 ### 4.3 라우팅 유형 매핑 테이블
 
-| 경로 | 기본/확장 | 라우팅 패턴 | 구현 우선순위 |
-|-----|-----------|-----------|-------------|
-| `/login`, `/callback` | 기본 | 일반 라우트 | 상 (MVP) |
-| `/dashboard`, `/dashboard/[id]` | 기본 | 일반 라우트 | 상 (MVP) |
-| `/dashboard/new`, `/dashboard/[id]/edit` | 기본 | 일반 라우트 | 상 (MVP) |
-| `/explore` | 기본 | 일반 라우트 | 상 (MVP) |
-| `/chart-editor/[id]`, `/chart/[id]` | 기본 | 일반 라우트 | 상 (MVP) |
-| `/profile/*` | 기본 | 일반 라우트 | 중 |
-| `@modal/dashboard/[id]` | 확장 | 인터셉트 라우트 | 중 |
-| `@modal/chart/[id]` | 확장 | 인터셉트 라우트 | 중 |
-| `@dashboard/info`, `@dashboard/share` | 확장 | 병렬 라우트 | 하 |
-| `/chart/preview` | 확장 | 일반 라우트 | 하 |
-| `/profile/notifications` | 확장 | 일반 라우트 | 하 |
+| 경로 | 기본/확장 | 라우팅 패턴 | 구현 우선순위 | 구독 플랜 제한 |
+|-----|-----------|-----------|-------------|-------------|
+| `/login`, `/callback` | 기본 | 일반 라우트 | 상 (MVP) | 없음 |
+| `/dashboard`, `/dashboard/[id]` | 기본 | 일반 라우트 | 상 (MVP) | Basic: 3개, Pro: 무제한 |
+| `/dashboard/new`, `/dashboard/[id]/edit` | 기본 | 일반 라우트 | 상 (MVP) | Basic: 6개 위젯, Pro: 무제한 |
+| `/explore` | 기본 | 일반 라우트 | 상 (MVP) | 없음 |
+| `/widget-editor/[id]`, `/widget/[id]` | 기본 | 동적 라우트 | 상 (MVP) | Basic: 기본 옵션, Pro: 고급 옵션 |
+| `/subscription/*` | 기본 | 일반 라우트 | 상 (MVP) | 없음 |
+| `/profile/*` | 기본 | 일반 라우트 | 중 | 없음 |
+| `@modal/dashboard/[id]` | 확장 | 인터셉트 라우트 | 중 | 없음 |
+| `@modal/widget/[id]` | 확장 | 인터셉트 라우트 | 중 | 없음 |
+| `@tabs/*` | 확장 | 병렬 라우트 | 하 | 없음 |
+| `/accessibility/*` | 확장 | 일반 라우트 | 하 | 없음 |
 
 ## 5. 페이지별 라우트 설계
 
 ### 5.1 인증 관련 페이지
 
-| 라우트 | 설명 | 권한 | 컴포넌트 타입 |
-|-------|------|------|--------------|
-| `/login` | 로그인 페이지 | Public | 서버 + 클라이언트 폼 |
-| `/callback` | OAuth 콜백 처리 | Public | 서버 컴포넌트 |
+| 라우트 | 설명 | 권한 | 컴포넌트 타입 | SNS 연동 |
+|-------|------|------|--------------|----------|
+| `/login` | SNS 로그인 페이지 | Public | 서버 + 클라이언트 폼 | Google, Naver, Kakao |
+| `/callback` | OAuth 콜백 처리 | Public | 서버 컴포넌트 | Supabase Auth |
 
 ### 5.2 대시보드 관련 페이지
 
-| 라우트 | 설명 | 권한 | 컴포넌트 타입 |
-|-------|------|------|--------------|
-| `/dashboard` | 대시보드 목록 | Authenticated | 서버 + 클라이언트 기능 |
-| `/dashboard/[id]` | 대시보드 상세 조회 | Authenticated | 서버 + 클라이언트 차트 |
-| `/dashboard/new` | 새 대시보드 생성 | Authenticated | 서버 + 클라이언트 에디터 |
-| `/dashboard/[id]/edit` | 대시보드 편집 | Owner | 서버 + 클라이언트 에디터 |
-| `/explore` | 공유 대시보드 탐색 | Authenticated | 서버 + 클라이언트 필터링 |
+| 라우트 | 설명 | 권한 | 컴포넌트 타입 | 구독 플랜 제한 |
+|-------|------|------|--------------|-------------|
+| `/dashboard` | 대시보드 목록 | Authenticated | 서버 + 클라이언트 기능 | Basic: 최대 3개 |
+| `/dashboard/[id]` | 대시보드 상세 조회 | Authenticated | 서버 + 클라이언트 차트 | Basic: 워터마크 표시 |
+| `/dashboard/new` | 새 대시보드 생성 | Authenticated | 서버 + 클라이언트 에디터 | Basic: 3개 한도 확인 |
+| `/dashboard/[id]/edit` | 대시보드 편집 | Owner | 서버 + 클라이언트 에디터 | Basic: 6개 위젯 한도 |
+| `/explore` | 공개 대시보드 탐색 | Authenticated | 서버 + 클라이언트 필터링 | Basic: 복사 불가 |
 
-### 5.3 차트 관련 페이지
+### 5.3 위젯 관련 페이지
 
-| 라우트 | 설명 | 권한 | 컴포넌트 타입 |
-|-------|------|------|--------------|
-| `/chart-editor/[id]` | 차트 생성/편집 | Authenticated | 서버 + 클라이언트 에디터 |
-| `/chart/[id]` | 개별 차트 상세 조회 | Authenticated | 서버 + 클라이언트 차트 |
+| 라우트 | 설명 | 권한 | 컴포넌트 타입 | 지원 위젯 유형 |
+|-------|------|------|--------------|-------------|
+| `/widget-editor/[id]` | 위젯 생성/편집 | Authenticated | 서버 + 클라이언트 에디터 | 5가지 차트형 + 2가지 텍스트형 |
+| `/widget/[id]` | 개별 위젯 상세 조회 | Authenticated | 서버 + 클라이언트 차트 | 모든 위젯 유형 |
 
-### 5.4 프로필 관련 페이지
+### 5.4 구독 관련 페이지
 
-| 라우트 | 설명 | 권한 | 컴포넌트 타입 |
-|-------|------|------|--------------|
-| `/profile/settings` | 사용자 설정 | Authenticated | 서버 + 클라이언트 폼 |
-| `/profile/subscription` | 구독 관리 | Authenticated | 서버 + 클라이언트 결제 |
-| `/profile/notifications` | 알림 설정 | Authenticated | 서버 + 클라이언트 토글 |
+| 라우트 | 설명 | 권한 | 컴포넌트 타입 | 토스페이먼츠 연동 |
+|-------|------|------|--------------|-----------------|
+| `/subscription/upgrade` | Pro 플랜 업그레이드 | Authenticated | 서버 + 클라이언트 폼 | 결제 위젯 |
+| `/subscription/billing` | 결제 내역 및 빌링 관리 | Authenticated | 서버 + 클라이언트 | 빌링키 관리 |
+| `/subscription/trial` | 7일 무료 체험 | Authenticated | 서버 + 클라이언트 | 체험 시작 |
+| `/subscription/payment/success` | 결제 성공 | Public | 서버 컴포넌트 | 결과 처리 |
+| `/subscription/payment/fail` | 결제 실패 | Public | 서버 컴포넌트 | 에러 처리 |
+| `/subscription/payment/cancel` | 결제 취소 | Public | 서버 컴포넌트 | 취소 처리 |
+
+### 5.5 프로필 관련 페이지
+
+| 라우트 | 설명 | 권한 | 컴포넌트 타입 | 기능 |
+|-------|------|------|--------------|------|
+| `/profile/settings` | 사용자 설정 | Authenticated | 서버 + 클라이언트 폼 | 프로필 편집 |
+| `/profile/notifications` | 알림 설정 | Authenticated | 서버 + 클라이언트 토글 | 구독 갱신 알림 |
 
 ## 6. 레이아웃 구조
 
@@ -195,7 +230,8 @@ E-Torch는 계층적 레이아웃 구조를 사용하여 일관된 사용자 경
 flowchart TD
     Root[RootLayout] --> Auth[AuthLayout]
     Root --> Dashboard[DashboardLayout]
-    Root --> Chart[ChartLayout]
+    Root --> Widget[WidgetLayout]
+    Root --> Subscription[SubscriptionLayout]
     Root --> Profile[ProfileLayout]
     
     Auth --> Login[로그인 페이지]
@@ -206,11 +242,15 @@ flowchart TD
     Dashboard --> DashboardEdit[대시보드 편집]
     Dashboard --> Explore[탐색 페이지]
     
-    Chart --> ChartEditor[차트 에디터]
-    Chart --> ChartDetail[차트 상세]
+    Widget --> WidgetEditor[위젯 에디터]
+    Widget --> WidgetDetail[위젯 상세]
+    
+    Subscription --> Upgrade[업그레이드]
+    Subscription --> Billing[빌링 관리]
+    Subscription --> Trial[무료 체험]
+    Subscription --> Payment[결제 처리]
     
     Profile --> Settings[설정 페이지]
-    Profile --> Subscription[구독 페이지]
     Profile --> Notifications[알림 페이지]
 ```
 
@@ -220,15 +260,16 @@ flowchart TD
 
 | 레이아웃 | 책임 |
 |---------|-----|
-| **RootLayout** | 전역 CSS/폰트(Inter, JetBrains_Mono), 테마 제공자, 메타데이터, 디자인 시스템 CSS 변수 적용 |
+| **RootLayout** | 전역 CSS/폰트(Inter, JetBrains_Mono), 테마 제공자, 메타데이터, OKLCH 색상 시스템 |
 | **AuthLayout** | 최소 디자인, 로고 및 설명, 중앙 정렬 컨테이너 |
-| **DashboardLayout** | 사이드 내비게이션, 상단 헤더, 메인 콘텐츠 영역 |
-| **ChartLayout** | 상단 헤더, 전체 화면 콘텐츠, 백 버튼 |
+| **DashboardLayout** | 사이드 내비게이션, 상단 헤더, 메인 콘텐츠 영역, 구독 상태 표시 |
+| **WidgetLayout** | 상단 헤더, 전체 화면 콘텐츠, 백 버튼, 저장 상태 |
+| **SubscriptionLayout** | 결제 보안 헤더, 진행 상태 표시, 토스페이먼츠 스크립트 로드 |
 | **ProfileLayout** | 사이드 내비게이션, 상단 헤더, 메인 콘텐츠 영역 |
 
 ## 7. 동적 라우팅 전략
 
-### 7.1 대시보드 및 차트 ID 라우팅 패턴
+### 7.1 대시보드 및 위젯 ID 라우팅 패턴
 
 동적 ID 기반 라우팅은 다음과 같은 패턴으로 구현됩니다:
 
@@ -243,14 +284,12 @@ interface DashboardPageProps {
 }
 
 export default async function DashboardPage({ params }: DashboardPageProps) {
-  // 서버에서 대시보드 데이터 페칭
   const dashboard = await fetchDashboardById(params.id);
   
   if (!dashboard) {
     return notFound();
   }
   
-  // 서버 래퍼 컴포넌트로 데이터 전달하여 렌더링
   return <DashboardServerWrapper dashboardId={params.id} initialData={dashboard} />;
 }
 ```
@@ -262,8 +301,10 @@ flowchart TD
     A[요청] --> B{ID 유효성 검증}
     B -->|유효함| C{권한 검증}
     B -->|유효하지 않음| D[404 페이지]
-    C -->|권한 있음| E[페이지 렌더링]
+    C -->|권한 있음| E{구독 플랜 확인}
     C -->|권한 없음| F[403 페이지/리디렉션]
+    E -->|Basic 제한 초과| G[업그레이드 안내]
+    E -->|접근 가능| H[페이지 렌더링]
 ```
 
 ## 8. 네비게이션 및 라우트 보호
@@ -272,9 +313,9 @@ flowchart TD
 
 E-Torch의 네비게이션 시스템은 다음과 같은 주요 컴포넌트로 구성됩니다:
 
-- **SideNavigation**: 주요 메뉴 항목 및 네비게이션 링크 제공 (`packages/ui/src/components/layout/side-navigation.tsx`)
-- **HeaderNavigation**: 현재 페이지 제목, 사용자 메뉴, 검색 바 등 (`packages/ui/src/components/layout/header-navigation.tsx`)
-- **BreadcrumbNavigation**: 현재 위치 및 상위 카테고리 표시 (`packages/ui/src/components/layout/breadcrumb-navigation.tsx`)
+- **SideNavigation**: 주요 메뉴 항목 및 네비게이션 링크 제공
+- **HeaderNavigation**: 현재 페이지 제목, 사용자 메뉴, 구독 상태 표시
+- **BreadcrumbNavigation**: 현재 위치 및 상위 카테고리 표시
 
 ### 8.2 라우트 보호 아키텍처
 
@@ -282,6 +323,7 @@ E-Torch의 네비게이션 시스템은 다음과 같은 주요 컴포넌트로 
 
 1. **미들웨어 보호**:
    - Supabase JWT 토큰 유효성 검증
+   - 구독 플랜별 접근 제한
    - 인증 필요 시 리다이렉션
 
 ```tsx
@@ -309,6 +351,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
   
+  // 구독 플랜별 접근 제한
+  const userPlan = session.user.app_metadata?.subscription_plan || 'basic';
+  
+  // Pro 전용 기능 보호
+  const proOnlyRoutes = [
+    '/dashboard/[id]/copy',
+    '/dashboard/[id]/embed',
+    '/widget-editor/[id]/advanced'
+  ];
+  
+  if (proOnlyRoutes.some(route => pathname.match(route.replace('[id]', '\\w+')))) {
+    if (userPlan !== 'pro') {
+      return NextResponse.redirect(new URL('/subscription/upgrade', request.url));
+    }
+  }
+  
   return res;
 }
 ```
@@ -323,19 +381,73 @@ export async function middleware(request: NextRequest) {
    - 세션 상태 검사
    - 로딩 상태 처리
 
-## 9. 클라이언트 측 네비게이션 최적화
+## 9. API 라우팅 구조
 
-### 9.1 효율적인 네비게이션 패턴
+### 9.1 데이터 소스별 API 라우팅
+
+```
+app/api/
+├── auth/                 # Supabase Auth 연동
+│   ├── login/route.ts    # SNS 로그인 처리
+│   ├── logout/route.ts   # 로그아웃 처리
+│   └── session/route.ts  # 세션 확인
+│
+├── data/                 # 경제지표 데이터 API
+│   ├── kosis/            # KOSIS 데이터 소스
+│   │   ├── indicators/route.ts    # 지표 목록 (MVP 12개)
+│   │   └── series/[id]/route.ts   # 시계열 데이터
+│   ├── ecos/             # ECOS 데이터 소스
+│   │   ├── indicators/route.ts    # 지표 목록 (MVP 8개)
+│   │   └── series/[id]/route.ts   # 시계열 데이터
+│   └── combined/route.ts # 다중 소스 통합 조회
+│
+├── dashboards/           # 대시보드 관리
+│   ├── route.ts          # 목록 조회, 생성
+│   ├── [id]/route.ts     # 상세 조회, 수정, 삭제
+│   ├── [id]/copy/route.ts # 복사 (Pro 전용)
+│   └── [id]/embed/route.ts # 임베드 코드 (Pro 전용)
+│
+├── widgets/              # 위젯 관리
+│   ├── route.ts          # 목록 조회, 생성
+│   └── [id]/route.ts     # 상세 조회, 수정, 삭제
+│
+├── payments/             # 토스페이먼츠 연동
+│   ├── create/route.ts   # 결제 생성
+│   ├── confirm/route.ts  # 결제 승인
+│   ├── webhook/route.ts  # 웹훅 처리
+│   └── billing/route.ts  # 빌링키 관리
+│
+└── subscription/         # 구독 관리
+    ├── status/route.ts   # 구독 상태 조회
+    ├── upgrade/route.ts  # 플랜 업그레이드
+    ├── cancel/route.ts   # 구독 취소
+    └── trial/route.ts    # 무료 체험 시작
+```
+
+### 9.2 구독 플랜별 API 접근 제한
+
+| API 경로 | Basic 플랜 | Pro 플랜 | 제한 내용 |
+|----------|-----------|----------|----------|
+| `/api/data/*/indicators` | 20개 지표 | 40개 지표 | 지표 목록 필터링 |
+| `/api/data/*/series` | 최근 3년 | 전체 기간 | 데이터 기간 제한 |
+| `/api/dashboards` | 최대 3개 | 무제한 | 생성 개수 제한 |
+| `/api/dashboards/[id]/copy` | 접근 불가 | 접근 가능 | 기능 제한 |
+| `/api/dashboards/[id]/embed` | 접근 불가 | 접근 가능 | 기능 제한 |
+| `/api/widgets` | 대시보드당 6개 | 무제한 | 생성 개수 제한 |
+
+## 10. 클라이언트 측 네비게이션 최적화
+
+### 10.1 효율적인 네비게이션 패턴
 
 ```tsx
-// 링크 컴포넌트 사용 예시 - design-system.md의 디자인 가이드라인 준수
+// 링크 컴포넌트 사용 예시 - OKLCH 색상 시스템 활용
 import Link from 'next/link';
 
 export function DashboardCard({ dashboard }) {
   return (
     <Link 
       href={`/dashboard/${dashboard.id}`}
-      prefetch={true} // 자동 prefetch
+      prefetch={true}
       className="rounded-lg border bg-card shadow-sm hover:bg-muted/50 transition-colors"
     >
       <div className="p-4">
@@ -370,7 +482,7 @@ export function SaveButton({ dashboardId, onSave }) {
 }
 ```
 
-### 9.2 모달 라우팅 구조
+### 10.2 모달 라우팅 구조
 
 모달 라우팅은 인터셉트 라우트를 사용하여 구현합니다:
 
@@ -403,9 +515,9 @@ export default async function DashboardModal({ params }) {
 }
 ```
 
-## 10. 메타데이터 전략
+## 11. 메타데이터 전략
 
-### 10.1 메타데이터 계층 구조
+### 11.1 메타데이터 계층 구조
 
 ```tsx
 // app/layout.tsx (기본 메타데이터)
@@ -428,7 +540,14 @@ export const metadata: Metadata = {
     default: 'E-Torch - 경제지표 대시보드 서비스',
   },
   description: '다양한 출처의 경제지표 데이터를 시각화하는 대시보드 서비스',
-  // ... 기타 메타데이터
+  keywords: ['경제지표', 'KOSIS', 'ECOS', '대시보드', '데이터 시각화'],
+  authors: [{ name: 'E-Torch Team' }],
+  openGraph: {
+    type: 'website',
+    locale: 'ko_KR',
+    url: 'https://e-torch.com',
+    siteName: 'E-Torch',
+  },
 };
 
 export default function RootLayout({ children }) {
@@ -450,6 +569,7 @@ export const metadata: Metadata = {
 // app/(dashboard)/dashboard/[id]/page.tsx (동적 메타데이터)
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const dashboard = await fetchDashboardById(params.id);
+  const userPlan = await getUserPlan();
   
   if (!dashboard) {
     return {
@@ -461,17 +581,18 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     title: dashboard.title,
     description: dashboard.description || '대시보드 상세 정보',
     openGraph: {
-      images: [dashboard.thumbnail || '/images/default-dashboard.png'],
+      // Pro 사용자는 워터마크 없는 이미지
+      images: [userPlan === 'pro' ? dashboard.thumbnail : dashboard.thumbnailWithWatermark],
     },
   };
 }
 ```
 
-## 11. 서버 액션 활용 전략
+## 12. 서버 액션 활용 전략
 
-Next.js 서버 액션을 활용하여 클라이언트-서버 통신을 간소화합니다. 이 섹션에서는 서버 액션의 라우팅 관점에서의 활용에 초점을 맞춥니다. 컴포넌트 통합 관점의 서버 액션 패턴은 [`core-components.md`](./components/core-components.md) 문서를 참조하십시오.
+Next.js 서버 액션을 활용하여 클라이언트-서버 통신을 간소화합니다. 이 섹션에서는 서버 액션의 라우팅 관점에서의 활용에 초점을 맞춥니다.
 
-### 11.1 서버 액션 워크플로우
+### 12.1 서버 액션 워크플로우
 
 ```mermaid
 flowchart LR
@@ -489,42 +610,44 @@ flowchart LR
     E --> F
 ```
 
-### 11.2 라우팅 관련 서버 액션 패턴
+### 12.2 라우팅 관련 서버 액션 패턴
 
-- 폼 제출 처리: 사용자 입력 검증 및 데이터베이스 저장 (`/dashboard/new`, `/dashboard/edit`)
-- 캐시 무효화: 관련 페이지의 캐시 자동 무효화 (`revalidatePath`)
-- 리디렉션: 액션 완료 후 적절한 페이지로 이동 (`redirect`)
-- 데이터 프리페칭: 페이지 전환 전 데이터 미리 로드 (`prefetch`)
+- **폼 제출 처리**: 사용자 입력 검증 및 데이터베이스 저장 (`/dashboard/new`, `/dashboard/edit`)
+- **구독 플랜 검증**: 플랜별 제한 확인 및 업그레이드 유도
+- **캐시 무효화**: 관련 페이지의 캐시 자동 무효화 (`revalidatePath`)
+- **리디렉션**: 액션 완료 후 적절한 페이지로 이동 (`redirect`)
 
 ```tsx
 // app/actions/dashboard.ts
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { saveDashboard } from '@/e-torch/server-api/dashboard';
 import { getCurrentUser } from '@/e-torch/server-api/auth';
-import { redirect } from 'next/navigation';
 
-export async function saveDashboardAction(
-  formData: FormData | Record<string, any>
-) {
-  // 현재 사용자 가져오기
+export async function saveDashboardAction(formData: FormData | Record<string, any>) {
   const user = await getCurrentUser();
   if (!user) {
     return { success: false, error: '인증되지 않은 사용자' };
   }
   
+  // 구독 플랜별 제한 검증
+  if (user.plan === 'basic') {
+    const dashboardCount = await getUserDashboardCount(user.id);
+    if (dashboardCount >= 3) {
+      redirect('/subscription/upgrade?reason=dashboard_limit');
+    }
+  }
+  
   try {
-    // FormData를 객체로 변환 (필요시)
     const dashboardData = formData instanceof FormData 
       ? Object.fromEntries(formData.entries())
       : formData;
     
-    // 소유자 정보 추가
     dashboardData.userId = user.id;
     dashboardData.updatedAt = new Date().toISOString();
     
-    // 저장 처리
     const result = await saveDashboard(dashboardData);
     
     // 캐시 무효화
@@ -541,60 +664,116 @@ export async function saveDashboardAction(
 }
 ```
 
+### 12.3 구독 플랜별 서버 액션 제한
+
 ```tsx
-// packages/dashboard/components/save-button.tsx
-'use client';
+// app/actions/subscription.ts
+'use server';
 
-import { useActionMutation } from '@/e-torch/state';
-import { saveDashboardAction } from '@/app/actions/dashboard';
-import { Button } from '@/e-torch/ui';
-import { queryKeys } from '@/e-torch/state/query-keys';
-
-export function SaveButton({ dashboardId, formData }) {
-  const { mutate, isPending } = useActionMutation({
-    action: saveDashboardAction,
-    invalidateQueries: [
-      { queryKey: queryKeys.dashboards.detail(dashboardId) },
-      { queryKey: queryKeys.dashboards.lists() }
-    ],
-    onSuccess: () => {
-      toast({
-        title: "저장 완료",
-        description: "대시보드가 성공적으로 저장되었습니다.",
-        variant: "default",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "저장 실패",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  });
+export async function createWidgetAction(widgetData: any) {
+  const user = await getCurrentUser();
   
+  // Basic 플랜 위젯 개수 제한
+  if (user.plan === 'basic') {
+    const widgetCount = await getUserWidgetCount(user.id, widgetData.dashboardId);
+    if (widgetCount >= 6) {
+      redirect('/subscription/upgrade?reason=widget_limit');
+    }
+  }
+  
+  // 위젯 생성 로직
+  const result = await createWidget(widgetData);
+  
+  revalidatePath(`/dashboard/${widgetData.dashboardId}/edit`);
+  return { success: true, data: result };
+}
+```
+
+## 13. 성능 최적화 라우팅 전략
+
+### 13.1 로딩 및 에러 처리
+
+```
+app/
+├── (dashboard)/
+│   ├── dashboard/
+│   │   ├── loading.tsx    # 대시보드 목록 로딩
+│   │   ├── error.tsx      # 대시보드 목록 에러
+│   │   └── [id]/
+│   │       ├── loading.tsx # 개별 대시보드 로딩
+│   │       └── error.tsx   # 개별 대시보드 에러
+│   └── explore/
+│       ├── loading.tsx     # 탐색 페이지 로딩
+│       └── error.tsx       # 탐색 페이지 에러
+│
+├── (widget)/
+│   └── widget-editor/[id]/
+│       ├── loading.tsx     # 위젯 에디터 로딩
+│       └── error.tsx       # 위젯 에디터 에러
+│
+└── (subscription)/
+    └── subscription/
+        ├── loading.tsx      # 구독 페이지 로딩
+        └── error.tsx        # 구독 페이지 에러
+```
+
+### 13.2 캐싱 전략
+
+- **정적 생성**: 공개 대시보드 탐색 페이지
+- **ISR**: 경제지표 데이터 (30분 간격)
+- **동적 렌더링**: 개인 대시보드, 위젯 에디터
+- **부분 사전 렌더링**: 대시보드 목록 페이지
+
+## 14. 접근성 라우팅 패턴
+
+### 14.1 접근성 지원 라우팅
+
+```
+app/
+├── (accessibility)/       # 접근성 지원 라우트 그룹
+│   ├── keyboard-help/     # 키보드 단축키 도움말
+│   │   └── page.tsx
+│   ├── screen-reader/     # 스크린 리더 가이드
+│   │   └── page.tsx
+│   ├── high-contrast/     # 고대비 모드 설정
+│   │   └── page.tsx
+│   └── layout.tsx
+```
+
+### 14.2 Skip Navigation 패턴
+
+```tsx
+// app/layout.tsx에 Skip Links 포함
+export default function RootLayout({ children }) {
   return (
-    <Button 
-      onClick={() => mutate(formData)}
-      disabled={isPending}
-    >
-      {isPending ? '저장 중...' : '저장'}
-    </Button>
+    <html lang="ko">
+      <body>
+        <a href="#main-content" className="sr-only focus:not-sr-only">
+          메인 콘텐츠로 건너뛰기
+        </a>
+        <a href="#navigation" className="sr-only focus:not-sr-only">
+          네비게이션으로 건너뛰기
+        </a>
+        {children}
+      </body>
+    </html>
   );
 }
 ```
 
-## 12. 결론
+## 15. 결론
 
 E-Torch의 라우팅 구조는 Next.js 15 App Router의 최신 기능을 활용하여 사용자 중심의 직관적인 인터페이스를 제공합니다. 주요 특징은 다음과 같습니다:
 
 - **계층적 레이아웃**: 페이지 간 일관된 사용자 경험 제공
 - **기능별 라우트 그룹화**: 코드 구조의 명확한 조직화
 - **서버/클라이언트 분리**: 성능과 사용자 경험 최적화
-- **동적 라우팅**: 대시보드와 차트에 대한 유연한 접근
-- **안전한 라우트 보호**: 다층적 인증 및 권한 검증
+- **동적 라우팅**: 대시보드와 위젯에 대한 유연한 접근
+- **구독 플랜별 라우트 보호**: 다층적 인증 및 권한 검증
+- **토스페이먼츠 연동**: 완전한 결제 시스템 라우팅
 - **메타데이터 최적화**: SEO 및 소셜 공유 최적화
 - **서버 액션**: 클라이언트-서버 통신 간소화
-- **디자인 시스템 통합**: OKLCH 색상 체계와 Tailwind CSS 4 클래스 활용
+- **접근성 지원**: WCAG 2.1 AA 수준 접근성 라우팅
+- **경제지표 특화**: KOSIS, ECOS 데이터 소스별 최적화
 
 이 구조는 E-Torch의 복잡한 기능을 직관적으로 접근 가능하게 만들며, 향후 기능 추가 시에도 확장 가능한 견고한 기반을 제공합니다.
