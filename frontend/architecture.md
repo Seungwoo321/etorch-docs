@@ -111,10 +111,11 @@ export const DATA_SOURCE_CONFIG = {
   OECD: {
     id: 'oecd',
     name: 'OECD 통계',
-    status: 'planned',
-    supportedPeriods: [],
-    indicatorCount: { basic: 0, pro: 0 },
-    plannedRelease: '2025-Q3'
+    status: 'planned',           // 명확히 향후 확장 예정
+    supportedPeriods: ['M', 'Q', 'A'], // 계획된 주기
+    indicatorCount: { basic: 0, pro: 0 }, // 현재 미제공
+    plannedRelease: '2025-Q3',   // 출시 예정일
+    note: '현재 비활성화, UI에서 선택 불가'
   }
 } as const
 
@@ -474,7 +475,7 @@ export const useAuthWithCache = () => {
 |------|-------------|-----------|----------|
 | **대시보드 수** | 3개 | 무제한 | DB 제약 + UI 진행바 |
 | **위젯 수** | 6개/대시보드 | 무제한 | react-grid-layout 제한 |
-| **경제지표** | 20개 (MVP) | 40개 | 프론트엔드 필터링 |
+| **경제지표** | 20개 (KOSIS 12개 + ECOS 8개) | 40개 (KOSIS 12개 + ECOS 28개) | 프론트엔드 필터링 |
 | **데이터 기간** | 최근 3년 | 전체 기간 | DatePicker 비활성화 |
 | **워터마크** | "E-Torch로 제작됨" | 제거 가능 | CSS 오버레이 |
 | **대시보드 복사** | 불가 | 가능 | 버튼 비활성화 |
@@ -487,7 +488,8 @@ export const PLAN_LIMITS = {
   basic: {
     dashboards: 3,
     widgets: 6,
-    indicators: 20,
+    indicators: 20, // KOSIS 12개 + ECOS 8개
+    indicatorsBySource: { kosis: 12, ecos: 8, oecd: 0 },
     dataYears: 3,
     watermark: true,
     copyDashboard: false,
@@ -497,7 +499,8 @@ export const PLAN_LIMITS = {
   pro: {
     dashboards: Infinity,
     widgets: Infinity,
-    indicators: 40,
+    indicators: 40, // KOSIS 12개 + ECOS 28개  
+    indicatorsBySource: { kosis: 12, ecos: 28, oecd: 0 },
     dataYears: Infinity,
     watermark: false, // 제거 가능
     copyDashboard: true,
@@ -905,13 +908,30 @@ const useResponsiveGridProps = () => {
   }
 }
 
-// 모바일 위젯 크기 프리셋
+// 모바일 위젯 크기 프리셋 (속성 패널에서 선택)
 const MOBILE_WIDGET_PRESETS = {
-  small: { w: 4, h: 2, label: '작게 (2행)' },
-  medium: { w: 4, h: 3, label: '중간 (3행)' },
-  large: { w: 4, h: 4, label: '크게 (4행)' },
-  extra: { w: 4, h: 6, label: '매우 크게 (6행)' }
+  small: { w: 4, h: 2, label: '작게 (2행)', icon: '📊' },
+  medium: { w: 4, h: 3, label: '중간 (3행)', icon: '📈' },
+  large: { w: 4, h: 4, label: '크게 (4행)', icon: '📉' },
+  extra: { w: 4, h: 6, label: '매우 크게 (6행)', icon: '📋' }
 } as const
+
+// 모바일 속성 패널 크기 조절 UI
+const MobileWidgetSizeSelector = ({ currentSize, onChange }) => (
+  <div className="grid grid-cols-2 gap-2 p-4">
+    {Object.entries(MOBILE_WIDGET_PRESETS).map(([key, preset]) => (
+      <Button
+        key={key}
+        variant={currentSize.h === preset.h ? "default" : "outline"}
+        className="h-16 flex-col"
+        onClick={() => onChange(preset)}
+      >
+        <span className="text-2xl">{preset.icon}</span>
+        <span className="text-xs">{preset.label}</span>
+      </Button>
+    ))}
+  </div>
+)
 ```
 
 ### 10.2 터치 인터페이스 최적화
