@@ -10,7 +10,7 @@
 | **1000+ 데이터 포인트** | 메모리 200MB 제한 | LTTB 다운샘플링 |
 | **구독 모델** | 권한 검증 < 10ms | 클라이언트 캐시 5분 |
 | **7가지 위젯 타입** | 차트 5개 + 텍스트 2개 | 팩토리 패턴 |
-| **토스페이먼츠 빌링** | 자동 갱신 구독 | PaymentWidget SDK |
+| **토스페이먼츠 빌링** | 자동 갱신 구독 | SDK v2 + 빌링키 |
 | **WCAG 2.1 AA** | 차트 접근성 | 데이터 테이블 + aria-label |
 
 ### 1.2 핵심 성능 목표
@@ -32,11 +32,11 @@
 | **모노레포** | Turborepo + pnpm | 2.5.3 + 10.11.0 | 9패키지 분할 |
 | **프레임워크** | Next.js + React | 15.3.2 + 19.1.0 | App Router + useOptimistic |
 | **UI** | Tailwind CSS + Shadcn/UI | 4.1.7 + latest | CSS-first, OKLCH 색상 |
-| **상태관리** | Zustand + TanStack Query | 5.0.5 + 5.77.0 | 서버/클라이언트 분리 |
+| **상태관리** | Zustand + TanStack Query | 5.0.5 + 5.77.0 | **서버/클라이언트 분리 전략** |
 | **차트** | Recharts | 2.15.3 | LTTB + 7가지 위젯 |
 | **레이아웃** | react-grid-layout | 1.5.1 | 200ms/300ms 디바운싱 |
 | **인증** | Supabase Auth | v2 | SNS 3개 + 구독 모델 |
-| **결제** | 토스페이먼츠 | latest | PaymentWidget + 빌링키 |
+| **결제** | **토스페이먼츠 SDK v2** | **latest** | **통합 SDK + 빌링키** |
 
 ### 2.2 Tailwind CSS 4 레이아웃 설정
 
@@ -154,10 +154,10 @@ export const validateDataPeriod = (plan: 'basic' | 'pro', startDate: Date, endDa
 | @e-torch/utils | LTTB, 포맷터, 유틸리티 | useLTTBSampling | 1000+ 포인트 다운샘플링 |
 | @e-torch/ui | Shadcn/UI + 패널 시스템 | AccessibleChart, ResizablePanel | WCAG 2.1 AA + 위젯 에디터 패널 |
 | @e-torch/data-sources | KOSIS/ECOS 어댑터 | useDataSource | 플랜별 지표 필터링 |
-| @e-torch/state | Zustand + TanStack Query | useGlobalState | 서버/클라이언트 분리 |
+| @e-torch/state | Zustand + TanStack Query | useGlobalState | **서버/클라이언트 분리** |
 | @e-torch/charts | 7가지 위젯 + LTTB | WidgetFactory | 위젯 팩토리 패턴 |
 | @e-torch/dashboard | 편집 + 레이아웃 | DashboardEditor | react-grid-layout |
-| @e-torch/server-api | 결제 + 인증 + 서버액션 | PaymentActions | 토스페이먼츠 연동 |
+| @e-torch/server-api | **결제 + 인증 + 서버액션** | **PaymentActions** | **토스페이먼츠 SDK v2** |
 | @e-torch/eslint | 접근성 + 성능 규칙 | eslintConfig | jsx-a11y 규칙 |
 
 ### 4.2 패키지 의존성 그래프
@@ -507,7 +507,52 @@ export const PLAN_LIMITS = {
 } as const
 ```
 
-### 6.3 구독 모델 권한 검증 플로우
+### 6.3 **토스페이먼츠 SDK v2 통합**
+
+```typescript
+// 토스페이먼츠 SDK v2 기반 구독 결제
+export const PaymentWidget = ({ plan }: { plan: 'monthly' | 'yearly' }) => {
+  const { loadTossPayments } = useTossPayments()
+  
+  const handleSubscription = async () => {
+    const tossPayments = await loadTossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY)
+    
+    // 빌링키 발급 + 첫 결제
+    await tossPayments.requestBillingAuth('카드', {
+      customerKey: user.id,
+      successUrl: '/payment/success',
+      failUrl: '/payment/fail',
+      // 구독 플랜별 금액
+      amount: plan === 'monthly' ? 9900 : 99000
+    })
+  }
+  
+  return <button onClick={handleSubscription}>구독하기</button>
+}
+
+// 서버 액션: 자동 결제 스케줄링
+export async function processSubscriptionPayment(billingKey: string, customerKey: string) {
+  'use server'
+  
+  const payment = await fetch('https://api.tosspayments.com/v1/billing/{billingKey}', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${Buffer.from(process.env.TOSS_SECRET_KEY + ':').toString('base64')}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      customerKey,
+      amount: getPlanAmount(customerKey),
+      orderId: generateOrderId(),
+      orderName: 'E-Torch Pro 구독'
+    })
+  })
+  
+  return payment.json()
+}
+```
+
+### 6.4 구독 모델 권한 검증 플로우
 
 ```mermaid
 graph TD
@@ -584,9 +629,148 @@ graph TD
     class EnableFeature,DisableFeature,ShowUpgrade,ApplyWatermark ui
 ```
 
-## 7. 워터마크 + 접근성
+## 7. **에러 바운더리 아키텍처**
 
-### 7.1 워터마크 시스템
+### 7.1 계층별 에러 처리 전략
+
+| 계층 | 에러 유형 | 처리 방법 | Fallback UI |
+|------|----------|----------|------------|
+| **차트 레벨** | 렌더링 실패, LTTB 오류 | ChartErrorBoundary | 에러 메시지 + 재시도 |
+| **위젯 레벨** | 데이터 로딩 실패 | WidgetErrorBoundary | 스켈레톤 + 오류 아이콘 |
+| **대시보드 레벨** | 레이아웃 오류, 권한 오류 | DashboardErrorBoundary | 부분 복구 + 전체 재로드 |
+| **앱 레벨** | 예상치 못한 오류 | RootErrorBoundary | 전체 앱 재시작 |
+
+### 7.2 에러 바운더리 구조
+
+```typescript
+// 차트 전용 에러 바운더리
+export class ChartErrorBoundary extends Component<PropsWithChildren> {
+  state = { hasError: false, error: null }
+  
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error }
+  }
+  
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="chart-error">
+          <AlertTriangle className="w-8 h-8 text-orange-500" />
+          <p>차트를 불러올 수 없습니다</p>
+          <Button onClick={() => this.setState({ hasError: false })}>
+            다시 시도
+          </Button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
+// 권한 오류 전용 처리
+export const AuthErrorBoundary = ({ children }: PropsWithChildren) => {
+  return (
+    <ErrorBoundary 
+      fallback={<UnauthorizedAccess />}
+      onError={(error) => {
+        if (error.message.includes('unauthorized')) {
+          router.push('/login')
+        }
+      }}
+    >
+      {children}
+    </ErrorBoundary>
+  )
+}
+```
+
+## 8. **타입 안전성 시스템**
+
+### 8.1 위젯 타입 시스템
+
+```typescript
+// 위젯 타입별 Props 타입 안전성
+export type WidgetType = 
+  | 'time-series' 
+  | 'bar-chart' 
+  | 'scatter-chart' 
+  | 'radar-chart' 
+  | 'radial-bar-chart'
+  | 'text-custom' 
+  | 'text-data'
+
+export type WidgetProps<T extends WidgetType> = 
+  T extends 'time-series' ? TimeSeriesWidgetProps :
+  T extends 'bar-chart' ? BarChartWidgetProps :
+  T extends 'scatter-chart' ? ScatterChartWidgetProps :
+  T extends 'radar-chart' ? RadarChartWidgetProps :
+  T extends 'radial-bar-chart' ? RadialBarChartWidgetProps :
+  T extends 'text-custom' ? TextCustomWidgetProps :
+  T extends 'text-data' ? TextDataWidgetProps :
+  never
+
+// 구독 플랜 타입 안전성
+export type SubscriptionPlan = 'basic' | 'pro'
+
+export type PlanLimits<T extends SubscriptionPlan> = {
+  readonly dashboards: T extends 'basic' ? 3 : typeof Infinity
+  readonly widgets: T extends 'basic' ? 6 : typeof Infinity
+  readonly indicators: T extends 'basic' ? 20 : 40
+  readonly dataYears: T extends 'basic' ? 3 : typeof Infinity
+  readonly watermark: T extends 'basic' ? true : false
+  readonly copyDashboard: T extends 'basic' ? false : true
+  readonly embedCode: T extends 'basic' ? false : true
+  readonly exportScale: T extends 'basic' ? 1.6 : 2.0
+}
+
+// 데이터 소스 타입 안전성
+export type DataSourceType = 'kosis' | 'ecos' | 'oecd'
+export type DataPeriod = 'D' | 'M' | 'Q' | 'A'
+
+export interface DataSourceConfig<T extends DataSourceType> {
+  readonly id: T
+  readonly name: string
+  readonly status: 'active' | 'planned' | 'deprecated'
+  readonly supportedPeriods: readonly DataPeriod[]
+  readonly indicatorCount: { basic: number; pro: number }
+}
+```
+
+### 8.2 런타임 타입 검증
+
+```typescript
+// Zod를 활용한 런타임 검증
+import { z } from 'zod'
+
+export const WidgetConfigSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('time-series'),
+    dataSources: z.array(DataSourceSchema).max(5),
+    options: TimeSeriesOptionsSchema
+  }),
+  z.object({
+    type: z.literal('text-custom'),
+    content: z.string().max(10000),
+    options: TextCustomOptionsSchema
+  })
+])
+
+export type WidgetConfig = z.infer<typeof WidgetConfigSchema>
+
+// API 응답 검증
+export const validateApiResponse = <T>(schema: z.ZodSchema<T>) => 
+  (data: unknown): T => {
+    const result = schema.safeParse(data)
+    if (!result.success) {
+      throw new Error(`API 응답 검증 실패: ${result.error.message}`)
+    }
+    return result.data
+  }
+```
+
+## 9. 워터마크 + 접근성
+
+### 9.1 워터마크 시스템
 
 ```typescript
 interface WatermarkProps {
@@ -640,7 +824,7 @@ export const exportDashboard = async (format: 'png' | 'pdf') => {
 }
 ```
 
-### 7.2 WCAG 2.1 AA 접근성
+### 9.2 WCAG 2.1 AA 접근성
 
 | 요구사항 | 구현 방법 | 검증 도구 | 패키지 위치 |
 |----------|----------|----------|------------|
@@ -686,9 +870,9 @@ export const AccessibleChart = ({
 }
 ```
 
-## 8. 모바일 최적화
+## 10. 모바일 최적화
 
-### 8.1 편집 기능 제한사항
+### 10.1 편집 기능 제한사항
 
 | 화면 크기 | 드래그 | 리사이즈 | 크기 조절 방법 | 구현 방식 |
 |----------|-------|---------|-------------|----------|
@@ -730,7 +914,7 @@ const MOBILE_WIDGET_PRESETS = {
 } as const
 ```
 
-### 8.2 터치 인터페이스 최적화
+### 10.2 터치 인터페이스 최적화
 
 | 설정 | 값 | 적용 범위 | CSS 구현 |
 |------|----|---------|---------|
@@ -739,9 +923,9 @@ const MOBILE_WIDGET_PRESETS = {
 | 드래그 핸들 | 48×48px | 위젯 이동 핸들 | w-12 h-12 |
 | 스와이프 감지 | 100px 이동 | 대시보드 네비게이션 | 터치 이벤트 |
 
-## 9. 개발 도구 설정
+## 11. 개발 도구 설정
 
-### 9.1 ESLint 접근성 + 성능 규칙
+### 11.1 ESLint 접근성 + 성능 규칙
 
 ```json
 {
@@ -759,7 +943,7 @@ const MOBILE_WIDGET_PRESETS = {
 }
 ```
 
-### 9.2 성능 모니터링
+### 11.2 성능 모니터링
 
 | 지표 | 목표값 | 경고 임계값 | 에러 임계값 | 자동 대응 |
 |------|--------|------------|-----------|----------|
