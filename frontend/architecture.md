@@ -162,12 +162,47 @@ export const validateDataPeriod = (plan: 'basic' | 'pro', startDate: Date, endDa
 
 ### 4.2 패키지 의존성 그래프
 
-```typescript
-// 핵심 의존성 (panels를 ui에 통합)
-core → utils, ui, data-sources, state, server-api
-ui → charts, dashboard (ResizablePanel 통합 완료)
-data-sources → state → charts → dashboard
-server-api → state (인증/결제 상태 관리)
+```mermaid
+graph TB
+    Core["@e-torch/core<br/>(타입, 상수, 구독 모델)"]
+    Utils["@e-torch/utils<br/>(LTTB, 포맷터)"]
+    UI["@e-torch/ui<br/>(Shadcn/UI + 패널시스템)"]
+    DataSources["@e-torch/data-sources<br/>(KOSIS/ECOS 어댑터)"]
+    State["@e-torch/state<br/>(Zustand + TanStack Query)"]
+    Charts["@e-torch/charts<br/>(7가지 위젯 + LTTB)"]
+    Dashboard["@e-torch/dashboard<br/>(편집 + 레이아웃)"]
+    ServerAPI["@e-torch/server-api<br/>(결제 + 인증)"]
+    ESLint["@e-torch/eslint-config<br/>(접근성 + 성능 규칙)"]
+    
+    Core --> Utils
+    Core --> UI
+    Core --> DataSources
+    Core --> State
+    Core --> ServerAPI
+    
+    Utils --> Charts
+    Utils --> Dashboard
+    
+    UI --> Charts
+    UI --> Dashboard
+    
+    DataSources --> State
+    State --> Charts
+    Charts --> Dashboard
+    
+    ServerAPI --> State
+    
+    ESLint --> Core
+    
+    classDef corePackage fill:#e1f5fe
+    classDef uiPackage fill:#f3e5f5
+    classDef dataPackage fill:#e8f5e8
+    classDef serverPackage fill:#fff3e0
+    
+    class Core,Utils corePackage
+    class UI,Charts,Dashboard uiPackage
+    class DataSources,State dataPackage
+    class ServerAPI serverPackage
 ```
 
 ### 4.3 편집 모드 상태 머신
