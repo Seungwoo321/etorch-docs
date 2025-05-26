@@ -805,20 +805,111 @@ export async function createWidgetAction(widgetData: any) {
 ### 13.1 표준화된 에러 처리 시스템
 
 ```tsx
+// types/errors.ts
+export interface StructuredError {
+  type: ErrorType;
+  code: ErrorCode;
+  message: string;
+  userMessage: string;
+  recoverable: boolean;
+  retryable: boolean;
+  context?: Record<string, any>;
+}
+
+export enum ErrorType {
+  SUBSCRIPTION_REQUIRED = 'SUBSCRIPTION_REQUIRED',
+  NETWORK_ERROR = 'NETWORK_ERROR',
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+  AUTH_ERROR = 'AUTH_ERROR',
+  QUOTA_EXCEEDED = 'QUOTA_EXCEEDED',
+  UNKNOWN = 'UNKNOWN'
+}
+
+export enum ErrorCode {
+  // 구독 관련
+  SUB_001 = 'DASHBOARD_LIMIT_EXCEEDED',
+  SUB_002 = 'WIDGET_LIMIT_EXCEEDED',
+  SUB_003 = 'DATA_PERIOD_RESTRICTED',
+  
+  // 네트워크 관련
+  NET_001 = 'API_TIMEOUT',
+  NET_002 = 'CONNECTION_FAILED',
+  
+  // 검증 관련
+  VAL_001 = 'INVALID_DASHBOARD_DATA',
+  VAL_002 = 'INVALID_WIDGET_CONFIG'
+}
+
+// utils/error-classifier.ts
+import { StructuredError, ErrorType, ErrorCode } from '@/types/errors';
+
+export function classifyError(error: Error): StructuredError {
+  // 구독 관련 에러
+  if (error.message.includes('dashboard_limit')) {
+    return {
+      type: ErrorType.SUBSCRIPTION_REQUIRED,
+      code: ErrorCode.SUB_001,
+      message: error.message,
+      userMessage: '대시보드 생성 한도에 도달했습니다. Pro 플랜으로 업그레이드하세요.',
+      recoverable: true,
+      retryable: false,
+      context: { upgradeUrl: '/subscription/upgrade?reason=dashboard_limit' }
+    };
+  }
+  
+  if (error.message.includes('widget_limit')) {
+    return {
+      type: ErrorType.SUBSCRIPTION_REQUIRED,
+      code: ErrorCode.SUB_002,
+      message: error.message,
+      userMessage: '위젯 생성 한도에 도달했습니다. Pro 플랜으로 업그레이드하세요.',
+      recoverable: true,
+      retryable: false,
+      context: { upgradeUrl: '/subscription/upgrade?reason=widget_limit' }
+    };
+  }
+  
+  // 네트워크 에러
+  if (error.name === 'NetworkError' || error.message.includes('fetch')) {
+    return {
+      type: ErrorType.NETWORK_ERROR,
+      code: ErrorCode.NET_001,
+      message: error.message,
+      userMessage: '네트워크 연결을 확인하고 다시 시도해주세요.',
+      recoverable: true,
+      retryable: true
+    };
+  }
+  
+  // 검증 에러
+  if (error.name === 'ValidationError') {
+    return {
+      type: ErrorType.VALIDATION_ERROR,
+      code: ErrorCode.VAL_001,
+      message: error.message,
+      userMessage: '입력값을 확인하고 다시 시도해주세요.',
+      recoverable: true,
+      retryable: false
+    };
+  }
+  
+  // 기본값
+  return {
+    type: ErrorType.UNKNOWN,
+    code: 'UNKNOWN' as ErrorCode,
+    message: error.message,
+    userMessage: '일시적 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+    recoverable: true,
+    retryable: true
+  };
+}
+
 // app/error-boundary.tsx
 'use client';
 
 import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
-
-type ErrorType = 'SUBSCRIPTION_REQUIRED' | 'NETWORK_ERROR' | 'VALIDATION_ERROR' | 'UNKNOWN';
-
-function classifyError(error: Error): ErrorType {
-  if (error.message.includes('subscription')) return 'SUBSCRIPTION_REQUIRED';
-  if (error.message.includes('network') || error.name === 'NetworkError') return 'NETWORK_ERROR';
-  if (error.name === 'ValidationError') return 'VALIDATION_ERROR';
-  return 'UNKNOWN';
-}
+import { classifyError, StructuredError, ErrorType } from '@/utils/error-classifier';
 
 export function GlobalErrorBoundary({ 
   error, 
@@ -827,102 +918,96 @@ export function GlobalErrorBoundary({
   error: Error & { digest?: string }; 
   reset: () => void; 
 }) {
-  const errorType = classifyError(error);
+  const structuredError = classifyError(error);
   
   useEffect(() => {
-    // 에러 로깅
+    // 구조화된 에러 로깅
     logger.error('Global error boundary triggered', {
-      error: error.message,
+      ...structuredError,
+      originalError: error.message,
       stack: error.stack,
       digest: error.digest,
-      type: errorType
+      timestamp: new Date().toISOString(),
+      userAgent: window.navigator.userAgent,
+      url: window.location.href
     });
-  }, [error, errorType]);
+  }, [error, structuredError]);
+  
+  const handleRetry = () => {
+    if (structuredError.retryable) {
+      reset();
+    }
+  };
+  
+  const handleRecover = () => {
+    if (structuredError.context?.upgradeUrl) {
+      window.location.href = structuredError.context.upgradeUrl;
+    } else if (structuredError.recoverable) {
+      window.location.href = '/dashboard';
+    }
+  };
+  
+  const getErrorTitle = (type: ErrorType): string => {
+    switch (type) {
+      case ErrorType.SUBSCRIPTION_REQUIRED:
+        return '업그레이드가 필요합니다';
+      case ErrorType.NETWORK_ERROR:
+        return '연결 오류';
+      case ErrorType.VALIDATION_ERROR:
+        return '입력 오류';
+      case ErrorType.AUTH_ERROR:
+        return '인증 오류';
+      case ErrorType.QUOTA_EXCEEDED:
+        return '사용량 한도 초과';
+      default:
+        return '오류가 발생했습니다';
+    }
+  };
   
   const renderErrorContent = () => {
-    switch (errorType) {
-      case 'SUBSCRIPTION_REQUIRED':
-        return (
-          <div className="text-center p-6">
-            <h2 className="text-2xl font-bold mb-4">업그레이드가 필요합니다</h2>
-            <p className="text-muted-foreground mb-6">
-              이 기능을 사용하려면 Pro 플랜으로 업그레이드하세요.
-            </p>
-            <a 
-              href="/subscription/upgrade" 
-              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-            >
-              Pro 플랜 보기
-            </a>
-          </div>
-        );
-      
-      case 'NETWORK_ERROR':
-        return (
-          <div className="text-center p-6">
-            <h2 className="text-2xl font-bold mb-4">연결 오류</h2>
-            <p className="text-muted-foreground mb-6">
-              네트워크 연결을 확인하고 다시 시도해주세요.
-            </p>
+    return (
+      <div className="text-center p-6">
+        <h2 className="text-2xl font-bold mb-4">{getErrorTitle(structuredError.type)}</h2>
+        <p className="text-muted-foreground mb-6">
+          {structuredError.userMessage}
+        </p>
+        
+        <div className="space-x-4">
+          {structuredError.retryable && (
             <button 
-              onClick={reset}
+              onClick={handleRetry}
               className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >
               다시 시도
             </button>
-          </div>
-        );
-      
-      case 'VALIDATION_ERROR':
-        return (
-          <div className="text-center p-6">
-            <h2 className="text-2xl font-bold mb-4">입력 오류</h2>
-            <p className="text-muted-foreground mb-6">
-              입력값을 확인하고 다시 시도해주세요.
-            </p>
+          )}
+          
+          {structuredError.recoverable && (
             <button 
-              onClick={reset}
-              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              onClick={handleRecover}
+              className={structuredError.context?.upgradeUrl 
+                ? "inline-flex items-center justify-center rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700"
+                : "inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+              }
             >
-              돌아가기
+              {structuredError.context?.upgradeUrl ? 'Pro 플랜 보기' : '홈으로 이동'}
             </button>
-          </div>
-        );
-      
-      default:
-        return (
-          <div className="text-center p-6">
-            <h2 className="text-2xl font-bold mb-4">오류가 발생했습니다</h2>
-            <p className="text-muted-foreground mb-6">
-              일시적인 오류입니다. 잠시 후 다시 시도해주세요.
-            </p>
-            <div className="space-x-4">
-              <button 
-                onClick={reset}
-                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-              >
-                다시 시도
-              </button>
-              <a 
-                href="/dashboard"
-                className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
-              >
-                홈으로 이동
-              </a>
-            </div>
-          </div>
-        );
-    }
-  };
-  
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="max-w-md w-full">
-        {renderErrorContent()}
+          )}
+        </div>
+        
+        {process.env.NODE_ENV === 'development' && (
+          <details className="mt-6 text-left">
+            <summary className="cursor-pointer text-sm text-muted-foreground">
+              개발자 정보 (개발 환경에서만 표시)
+            </summary>
+            <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-auto">
+              {JSON.stringify(structuredError, null, 2)}
+            </pre>
+          </details>
+        )}
       </div>
-    </div>
-  );
-}
+    );
+  };
 ```
 
 ### 13.2 로딩 및 에러 처리 구조
@@ -953,12 +1038,79 @@ app/
 └── error-boundary.tsx      # 전역 에러 바운더리
 ```
 
-### 13.3 캐싱 전략
+#### 13.3 타입 안전 에러 처리
 
-- **정적 생성**: 공개 대시보드 탐색 페이지, 접근성 페이지
-- **ISR**: 경제지표 데이터 (30분 간격)
-- **동적 렌더링**: 개인 대시보드, 위젯 에디터
-- **부분 사전 렌더링**: 대시보드 목록 페이지
+**에러 타입 정의 파일 구조**
+
+```
+app/
+├── types/
+│   └── errors.ts         # 에러 타입 정의
+├── utils/
+│   └── error-classifier.ts # 에러 분류 로직
+└── components/
+    └── error-boundary.tsx  # 에러 바운더리 컴포넌트
+```
+
+**서버 액션에서의 타입 안전 에러 처리**
+
+```tsx
+// app/actions/dashboard.ts
+import { StructuredError, ErrorType, ErrorCode } from '@/types/errors';
+
+export async function saveDashboardAction(formData: FormData) {
+  try {
+    // ... 기존 로직
+  } catch (error) {
+    const structuredError = classifyError(error as Error);
+    
+    return { 
+      success: false, 
+      error: structuredError 
+    };
+  }
+}
+```
+
+**클라이언트에서의 에러 처리**
+
+```tsx
+// components/dashboard-form.tsx
+'use client';
+
+import { StructuredError } from '@/types/errors';
+
+export function DashboardForm() {
+  const [error, setError] = useState<StructuredError | null>(null);
+  
+  const handleSubmit = async (formData: FormData) => {
+    const result = await saveDashboardAction(formData);
+    
+    if (!result.success && result.error) {
+      setError(result.error);
+      
+      // 자동 복구 시도
+      if (result.error.retryable) {
+        setTimeout(() => handleSubmit(formData), 2000);
+      }
+    }
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      {error && (
+        <div className="error-display">
+          <p>{error.userMessage}</p>
+          {error.context?.upgradeUrl && (
+            <a href={error.context.upgradeUrl}>업그레이드</a>
+          )}
+        </div>
+      )}
+      {/* 폼 필드들 */}
+    </form>
+  );
+}
+```
 
 ## 14. 접근성 라우팅 패턴
 
