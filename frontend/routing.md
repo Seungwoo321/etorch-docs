@@ -863,11 +863,17 @@ export async function GET(request: NextRequest) {
       category: locale === 'en' ? indicator.categoryEn : indicator.categoryKo,
     }));
     
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: translatedIndicators,
       locale,
     });
+    
+    // 지표 목록은 거의 변경되지 않으므로 긴 캐시 적용
+    response.headers.set('Cache-Control', 'public, s-maxage=86400, max-age=43200'); // CDN 24시간, 브라우저 12시간
+    response.headers.set('Vary', 'Accept-Language'); // 언어별 캐시 분리
+    
+    return response;
   } catch (error) {
     const errorMessage = locale === 'en' 
       ? 'Failed to fetch indicators'
@@ -875,6 +881,57 @@ export async function GET(request: NextRequest) {
       
     return NextResponse.json(
       { success: false, error: errorMessage },
+      { status: 500 }
+    );
+  }
+}
+
+// app/api/data/[source]/series/[id]/route.ts
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { source: string; id: string } }
+) {
+  const { searchParams } = new URL(request.url);
+  const period = searchParams.get('period') || 'M';
+  const startDate = searchParams.get('startDate');
+  const endDate = searchParams.get('endDate');
+  
+  try {
+    // 서버 캐싱 없이 직접 데이터 조회
+    const data = await getSeriesData(params.source as 'KOSIS' | 'ECOS', params.id, period, startDate, endDate);
+    
+    const response = NextResponse.json({
+      success: true,
+      data,
+      metadata: {
+        source: params.source,
+        indicator: params.id,
+        period,
+        dateRange: { startDate, endDate },
+        fetchedAt: new Date().toISOString(),
+      },
+    });
+    
+    // TanStack Query와 조화되는 HTTP 캐시 설정
+    const isHistoricalData = new Date(endDate!) < new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    
+    if (isHistoricalData) {
+      // 과거 데이터: 긴 캐시 + TanStack Query와 일치하는 설정
+      response.headers.set('Cache-Control', 'public, max-age=86400, s-maxage=604800'); // 브라우저 1일, CDN 7일
+    } else {
+      // 최신 데이터: TanStack Query staleTime과 일치하는 짧은 캐시
+      const cacheTime = params.source === 'ECOS' && period === 'D' ? 900 : 1800; // 15분 또는 30분
+      response.headers.set('Cache-Control', `public, max-age=${cacheTime}, s-maxage=${cacheTime * 2}`);
+    }
+    
+    // ETag로 조건부 요청 지원 (TanStack Query가 활용 가능)
+    const etag = `"${params.source}-${params.id}-${period}-${startDate}-${endDate}"`;
+    response.headers.set('ETag', etag);
+    
+    return response;
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch series data' },
       { status: 500 }
     );
   }
@@ -1718,6 +1775,23 @@ const getCachedLocalizedDashboard = unstable_cache(
   }
 );
 
+// 지표 메타데이터만 서버 캐싱 (리스트는 자주 바뀌지 않음)
+const getCachedIndicatorsList = unstable_cache(
+  async (source: 'KOSIS' | 'ECOS', locale: 'ko' | 'en') => {
+    const indicators = await getIndicatorsList(source);
+    return indicators.map(indicator => ({
+      ...indicator,
+      name: locale === 'en' ? indicator.nameEn : indicator.nameKo,
+      description: locale === 'en' ? indicator.descriptionEn : indicator.descriptionKo,
+    }));
+  },
+  ['indicators-list'],
+  {
+    tags: [`source-${source}`, `locale-${locale}`],
+    revalidate: 86400, // 24시간 캐시 (지표 목록은 거의 변경되지 않음)
+  }
+);
+
 export default async function DashboardPage({ 
   params 
 }: { 
@@ -1757,37 +1831,121 @@ export async function invalidateLocalizedDashboardCache(
 ### 16.2 언어별 사용자 인식 성능 최적화
 
 ```tsx
-// components/LocalizedDashboardCard.tsx
-import { LocalizedLink } from './LocalizedLink';
-import { Suspense } from 'react';
-import { useDictionary } from '@/hooks/use-dictionary';
+// ✅ TanStack Query 기반 캐싱 전략
+import { useQuery, useQueries } from '@tanstack/react-query';
 
-export function LocalizedDashboardCard({ dashboard, locale }) {
-  const dictionary = useDictionary();
+// 데이터 특성별 TanStack Query 설정
+export function getIndicatorQueryConfig(
+  source: 'KOSIS' | 'ECOS',
+  period: string,
+  isHistorical: boolean
+) {
+  if (isHistorical) {
+    // 과거 데이터는 거의 변경되지 않음
+    return {
+      staleTime: 24 * 60 * 60 * 1000, // 24시간
+      gcTime: 7 * 24 * 60 * 60 * 1000, // 7일간 메모리 보관
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    };
+  }
   
-  return (
-    <LocalizedLink 
-      href={`/dashboard/${dashboard.id}`}
-      prefetch={true} // 언어별 호버 시 프리페치
-      className="block"
-    >
-      <div className="rounded-lg border bg-card shadow-sm hover:bg-muted/50 transition-colors">
-        <Suspense fallback={<DashboardCardSkeleton dictionary={dictionary} />}>
-          <DashboardCardContent dashboard={dashboard} dictionary={dictionary} />
-        </Suspense>
-      </div>
-    </LocalizedLink>
-  );
+  // 최신 데이터는 소스별 차별화
+  const configMatrix = {
+    'KOSIS': {
+      'D': {
+        staleTime: 30 * 60 * 1000, // 30분
+        gcTime: 2 * 60 * 60 * 1000, // 2시간
+        refetchInterval: 60 * 60 * 1000, // 1시간마다 백그라운드 갱신
+      },
+      'M': {
+        staleTime: 6 * 60 * 60 * 1000, // 6시간
+        gcTime: 24 * 60 * 60 * 1000, // 24시간
+        refetchOnWindowFocus: false,
+      },
+      'Q': {
+        staleTime: 12 * 60 * 60 * 1000, // 12시간
+        gcTime: 24 * 60 * 60 * 1000, // 24시간
+        refetchOnWindowFocus: false,
+      },
+      'A': {
+        staleTime: 24 * 60 * 60 * 1000, // 24시간
+        gcTime: 7 * 24 * 60 * 60 * 1000, // 7일
+        refetchOnWindowFocus: false,
+      }
+    },
+    'ECOS': {
+      'D': {
+        staleTime: 15 * 60 * 1000, // 15분 (더 빈번한 업데이트)
+        gcTime: 60 * 60 * 1000, // 1시간
+        refetchInterval: 30 * 60 * 1000, // 30분마다 백그라운드 갱신
+      },
+      // ... 다른 주기는 KOSIS보다 짧게 설정
+    }
+  };
+  
+  const baseConfig = configMatrix[source][period] || configMatrix[source]['M'];
+  
+  return {
+    ...baseConfig,
+    retry: 3, // 네트워크 오류 시 3회 재시도
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  };
 }
 
-function DashboardCardSkeleton({ dictionary }) {
-  return (
-    <div className="p-4 animate-pulse">
-      <div className="h-6 bg-muted rounded mb-2"></div>
-      <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-      <div className="h-3 bg-muted rounded w-1/2" aria-label={dictionary.common.loading}></div>
-    </div>
-  );
+// 단일 지표 데이터 조회
+export function useIndicatorData(
+  source: 'KOSIS' | 'ECOS',
+  indicatorCode: string,
+  period: string,
+  startDate: string,
+  endDate: string
+) {
+  const isHistorical = new Date(endDate) < new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const queryConfig = getIndicatorQueryConfig(source, period, isHistorical);
+  
+  return useQuery({
+    queryKey: ['indicator', source, indicatorCode, period, startDate, endDate],
+    queryFn: async () => {
+      const response = await fetch(
+        `/api/data/${source.toLowerCase()}/series/${indicatorCode}?period=${period}&startDate=${startDate}&endDate=${endDate}`
+      );
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${source} data: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    ...queryConfig,
+  });
+}
+
+// 다중 지표 동시 조회 (대시보드용)
+export function useMultipleIndicatorData(indicators: Array<{
+  source: 'KOSIS' | 'ECOS';
+  code: string;
+  period: string;
+  startDate: string;
+  endDate: string;
+}>) {
+  return useQueries({
+    queries: indicators.map(indicator => ({
+      queryKey: ['indicator', indicator.source, indicator.code, indicator.period, indicator.startDate, indicator.endDate],
+      queryFn: async () => {
+        const response = await fetch(
+          `/api/data/${indicator.source.toLowerCase()}/series/${indicator.code}?period=${indicator.period}&startDate=${indicator.startDate}&endDate=${indicator.endDate}`
+        );
+        return response.json();
+      },
+      ...getIndicatorQueryConfig(
+        indicator.source, 
+        indicator.period, 
+        new Date(indicator.endDate) < new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      ),
+    })),
+  });
 }
 ```
 
