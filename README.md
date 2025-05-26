@@ -86,7 +86,7 @@ pnpm --filter @e-torch/web build
 - [디자인 시스템](./ui-design/design-system.md): 색상, 타이포그래피, 컴포넌트 가이드라인
 - [UI/UX 요구사항](./ui-design/ui-ux-requirements.md): UI 컴포넌트 상세 요구사항
 - [사용자 흐름](./ui-design/user-flows.md): 주요 사용자 경험 흐름
-- [와이어프레임](./ui-design/wireframes/README.md): UI 레이아웃 설계
+- [와이어프레임](./ui-design/wireframes_overview.md): UI 레이아웃 설계
 
 ### 프론트엔드 아키텍처 문서
 
