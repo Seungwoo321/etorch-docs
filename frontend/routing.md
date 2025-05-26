@@ -2,54 +2,59 @@
 
 ## 1. 개요
 
-E-Torch는 Next.js 15 App Router를 활용하여 직관적이고 체계적인 라우팅 구조를 구현합니다. 이 문서는 E-Torch의 라우팅 아키텍처, 페이지 구성, 라우트 그룹, 레이아웃, 그리고 내비게이션 전략을 설명합니다.
+E-Torch는 Next.js 15 App Router를 활용하여 국제화를 고려한 직관적이고 체계적인 라우팅 구조를 구현합니다. **[locale] 구조**를 채택하여 SEO 최적화, 사용자 경험, 공유 편의성, 캐싱 효율성을 극대화합니다. 이 문서는 E-Torch의 라우팅 아키텍처, 페이지 구성, 라우트 그룹, 레이아웃, 그리고 내비게이션 전략을 설명합니다.
 
-## 2. Next.js 15 App Router 활용 전략
+## 2. Next.js 15 App Router + 국제화 활용 전략
 
-Next.js 15의 App Router 파일 시스템 기반 라우팅을 활용하여 다음과 같은 기능들을 구현합니다:
+Next.js 15의 App Router 파일 시스템 기반 라우팅과 [locale] 구조를 활용하여 다음과 같은 기능들을 구현합니다:
 
 ```mermaid
 flowchart TD
-    A[Next.js 15 App Router 활용] --> B[서버 컴포넌트 우선]
-    A --> C[라우트 그룹]
+    A[Next.js 15 App Router + [locale]] --> B[서버 컴포넌트 우선]
+    A --> C[국제화 라우트 그룹]
     A --> D[중첩 레이아웃]
     A --> E[동적 라우트]
     A --> F[인터셉트 라우트]
     A --> G[병렬 라우트]
     
-    B --> B1[SEO 최적화]
+    B --> B1[언어별 SEO 최적화]
     B --> B2[초기 로딩 성능 향상]
     
-    C --> C1[기능별 그룹화]
+    C --> C1[언어별 기능 그룹화]
     C --> C2[코드 구조 명확화]
     
-    D --> D1[일관된 UI 경험]
+    D --> D1[언어별 일관된 UI 경험]
     D --> D2[중복 코드 제거]
     
     E --> E1[대시보드/차트 동적 ID]
-    E --> E2[URL 파라미터 활용]
+    E --> E2[언어별 URL 파라미터 활용]
     
-    F --> F1[모달/팝업 구현]
+    F --> F1[언어별 모달/팝업 구현]
     F --> F2[전환 없는 데이터 로드]
     
-    G --> G1[탭 인터페이스]
+    G --> G1[언어별 탭 인터페이스]
     G --> G2[동시 콘텐츠 로드]
 ```
 
-## 3. 라우팅 구조 설계
+## 3. 국제화 [locale] 라우팅 구조 설계
 
-E-Torch의 라우팅 구조는 `architecture.md`에 정의된 모노레포 패키지 구조와 통합되어 기능별로 그룹화됩니다:
+E-Torch의 라우팅 구조는 `architecture.md`에 정의된 모노레포 패키지 구조와 통합되어 **언어별로 최상위에서 분리**됩니다:
 
 ```mermaid
 graph TD
-    Root[app/] --> Auth["(auth)/"]
-    Root --> Dashboard["(dashboard)/"]
-    Root --> Widget["(widget)/"]
-    Root --> Subscription["(subscription)/"]
-    Root --> Profile["(profile)/"]
+    Root[app/] --> Locale["[locale]/"]
     Root --> API["api/"]
-    Root --> Layout["layout.tsx"]
-    Root --> Page["page.tsx"]
+    Root --> Middleware["middleware.ts"]
+    Root --> Layout["layout.tsx (Root)"]
+    Root --> Page["page.tsx (Redirect)"]
+    
+    Locale --> Auth["(auth)/"]
+    Locale --> Dashboard["(dashboard)/"]
+    Locale --> Widget["(widget)/"]
+    Locale --> Subscription["(subscription)/"]
+    Locale --> Profile["(profile)/"]
+    Locale --> LocaleLayout["layout.tsx (Locale)"]
+    Locale --> LocalePage["page.tsx (Home)"]
     
     Auth --> Auth1["login/"]
     Auth --> Auth2["callback/"]
@@ -83,165 +88,402 @@ graph TD
     API --> API5["payments/"]
 ```
 
-## 4. 기본 및 확장 라우팅 구조
+## 4. 국제화 라우팅 구조
 
-E-Torch의 라우팅 구조는 **기본 라우팅**과 **확장 라우팅**으로 구분됩니다. 이는 개발 단계와 기능 구현 우선순위에 따라 점진적으로 구현됩니다.
+### 4.1 기본 [locale] 라우팅 구조
 
-### 4.1 기본 라우팅 구조
-
-기본 라우팅 구조는 제품의 핵심 기능을 제공하는 필수 경로로 구성됩니다. 이는 MVP(Minimum Viable Product) 단계에서 우선적으로 구현됩니다.
+국제화를 고려한 기본 라우팅 구조는 **언어별 URL 경로**로 구성됩니다. 초기에는 한국어(`ko`)와 영어(`en`)를 지원합니다.
 
 ```
 app/
-├── (auth)/               # 인증 관련 라우트 그룹
-│   ├── login/            # SNS 로그인 페이지 (Google, Naver, Kakao)
-│   ├── callback/         # OAuth 콜백 처리
-│   └── layout.tsx        # 인증 레이아웃
+├── [locale]/             # 국제화 라우트 (ko, en)
+│   ├── (auth)/           # 인증 관련 라우트 그룹
+│   │   ├── login/        # SNS 로그인 페이지 (Google, Naver, Kakao)
+│   │   ├── callback/     # OAuth 콜백 처리
+│   │   └── layout.tsx    # 인증 레이아웃
+│   │
+│   ├── (dashboard)/      # 대시보드 관련 라우트 그룹
+│   │   ├── dashboard/    # 대시보드 목록 페이지
+│   │   ├── dashboard/[id]/   # 개별 대시보드 상세 페이지
+│   │   ├── dashboard/new/    # 새 대시보드 생성 페이지
+│   │   ├── dashboard/[id]/edit/ # 대시보드 편집 페이지
+│   │   ├── explore/      # 공개 대시보드 탐색/발견 페이지
+│   │   └── layout.tsx    # 대시보드 레이아웃
+│   │
+│   ├── (widget)/         # 위젯 관련 라우트 그룹
+│   │   ├── widget-editor/[id]/ # 위젯 에디터 페이지 (5가지 차트형 + 2가지 텍스트형)
+│   │   ├── widget/[id]/  # 개별 위젯 상세 페이지
+│   │   └── layout.tsx    # 위젯 레이아웃
+│   │
+│   ├── (subscription)/   # 구독 관련 라우트 그룹
+│   │   ├── subscription/upgrade/ # Pro 플랜 업그레이드
+│   │   ├── subscription/billing/ # 결제 내역 및 빌링 관리
+│   │   ├── subscription/trial/   # 7일 무료 체험
+│   │   ├── subscription/payment/ # 토스페이먼츠 결제 처리
+│   │   │   ├── success/  # 결제 성공
+│   │   │   ├── fail/     # 결제 실패
+│   │   │   └── cancel/   # 결제 취소
+│   │   └── layout.tsx    # 구독 레이아웃
+│   │
+│   ├── (profile)/        # 사용자 프로필 관련 라우트 그룹
+│   │   ├── profile/settings/ # 프로필 설정 페이지
+│   │   ├── profile/notifications/ # 알림 설정 페이지
+│   │   └── layout.tsx    # 프로필 레이아웃
+│   │
+│   ├── accessibility/    # 통합 접근성 지원 페이지
+│   │   └── page.tsx      # 키보드 도움말, 스크린 리더 가이드, 고대비 모드를 탭으로 통합
+│   │
+│   ├── layout.tsx        # 언어별 레이아웃
+│   └── page.tsx          # 언어별 홈페이지
 │
-├── (dashboard)/          # 대시보드 관련 라우트 그룹
-│   ├── dashboard/        # 대시보드 목록 페이지
-│   ├── dashboard/[id]/   # 개별 대시보드 상세 페이지
-│   ├── dashboard/new/    # 새 대시보드 생성 페이지
-│   ├── dashboard/[id]/edit/ # 대시보드 편집 페이지
-│   ├── explore/          # 공개 대시보드 탐색/발견 페이지
-│   └── layout.tsx        # 대시보드 레이아웃
-│
-├── (widget)/             # 위젯 관련 라우트 그룹
-│   ├── widget-editor/[id]/ # 위젯 에디터 페이지 (5가지 차트형 + 2가지 텍스트형)
-│   ├── widget/[id]/      # 개별 위젯 상세 페이지
-│   └── layout.tsx        # 위젯 레이아웃
-│
-├── (subscription)/       # 구독 관련 라우트 그룹
-│   ├── subscription/upgrade/ # Pro 플랜 업그레이드
-│   ├── subscription/billing/ # 결제 내역 및 빌링 관리
-│   ├── subscription/trial/   # 7일 무료 체험
-│   ├── subscription/payment/ # 토스페이먼츠 결제 처리
-│   │   ├── success/      # 결제 성공
-│   │   ├── fail/         # 결제 실패
-│   │   └── cancel/       # 결제 취소
-│   └── layout.tsx        # 구독 레이아웃
-│
-├── (profile)/            # 사용자 프로필 관련 라우트 그룹
-│   ├── profile/settings/ # 프로필 설정 페이지
-│   ├── profile/notifications/ # 알림 설정 페이지
-│   └── layout.tsx        # 프로필 레이아웃
-│
-├── accessibility/        # 통합 접근성 지원 페이지
-│   └── page.tsx          # 키보드 도움말, 스크린 리더 가이드, 고대비 모드를 탭으로 통합
-│
+├── api/                  # API 라우트 (언어 무관)
+├── middleware.ts         # 언어 감지 및 리디렉션
 ├── layout.tsx            # 루트 레이아웃
-└── page.tsx              # 홈페이지
+└── page.tsx              # 언어 리디렉션 페이지
 ```
 
-### 4.2 확장 라우팅 구조
+### 4.2 확장 국제화 라우팅 구조
 
-확장 라우팅 구조는 향상된 사용자 경험을 위한 고급 라우팅 패턴을 포함합니다. 이는 기본 기능 구현 후 점진적으로 추가됩니다.
+향상된 사용자 경험을 위한 고급 라우팅 패턴을 포함합니다:
 
 ```
 # 기본 라우팅 구조에 다음과 같은 확장 패턴 추가
 
 app/
-├── @modal/               # 인터셉트 라우트 (선별적 모달용)
-│   ├── dashboard/[id]/   # 대시보드 미리보기 모달 (높은 사용 빈도)
-│   └── subscription/upgrade/ # 업그레이드 모달 (컨텍스트 유지 필요)
+├── [locale]/
+│   ├── @modal/           # 인터셉트 라우트 (선별적 모달용)
+│   │   ├── dashboard/[id]/   # 대시보드 미리보기 모달 (높은 사용 빈도)
+│   │   └── subscription/upgrade/ # 업그레이드 모달 (컨텍스트 유지 필요)
+│   │
+│   ├── (dashboard)/          
+│   │   └── @tabs/        # 병렬 라우트 (대시보드 탭용)
+│   │       ├── info/     # 대시보드 정보 탭
+│   │       ├── share/    # 대시보드 공유 탭
+│   │       └── analytics/ # 대시보드 분석 탭
+│   │
+│   └── (widget)/              
+│       ├── widget-editor/[id]/
+│       │   ├── @preview/ # 미리보기 패널 (병렬 라우트)
+│       │   ├── @options/ # 옵션 패널 (병렬 라우트)
+│       │   └── @datasource/ # 데이터 소스 패널 (병렬 라우트)
+│       └── preview/      # 위젯 미리보기 페이지
 │
-├── (dashboard)/          
-│   └── @tabs/            # 병렬 라우트 (대시보드 탭용)
-│       ├── info/         # 대시보드 정보 탭
-│       ├── share/        # 대시보드 공유 탭
-│       └── analytics/    # 대시보드 분석 탭
-│
-├── (widget)/              
-│   ├── widget-editor/[id]/
-│   │   ├── @preview/     # 미리보기 패널 (병렬 라우트)
-│   │   ├── @options/     # 옵션 패널 (병렬 라우트)
-│   │   └── @datasource/  # 데이터 소스 패널 (병렬 라우트)
-│   └── preview/          # 위젯 미리보기 페이지
-│
-└── [locale]/             # 국제화 대응 (향후 확장)
-    ├── (dashboard)/
-    ├── (auth)/
-    └── middleware.ts     # 언어 감지 및 리디렉션
+└── dictionaries/         # 다국어 사전 파일
+    ├── ko.json
+    └── en.json
 ```
 
-### 4.3 라우팅 유형 매핑 테이블
+### 4.3 라우팅 유형 매핑 테이블 (국제화 적용)
 
-| 경로 | 기본/확장 | 라우팅 패턴 | 구현 우선순위 | 구독 플랜 제한 |
-|-----|-----------|-----------|-------------|-------------|
-| `/login`, `/callback` | 기본 | 일반 라우트 | 상 (MVP) | 없음 |
-| `/dashboard`, `/dashboard/[id]` | 기본 | 일반 라우트 | 상 (MVP) | Basic: 3개, Pro: 무제한 |
-| `/dashboard/new`, `/dashboard/[id]/edit` | 기본 | 일반 라우트 | 상 (MVP) | Basic: 6개 위젯, Pro: 무제한 |
-| `/explore` | 기본 | 일반 라우트 | 상 (MVP) | 없음 |
-| `/widget-editor/[id]`, `/widget/[id]` | 기본 | 동적 라우트 | 상 (MVP) | Basic: 기본 옵션, Pro: 고급 옵션 |
-| `/subscription/*` | 기본 | 일반 라우트 | 상 (MVP) | 없음 |
-| `/profile/*` | 기본 | 일반 라우트 | 중 | 없음 |
-| `/accessibility` | 기본 | 일반 라우트 | 중 | 없음 |
-| `@modal/dashboard/[id]` | 확장 | 인터셉트 라우트 | 중 | 없음 |
-| `@tabs/*` | 확장 | 병렬 라우트 | 하 | 없음 |
-| `[locale]/*` | 확장 | 국제화 라우트 | 하 | 없음 |
+| 경로 | 한국어 URL | 영어 URL | 라우팅 패턴 | 구현 우선순위 | 구독 플랜 제한 |
+|-----|-----------|---------|-----------|-------------|-------------|
+| 로그인/콜백 | `/ko/login`, `/ko/callback` | `/en/login`, `/en/callback` | 일반 라우트 | 상 (MVP) | 없음 |
+| 대시보드 | `/ko/dashboard`, `/ko/dashboard/[id]` | `/en/dashboard`, `/en/dashboard/[id]` | 일반 라우트 | 상 (MVP) | Basic: 3개, Pro: 무제한 |
+| 대시보드 생성/편집 | `/ko/dashboard/new`, `/ko/dashboard/[id]/edit` | `/en/dashboard/new`, `/en/dashboard/[id]/edit` | 일반 라우트 | 상 (MVP) | Basic: 6개 위젯, Pro: 무제한 |
+| 탐색 | `/ko/explore` | `/en/explore` | 일반 라우트 | 상 (MVP) | 없음 |
+| 위젯 에디터 | `/ko/widget-editor/[id]`, `/ko/widget/[id]` | `/en/widget-editor/[id]`, `/en/widget/[id]` | 동적 라우트 | 상 (MVP) | Basic: 기본 옵션, Pro: 고급 옵션 |
+| 구독 | `/ko/subscription/*` | `/en/subscription/*` | 일반 라우트 | 상 (MVP) | 없음 |
+| 프로필 | `/ko/profile/*` | `/en/profile/*` | 일반 라우트 | 중 | 없음 |
+| 접근성 | `/ko/accessibility` | `/en/accessibility` | 일반 라우트 | 중 | 없음 |
+| 모달 | `/ko/@modal/dashboard/[id]` | `/en/@modal/dashboard/[id]` | 인터셉트 라우트 | 중 | 없음 |
+| 탭 | `/ko/@tabs/*` | `/en/@tabs/*` | 병렬 라우트 | 하 | 없음 |
 
-## 5. 페이지별 라우트 설계
+## 5. 국제화 미들웨어 구현
 
-### 5.1 인증 관련 페이지
+### 5.1 언어 감지 및 리디렉션 로직
 
-| 라우트 | 설명 | 권한 | 컴포넌트 타입 | SNS 연동 |
-|-------|------|------|--------------|----------|
-| `/login` | SNS 로그인 페이지 | Public | 서버 + 클라이언트 폼 | Google, Naver, Kakao |
-| `/callback` | OAuth 콜백 처리 | Public | 서버 컴포넌트 | Supabase Auth |
+```tsx
+// middleware.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { match } from '@formatjs/intl-localematcher';
+import Negotiator from 'negotiator';
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 
-### 5.2 대시보드 관련 페이지
+// 지원 언어 목록
+const locales = ['ko', 'en'];
+const defaultLocale = 'ko';
 
-| 라우트 | 설명 | 권한 | 컴포넌트 타입 | 구독 플랜 제한 |
-|-------|------|------|--------------|-------------|
-| `/dashboard` | 대시보드 목록 | Authenticated | 서버 + 클라이언트 기능 | Basic: 최대 3개 |
-| `/dashboard/[id]` | 대시보드 상세 조회 | Authenticated | 서버 + 클라이언트 차트 | Basic: 워터마크 표시 |
-| `/dashboard/new` | 새 대시보드 생성 | Authenticated | 서버 + 클라이언트 에디터 | Basic: 3개 한도 확인 |
-| `/dashboard/[id]/edit` | 대시보드 편집 | Owner | 서버 + 클라이언트 에디터 | Basic: 6개 위젯 한도 |
-| `/explore` | 공개 대시보드 탐색 | Authenticated | 서버 + 클라이언트 필터링 | Basic: 복사 불가 |
+// 공개 라우트 (인증 불필요)
+const publicRoutes = ['/login', '/callback', '/accessibility'];
 
-### 5.3 위젯 관련 페이지
+// 언어 감지 함수
+function getLocale(request: NextRequest): string {
+  // URL에서 언어 추출 시도
+  const pathname = request.nextUrl.pathname;
+  const pathnameLocale = locales.find(
+    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
+  );
+  
+  if (pathnameLocale) return pathnameLocale;
+  
+  // Accept-Language 헤더 기반 언어 감지
+  const negotiatorHeaders: Record<string, string> = {};
+  request.headers.forEach((value, key) => (negotiatorHeaders[key] = value));
 
-| 라우트 | 설명 | 권한 | 컴포넌트 타입 | 지원 위젯 유형 |
-|-------|------|------|--------------|-------------|
-| `/widget-editor/[id]` | 위젯 생성/편집 | Authenticated | 서버 + 클라이언트 에디터 | 5가지 차트형 + 2가지 텍스트형 |
-| `/widget/[id]` | 개별 위젯 상세 조회 | Authenticated | 서버 + 클라이언트 차트 | 모든 위젯 유형 |
+  const languages = new Negotiator({ headers: negotiatorHeaders }).languages();
+  return match(languages, locales, defaultLocale);
+}
 
-### 5.4 구독 관련 페이지
+// JWT 토큰 로컬 검증 (성능 최적화)
+function isValidJWT(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp * 1000 > Date.now();
+  } catch {
+    return false;
+  }
+}
 
-| 라우트 | 설명 | 권한 | 컴포넌트 타입 | 토스페이먼츠 연동 |
-|-------|------|------|--------------|-----------------|
-| `/subscription/upgrade` | Pro 플랜 업그레이드 | Authenticated | 서버 + 클라이언트 폼 | 결제 위젯 |
-| `/subscription/billing` | 결제 내역 및 빌링 관리 | Authenticated | 서버 + 클라이언트 | 빌링키 관리 |
-| `/subscription/trial` | 7일 무료 체험 | Authenticated | 서버 + 클라이언트 | 체험 시작 |
-| `/subscription/payment/success` | 결제 성공 | Public | 서버 컴포넌트 | 결과 처리 |
-| `/subscription/payment/fail` | 결제 실패 | Public | 서버 컴포넌트 | 에러 처리 |
-| `/subscription/payment/cancel` | 결제 취소 | Public | 서버 컴포넌트 | 취소 처리 |
+export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  
+  // 1. 언어 처리
+  const pathnameIsMissingLocale = locales.every(
+    (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
+  );
 
-### 5.5 프로필 관련 페이지
+  // 언어가 없는 경로는 감지된 언어로 리디렉션
+  if (pathnameIsMissingLocale) {
+    const locale = getLocale(request);
+    const newUrl = new URL(`/${locale}${pathname}`, request.url);
+    return NextResponse.redirect(newUrl);
+  }
+  
+  // 현재 언어 추출
+  const currentLocale = pathname.split('/')[1];
+  
+  // 2. API 라우트는 패스
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+  
+  // 3. 정적 파일은 패스
+  if (pathname.includes('.')) {
+    return NextResponse.next();
+  }
+  
+  // 4. 공개 라우트 확인
+  const pathWithoutLocale = pathname.replace(`/${currentLocale}`, '');
+  if (publicRoutes.some(route => pathWithoutLocale.startsWith(route))) {
+    return NextResponse.next();
+  }
+  
+  // 5. 인증 확인 (최적화된 방식)
+  const token = request.cookies.get('supabase-auth-token')?.value;
+  
+  // JWT 토큰 로컬 검증 우선 (성능 최적화)
+  if (token && isValidJWT(token)) {
+    return NextResponse.next();
+  }
+  
+  // 필요시에만 Supabase 세션 검증
+  const res = NextResponse.next();
+  const supabase = createMiddlewareClient({ req: request, res });
+  
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (!session) {
+    const loginUrl = new URL(`/${currentLocale}/login`, request.url);
+    loginUrl.searchParams.set('redirectTo', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+  
+  // 6. 구독 플랜별 접근 제한
+  const userPlan = session.user.app_metadata?.subscription_plan || 'basic';
+  
+  // Pro 전용 기능 보호
+  const proOnlyRoutes = [
+    '/dashboard/[id]/copy',
+    '/dashboard/[id]/embed',
+    '/widget-editor/[id]/advanced'
+  ];
+  
+  const routePattern = pathWithoutLocale;
+  if (proOnlyRoutes.some(route => routePattern.match(route.replace('[id]', '\\w+')))) {
+    if (userPlan !== 'pro') {
+      return NextResponse.redirect(new URL(`/${currentLocale}/subscription/upgrade`, request.url));
+    }
+  }
+  
+  return res;
+}
 
-| 라우트 | 설명 | 권한 | 컴포넌트 타입 | 기능 |
-|-------|------|------|--------------|------|
-| `/profile/settings` | 사용자 설정 | Authenticated | 서버 + 클라이언트 폼 | 프로필 편집 |
-| `/profile/notifications` | 알림 설정 | Authenticated | 서버 + 클라이언트 토글 | 구독 갱신 알림 |
+export const config = {
+  matcher: [
+    // Skip all internal paths (_next)
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+    // Optional: only run on root (/) URL
+    // '/'
+  ],
+};
+```
 
-### 5.6 접근성 지원 페이지
+### 5.2 언어별 사전 및 컨텍스트
 
-| 라우트 | 설명 | 권한 | 컴포넌트 타입 | 기능 |
-|-------|------|------|--------------|------|
-| `/accessibility` | 통합 접근성 지원 | Public | 서버 + 클라이언트 탭 | 키보드 도움말, 스크린 리더 가이드, 고대비 모드 |
+```tsx
+// dictionaries/ko.json
+{
+  "navigation": {
+    "dashboard": "대시보드",
+    "explore": "탐색",
+    "subscription": "구독",
+    "profile": "프로필"
+  },
+  "dashboard": {
+    "title": "내 대시보드",
+    "create_new": "새 대시보드 생성",
+    "edit": "편집",
+    "share": "공유",
+    "delete": "삭제"
+  },
+  "subscription": {
+    "basic_plan": "Basic 플랜",
+    "pro_plan": "Pro 플랜",
+    "upgrade": "업그레이드",
+    "trial": "무료 체험"
+  },
+  "errors": {
+    "dashboard_limit": "대시보드 생성 한도에 도달했습니다.",
+    "widget_limit": "위젯 생성 한도에 도달했습니다.",
+    "network_error": "네트워크 연결을 확인해주세요."
+  }
+}
 
-## 6. 레이아웃 구조
+// dictionaries/en.json
+{
+  "navigation": {
+    "dashboard": "Dashboard",
+    "explore": "Explore",
+    "subscription": "Subscription",
+    "profile": "Profile"
+  },
+  "dashboard": {
+    "title": "My Dashboards",
+    "create_new": "Create New Dashboard",
+    "edit": "Edit",
+    "share": "Share",
+    "delete": "Delete"
+  },
+  "subscription": {
+    "basic_plan": "Basic Plan",
+    "pro_plan": "Pro Plan",
+    "upgrade": "Upgrade",
+    "trial": "Free Trial"
+  },
+  "errors": {
+    "dashboard_limit": "Dashboard creation limit reached.",
+    "widget_limit": "Widget creation limit reached.",
+    "network_error": "Please check your network connection."
+  }
+}
 
-E-Torch는 계층적 레이아웃 구조를 사용하여 일관된 사용자 경험을 제공합니다:
+// lib/dictionaries.ts
+import 'server-only';
+
+const dictionaries = {
+  ko: () => import('../dictionaries/ko.json').then((module) => module.default),
+  en: () => import('../dictionaries/en.json').then((module) => module.default),
+};
+
+export const getDictionary = async (locale: 'ko' | 'en') =>
+  dictionaries[locale]();
+
+// hooks/use-dictionary.ts (클라이언트용)
+'use client';
+
+import { createContext, useContext } from 'react';
+
+type Dictionary = Record<string, any>;
+
+const DictionaryContext = createContext<Dictionary | null>(null);
+
+export function DictionaryProvider({ 
+  children, 
+  dictionary 
+}: { 
+  children: React.ReactNode;
+  dictionary: Dictionary;
+}) {
+  return (
+    <DictionaryContext.Provider value={dictionary}>
+      {children}
+    </DictionaryContext.Provider>
+  );
+}
+
+export function useDictionary() {
+  const dictionary = useContext(DictionaryContext);
+  if (!dictionary) {
+    throw new Error('useDictionary must be used within a DictionaryProvider');
+  }
+  return dictionary;
+}
+```
+
+## 6. 언어별 페이지 구성
+
+### 6.1 인증 관련 페이지
+
+| 라우트 | 한국어 URL | 영어 URL | 권한 | 컴포넌트 타입 | SNS 연동 |
+|-------|-----------|---------|------|--------------|----------|
+| 로그인 | `/ko/login` | `/en/login` | Public | 서버 + 클라이언트 폼 | Google, Naver, Kakao |
+| 콜백 | `/ko/callback` | `/en/callback` | Public | 서버 컴포넌트 | Supabase Auth |
+
+### 6.2 대시보드 관련 페이지
+
+| 라우트 | 한국어 URL | 영어 URL | 권한 | 컴포넌트 타입 | 구독 플랜 제한 |
+|-------|-----------|---------|------|--------------|-------------|
+| 대시보드 목록 | `/ko/dashboard` | `/en/dashboard` | Authenticated | 서버 + 클라이언트 기능 | Basic: 최대 3개 |
+| 대시보드 상세 | `/ko/dashboard/[id]` | `/en/dashboard/[id]` | Authenticated | 서버 + 클라이언트 차트 | Basic: 워터마크 표시 |
+| 새 대시보드 | `/ko/dashboard/new` | `/en/dashboard/new` | Authenticated | 서버 + 클라이언트 에디터 | Basic: 3개 한도 확인 |
+| 대시보드 편집 | `/ko/dashboard/[id]/edit` | `/en/dashboard/[id]/edit` | Owner | 서버 + 클라이언트 에디터 | Basic: 6개 위젯 한도 |
+| 공개 대시보드 탐색 | `/ko/explore` | `/en/explore` | Authenticated | 서버 + 클라이언트 필터링 | Basic: 복사 불가 |
+
+### 6.3 위젯 관련 페이지
+
+| 라우트 | 한국어 URL | 영어 URL | 권한 | 컴포넌트 타입 | 지원 위젯 유형 |
+|-------|-----------|---------|------|--------------|-------------|
+| 위젯 에디터 | `/ko/widget-editor/[id]` | `/en/widget-editor/[id]` | Authenticated | 서버 + 클라이언트 에디터 | 5가지 차트형 + 2가지 텍스트형 |
+| 위젯 상세 | `/ko/widget/[id]` | `/en/widget/[id]` | Authenticated | 서버 + 클라이언트 차트 | 모든 위젯 유형 |
+
+### 6.4 구독 관련 페이지
+
+| 라우트 | 한국어 URL | 영어 URL | 권한 | 컴포넌트 타입 | 토스페이먼츠 연동 |
+|-------|-----------|---------|------|--------------|-----------------|
+| 업그레이드 | `/ko/subscription/upgrade` | `/en/subscription/upgrade` | Authenticated | 서버 + 클라이언트 폼 | 결제 위젯 |
+| 빌링 관리 | `/ko/subscription/billing` | `/en/subscription/billing` | Authenticated | 서버 + 클라이언트 | 빌링키 관리 |
+| 무료 체험 | `/ko/subscription/trial` | `/en/subscription/trial` | Authenticated | 서버 + 클라이언트 | 체험 시작 |
+| 결제 성공 | `/ko/subscription/payment/success` | `/en/subscription/payment/success` | Public | 서버 컴포넌트 | 결과 처리 |
+| 결제 실패 | `/ko/subscription/payment/fail` | `/en/subscription/payment/fail` | Public | 서버 컴포넌트 | 에러 처리 |
+| 결제 취소 | `/ko/subscription/payment/cancel` | `/en/subscription/payment/cancel` | Public | 서버 컴포넌트 | 취소 처리 |
+
+### 6.5 프로필 관련 페이지
+
+| 라우트 | 한국어 URL | 영어 URL | 권한 | 컴포넌트 타입 | 기능 |
+|-------|-----------|---------|------|--------------|------|
+| 사용자 설정 | `/ko/profile/settings` | `/en/profile/settings` | Authenticated | 서버 + 클라이언트 폼 | 프로필 편집, 언어 설정 |
+| 알림 설정 | `/ko/profile/notifications` | `/en/profile/notifications` | Authenticated | 서버 + 클라이언트 토글 | 구독 갱신 알림 |
+
+### 6.6 접근성 지원 페이지
+
+| 라우트 | 한국어 URL | 영어 URL | 권한 | 컴포넌트 타입 | 기능 |
+|-------|-----------|---------|------|--------------|------|
+| 통합 접근성 | `/ko/accessibility` | `/en/accessibility` | Public | 서버 + 클라이언트 탭 | 키보드 도움말, 스크린 리더 가이드, 고대비 모드 |
+
+## 7. 언어별 레이아웃 구조
+
+E-Torch는 국제화를 고려한 계층적 레이아웃 구조를 사용하여 언어별 일관된 사용자 경험을 제공합니다:
 
 ```mermaid
 flowchart TD
-    Root[RootLayout] --> Auth[AuthLayout]
-    Root --> Dashboard[DashboardLayout]
-    Root --> Widget[WidgetLayout]
-    Root --> Subscription[SubscriptionLayout]
-    Root --> Profile[ProfileLayout]
-    Root --> Accessibility[AccessibilityLayout]
+    Root[RootLayout] --> Locale["LocaleLayout ([locale])"]
+    
+    Locale --> Auth[AuthLayout]
+    Locale --> Dashboard[DashboardLayout]
+    Locale --> Widget[WidgetLayout]
+    Locale --> Subscription[SubscriptionLayout]
+    Locale --> Profile[ProfileLayout]
+    Locale --> Accessibility[AccessibilityLayout]
     
     Auth --> Login[로그인 페이지]
     Auth --> Callback[콜백 페이지]
@@ -265,195 +507,233 @@ flowchart TD
     Accessibility --> AccessibilityPage[통합 접근성 페이지]
 ```
 
-### 6.1 레이아웃 책임 분리
+### 7.1 레이아웃 책임 분리 (국제화 고려)
 
 각 레이아웃은 명확한 책임을 갖는 구조로 설계되어 있습니다:
 
 | 레이아웃 | 책임 |
 |---------|-----|
-| **RootLayout** | 전역 CSS/폰트(Inter, JetBrains_Mono), 테마 제공자, 메타데이터, OKLCH 색상 시스템, 전역 에러 바운더리 |
-| **AuthLayout** | 최소 디자인, 로고 및 설명, 중앙 정렬 컨테이너 |
-| **DashboardLayout** | 사이드 내비게이션, 상단 헤더, 메인 콘텐츠 영역, 구독 상태 표시 |
-| **WidgetLayout** | 상단 헤더, 전체 화면 콘텐츠, 백 버튼, 저장 상태 |
-| **SubscriptionLayout** | 결제 보안 헤더, 진행 상태 표시, 토스페이먼츠 스크립트 로드 |
-| **ProfileLayout** | 사이드 내비게이션, 상단 헤더, 메인 콘텐츠 영역 |
-| **AccessibilityLayout** | 접근성 최적화 헤더, 탭 네비게이션, 고대비 모드 지원 |
+| **RootLayout** | 전역 CSS/폰트(Inter, JetBrains_Mono), 테마 제공자, 메타데이터, OKLCH 색상 시스템, 전역 에러 바운더리, **언어 리디렉션** |
+| **LocaleLayout** | **언어별 사전 제공, 언어별 메타데이터, 언어 전환 UI, RTL/LTR 방향 설정** |
+| **AuthLayout** | 최소 디자인, 로고 및 설명, 중앙 정렬 컨테이너, **언어별 폼 검증** |
+| **DashboardLayout** | 사이드 내비게이션, 상단 헤더, 메인 콘텐츠 영역, 구독 상태 표시, **언어별 네비게이션** |
+| **WidgetLayout** | 상단 헤더, 전체 화면 콘텐츠, 백 버튼, 저장 상태, **언어별 위젯 타입명** |
+| **SubscriptionLayout** | 결제 보안 헤더, 진행 상태 표시, 토스페이먼츠 스크립트 로드, **언어별 결제 정보** |
+| **ProfileLayout** | 사이드 내비게이션, 상단 헤더, 메인 콘텐츠 영역, **언어 설정 UI** |
+| **AccessibilityLayout** | 접근성 최적화 헤더, 탭 네비게이션, 고대비 모드 지원, **언어별 접근성 가이드** |
 
-## 7. 동적 라우팅 전략
+## 8. 동적 라우팅 전략 (국제화 적용)
 
-### 7.1 대시보드 및 위젯 ID 라우팅 패턴
+### 8.1 대시보드 및 위젯 ID 라우팅 패턴
 
-동적 ID 기반 라우팅은 다음과 같은 패턴으로 구현됩니다:
+동적 ID 기반 라우팅은 언어별로 다음과 같은 패턴으로 구현됩니다:
 
 ```tsx
-// app/(dashboard)/dashboard/[id]/page.tsx (서버 컴포넌트)
+// app/[locale]/(dashboard)/dashboard/[id]/page.tsx (서버 컴포넌트)
 import { fetchDashboardById } from '@/e-torch/server-api/dashboard';
 import { notFound } from 'next/navigation';
 import { DashboardServerWrapper } from '@/e-torch/dashboard/server';
+import { getDictionary } from '@/lib/dictionaries';
 
 interface DashboardPageProps {
-  params: { id: string };
+  params: { 
+    locale: 'ko' | 'en';
+    id: string;
+  };
 }
 
 export default async function DashboardPage({ params }: DashboardPageProps) {
-  const dashboard = await fetchDashboardById(params.id);
+  const [dashboard, dictionary] = await Promise.all([
+    fetchDashboardById(params.id),
+    getDictionary(params.locale)
+  ]);
   
   if (!dashboard) {
     return notFound();
   }
   
-  return <DashboardServerWrapper dashboardId={params.id} initialData={dashboard} />;
+  return (
+    <DashboardServerWrapper 
+      dashboardId={params.id} 
+      initialData={dashboard}
+      dictionary={dictionary}
+      locale={params.locale}
+    />
+  );
+}
+
+// 언어별 메타데이터 생성
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: { locale: 'ko' | 'en'; id: string } 
+}): Promise<Metadata> {
+  const [dashboard, dictionary] = await Promise.all([
+    fetchDashboardById(params.id),
+    getDictionary(params.locale)
+  ]);
+  
+  if (!dashboard) {
+    return {
+      title: dictionary.errors.not_found,
+    };
+  }
+  
+  return {
+    title: dashboard.title,
+    description: dashboard.description || dictionary.dashboard.description_default,
+    alternates: {
+      languages: {
+        'ko': `/ko/dashboard/${params.id}`,
+        'en': `/en/dashboard/${params.id}`,
+        'x-default': `/ko/dashboard/${params.id}`,
+      },
+    },
+    openGraph: {
+      locale: params.locale === 'ko' ? 'ko_KR' : 'en_US',
+      alternateLocale: params.locale === 'ko' ? 'en_US' : 'ko_KR',
+    },
+  };
 }
 ```
 
-### 7.2 동적 라우트 접근 제어 패턴
+### 8.2 동적 라우트 접근 제어 패턴 (다국어)
 
 ```mermaid
 flowchart TD
-    A[요청] --> B{ID 유효성 검증}
-    B -->|유효함| C{권한 검증}
-    B -->|유효하지 않음| D[404 페이지]
-    C -->|권한 있음| E{구독 플랜 확인}
-    C -->|권한 없음| F[403 페이지/리디렉션]
-    E -->|Basic 제한 초과| G[업그레이드 안내]
-    E -->|접근 가능| H[페이지 렌더링]
+    A[요청] --> B{언어 확인}
+    B -->|지원 언어| C{ID 유효성 검증}
+    B -->|미지원 언어| D[기본 언어로 리디렉션]
+    C -->|유효함| E{권한 검증}
+    C -->|유효하지 않음| F[404 페이지]
+    E -->|권한 있음| G{구독 플랜 확인}
+    E -->|권한 없음| H[403 페이지/리디렉션]
+    G -->|Basic 제한 초과| I[언어별 업그레이드 안내]
+    G -->|접근 가능| J[언어별 페이지 렌더링]
 ```
 
-## 8. 네비게이션 및 라우트 보호
+## 9. 네비게이션 및 라우트 보호 (국제화)
 
-### 8.1 네비게이션 컴포넌트 구조
+### 9.1 네비게이션 컴포넌트 구조 (다국어)
 
 E-Torch의 네비게이션 시스템은 다음과 같은 주요 컴포넌트로 구성됩니다:
 
-- **SideNavigation**: 주요 메뉴 항목 및 네비게이션 링크 제공
-- **HeaderNavigation**: 현재 페이지 제목, 사용자 메뉴, 구독 상태 표시
-- **BreadcrumbNavigation**: 현재 위치 및 상위 카테고리 표시
-
-### 8.2 라우트 보호 아키텍처
-
-라우트 보호는 다층적 접근으로 구현됩니다:
-
-1. **최적화된 미들웨어 보호**:
-   - JWT 토큰 로컬 검증 우선
-   - 필요시에만 Supabase 세션 검증
-   - 구독 플랜별 접근 제한
-   - 인증 필요 시 리다이렉션
+- **LocalizedSideNavigation**: 언어별 메뉴 항목 및 네비게이션 링크 제공
+- **LocalizedHeaderNavigation**: 언어별 페이지 제목, 사용자 메뉴, 구독 상태 표시, **언어 전환 버튼**
+- **LocalizedBreadcrumbNavigation**: 언어별 현재 위치 및 상위 카테고리 표시
 
 ```tsx
-// middleware.ts
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
-import { isValidJWT, getCachedSession } from '@/lib/auth-utils';
+// components/navigation/LocalizedSideNavigation.tsx
+'use client';
 
-export async function middleware(request: NextRequest) {
-  const pathname = request.nextUrl.pathname;
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useDictionary } from '@/hooks/use-dictionary';
+
+export function LocalizedSideNavigation() {
+  const params = useParams();
+  const locale = params.locale as string;
+  const dictionary = useDictionary();
   
-  // 공개 라우트는 통과
-  if (publicRoutes.some(route => pathname.startsWith(route))) {
-    return NextResponse.next();
-  }
-  
-  // JWT 토큰 로컬 검증 우선
-  const token = request.cookies.get('supabase-auth-token')?.value;
-  if (token && isValidJWT(token)) {
-    // 토큰이 유효하면 바로 통과 (성능 최적화)
-    return NextResponse.next();
-  }
-  
-  // 세션 캐시 확인
-  const cachedSession = await getCachedSession(request);
-  if (cachedSession?.isValid) {
-    return NextResponse.next();
-  }
-  
-  // 필요시에만 Supabase 세션 검증
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req: request, res });
-  
-  const { data: { session } } = await supabase.auth.getSession();
-  
-  if (!session) {
-    const url = new URL('/login', request.url);
-    url.searchParams.set('redirectTo', pathname);
-    return NextResponse.redirect(url);
-  }
-  
-  // 구독 플랜별 접근 제한
-  const userPlan = session.user.app_metadata?.subscription_plan || 'basic';
-  
-  // Pro 전용 기능 보호
-  const proOnlyRoutes = [
-    '/dashboard/[id]/copy',
-    '/dashboard/[id]/embed',
-    '/widget-editor/[id]/advanced'
+  const navigationItems = [
+    {
+      href: `/${locale}/dashboard`,
+      label: dictionary.navigation.dashboard,
+      icon: 'Dashboard'
+    },
+    {
+      href: `/${locale}/explore`,
+      label: dictionary.navigation.explore,
+      icon: 'Explore'
+    },
+    {
+      href: `/${locale}/subscription`,
+      label: dictionary.navigation.subscription,
+      icon: 'Subscription'
+    },
+    {
+      href: `/${locale}/profile`,
+      label: dictionary.navigation.profile,
+      icon: 'Profile'
+    }
   ];
   
-  if (proOnlyRoutes.some(route => pathname.match(route.replace('[id]', '\\w+')))) {
-    if (userPlan !== 'pro') {
-      return NextResponse.redirect(new URL('/subscription/upgrade', request.url));
-    }
-  }
-  
-  return res;
+  return (
+    <nav className="space-y-2">
+      {navigationItems.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className="flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-muted"
+        >
+          <span>{item.label}</span>
+        </Link>
+      ))}
+    </nav>
+  );
 }
-```
 
-2. **서버 컴포넌트 보호**:
-   - 세션 검증
-   - 권한 검증
-   - 리다이렉션/404 처리
+// components/navigation/LanguageSwitcher.tsx
+'use client';
 
-3. **클라이언트 래퍼 보호**:
-   - AuthGuard 컴포넌트
-   - 세션 상태 검사
-   - 로딩 상태 처리
+import { useParams, usePathname, useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
-### 8.3 구독 플랜 검증 최적화
+const languages = [
+  { code: 'ko', name: '한국어', flag: '🇰🇷' },
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+];
 
-구독 플랜 검증 로직을 커스텀 훅으로 중앙화하여 중복을 제거합니다:
-
-```tsx
-// hooks/useSubscriptionGuard.ts
-import { useAuth } from '@/lib/auth';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-
-export function useSubscriptionGuard(requiredPlan: 'basic' | 'pro' = 'basic') {
-  const { user, plan, isLoading } = useAuth();
+export function LanguageSwitcher() {
+  const params = useParams();
+  const pathname = usePathname();
   const router = useRouter();
   
-  useEffect(() => {
-    if (!isLoading && plan && !hasAccess(plan, requiredPlan)) {
-      router.push('/subscription/upgrade');
-    }
-  }, [plan, requiredPlan, isLoading, router]);
+  const currentLocale = params.locale as string;
+  const currentLanguage = languages.find(lang => lang.code === currentLocale);
   
-  const hasAccess = (currentPlan: string, required: string) => {
-    if (required === 'basic') return true;
-    if (required === 'pro') return currentPlan === 'pro';
-    return false;
+  const switchLanguage = (newLocale: string) => {
+    // 현재 경로에서 언어 부분을 교체
+    const newPathname = pathname.replace(`/${currentLocale}`, `/${newLocale}`);
+    router.push(newPathname);
   };
   
-  return { 
-    canAccess: hasAccess(plan, requiredPlan), 
-    isLoading,
-    needsUpgrade: !hasAccess(plan, requiredPlan)
-  };
-}
-
-// 사용 예시
-export function ProFeatureComponent() {
-  const { canAccess, isLoading, needsUpgrade } = useSubscriptionGuard('pro');
-  
-  if (isLoading) return <LoadingSpinner />;
-  if (needsUpgrade) return <UpgradePrompt />;
-  
-  return <ProFeatureContent />;
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm">
+          <span className="mr-2">{currentLanguage?.flag}</span>
+          <span>{currentLanguage?.name}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {languages.map((language) => (
+          <DropdownMenuItem
+            key={language.code}
+            onClick={() => switchLanguage(language.code)}
+            className={currentLocale === language.code ? 'bg-muted' : ''}
+          >
+            <span className="mr-2">{language.flag}</span>
+            <span>{language.name}</span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
 ```
 
-## 9. API 라우팅 구조
+## 10. API 라우팅 구조 (언어 무관)
 
-### 9.1 데이터 소스별 API 라우팅
+### 10.1 데이터 소스별 API 라우팅
+
+API 라우트는 언어와 무관하게 단일 엔드포인트로 구성됩니다. 필요한 경우 Accept-Language 헤더를 통해 언어별 응답을 제공합니다.
 
 ```
 app/api/
@@ -464,10 +744,10 @@ app/api/
 │
 ├── data/                 # 경제지표 데이터 API
 │   ├── kosis/            # KOSIS 데이터 소스
-│   │   ├── indicators/route.ts    # 지표 목록 (MVP 12개)
+│   │   ├── indicators/route.ts    # 지표 목록 (MVP 12개, 언어별 번역)
 │   │   └── series/[id]/route.ts   # 시계열 데이터
 │   ├── ecos/             # ECOS 데이터 소스
-│   │   ├── indicators/route.ts    # 지표 목록 (MVP 8개)
+│   │   ├── indicators/route.ts    # 지표 목록 (MVP 8개, 언어별 번역)
 │   │   └── series/[id]/route.ts   # 시계열 데이터
 │   └── combined/route.ts # 다중 소스 통합 조회
 │
@@ -494,45 +774,147 @@ app/api/
     └── trial/route.ts    # 무료 체험 시작
 ```
 
-### 9.2 구독 플랜별 API 접근 제한
-
-| API 경로 | Basic 플랜 | Pro 플랜 | 제한 내용 |
-|----------|-----------|----------|----------|
-| `/api/data/*/indicators` | 20개 지표 | 40개 지표 | 지표 목록 필터링 |
-| `/api/data/*/series` | 최근 3년 | 전체 기간 | 데이터 기간 제한 |
-| `/api/dashboards` | 최대 3개 | 무제한 | 생성 개수 제한 |
-| `/api/dashboards/[id]/copy` | 접근 불가 | 접근 가능 | 기능 제한 |
-| `/api/dashboards/[id]/embed` | 접근 불가 | 접근 가능 | 기능 제한 |
-| `/api/widgets` | 대시보드당 6개 | 무제한 | 생성 개수 제한 |
-
-## 10. 클라이언트 측 네비게이션 최적화
-
-### 10.1 효율적인 네비게이션 패턴
+### 10.2 언어별 API 응답 처리
 
 ```tsx
-// 링크 컴포넌트 사용 예시 - OKLCH 색상 시스템 활용
-import Link from 'next/link';
+// app/api/data/kosis/indicators/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { getKosisIndicators } from '@/lib/data-sources/kosis';
 
-export function DashboardCard({ dashboard }) {
+export async function GET(request: NextRequest) {
+  // Accept-Language 헤더에서 언어 감지
+  const acceptLanguage = request.headers.get('accept-language');
+  const locale = acceptLanguage?.includes('en') ? 'en' : 'ko';
+  
+  try {
+    const indicators = await getKosisIndicators();
+    
+    // 언어별 번역 적용
+    const translatedIndicators = indicators.map(indicator => ({
+      ...indicator,
+      name: locale === 'en' ? indicator.nameEn : indicator.nameKo,
+      description: locale === 'en' ? indicator.descriptionEn : indicator.descriptionKo,
+      category: locale === 'en' ? indicator.categoryEn : indicator.categoryKo,
+    }));
+    
+    return NextResponse.json({
+      success: true,
+      data: translatedIndicators,
+      locale,
+    });
+  } catch (error) {
+    const errorMessage = locale === 'en' 
+      ? 'Failed to fetch indicators'
+      : '지표 조회에 실패했습니다';
+      
+    return NextResponse.json(
+      { success: false, error: errorMessage },
+      { status: 500 }
+    );
+  }
+}
+```
+
+## 11. 클라이언트 측 네비게이션 최적화 (국제화)
+
+### 11.1 효율적인 언어별 네비게이션 패턴
+
+```tsx
+// components/LocalizedLink.tsx
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+
+interface LocalizedLinkProps {
+  href: string;
+  children: React.ReactNode;
+  className?: string;
+  prefetch?: boolean;
+}
+
+export function LocalizedLink({ 
+  href, 
+  children, 
+  className, 
+  prefetch = true 
+}: LocalizedLinkProps) {
+  const params = useParams();
+  const locale = params.locale as string;
+  
+  // href가 이미 언어 코드를 포함하고 있는지 확인
+  const localizedHref = href.startsWith(`/${locale}`) 
+    ? href 
+    : `/${locale}${href}`;
+  
   return (
     <Link 
-      href={`/dashboard/${dashboard.id}`}
-      prefetch={true}
-      className="rounded-lg border bg-card shadow-sm hover:bg-muted/50 transition-colors"
+      href={localizedHref}
+      prefetch={prefetch}
+      className={className}
     >
-      <div className="p-4">
-        <h3 className="text-xl font-semibold leading-snug">{dashboard.title}</h3>
-        <p className="text-sm text-muted-foreground">{dashboard.description}</p>
-      </div>
+      {children}
     </Link>
   );
 }
 
-// 프로그래매틱 네비게이션
-import { useRouter } from 'next/navigation';
+// components/DashboardCard.tsx (국제화 적용)
+import { LocalizedLink } from './LocalizedLink';
+import { useDictionary } from '@/hooks/use-dictionary';
 
-export function SaveButton({ dashboardId, onSave }) {
+export function DashboardCard({ dashboard }) {
+  const dictionary = useDictionary();
+  
+  return (
+    <LocalizedLink 
+      href={`/dashboard/${dashboard.id}`}
+      className="block rounded-lg border bg-card shadow-sm hover:bg-muted/50 transition-colors"
+    >
+      <div className="p-4">
+        <h3 className="text-xl font-semibold leading-snug">{dashboard.title}</h3>
+        <p className="text-sm text-muted-foreground">{dashboard.description}</p>
+        <div className="mt-2 text-xs text-muted-foreground">
+          {dictionary.dashboard.last_updated}: {dashboard.updatedAt}
+        </div>
+      </div>
+    </LocalizedLink>
+  );
+}
+
+// hooks/useLocalizedRouter.ts
+'use client';
+
+import { useRouter, useParams } from 'next/navigation';
+
+export function useLocalizedRouter() {
   const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
+  
+  const push = (href: string) => {
+    const localizedHref = href.startsWith(`/${locale}`) 
+      ? href 
+      : `/${locale}${href}`;
+    router.push(localizedHref);
+  };
+  
+  const replace = (href: string) => {
+    const localizedHref = href.startsWith(`/${locale}`) 
+      ? href 
+      : `/${locale}${href}`;
+    router.replace(localizedHref);
+  };
+  
+  return {
+    ...router,
+    push,
+    replace,
+    locale,
+  };
+}
+
+// 사용 예시
+export function SaveButton({ dashboardId, onSave }) {
+  const router = useLocalizedRouter();
+  const dictionary = useDictionary();
   
   const handleSave = async () => {
     const result = await onSave();
@@ -546,53 +928,18 @@ export function SaveButton({ dashboardId, onSave }) {
       onClick={handleSave} 
       className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
     >
-      저장
+      {dictionary.common.save}
     </button>
   );
 }
 ```
 
-### 10.2 선별적 모달 라우팅 구조
+## 12. 메타데이터 전략 (국제화)
 
-높은 사용 빈도와 컨텍스트 유지가 중요한 경우에만 인터셉트 라우트를 적용합니다:
-
-```
-app/
-├── dashboard/[id]/
-│   └── page.tsx         # 일반 대시보드 페이지
-│
-└── @modal/
-    ├── dashboard/[id]/
-    │   └── page.tsx     # 대시보드 미리보기 모달 (높은 사용 빈도)
-    └── subscription/upgrade/
-        └── page.tsx     # 업그레이드 모달 (컨텍스트 유지 중요)
-```
+### 12.1 언어별 메타데이터 계층 구조
 
 ```tsx
-// app/@modal/dashboard/[id]/page.tsx
-import { fetchDashboardById } from '@/e-torch/server-api/dashboard';
-import { DashboardModalContent } from '@/e-torch/dashboard/components/dashboard-modal-content';
-
-export default async function DashboardModal({ params }) {
-  const dashboard = await fetchDashboardById(params.id);
-  
-  return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-      <div className="fixed left-1/2 top-1/2 z-50 max-h-[85vh] w-[90%] max-w-3xl -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-card p-6 shadow-lg">
-        <h2 className="text-xl font-semibold leading-snug">{dashboard.title}</h2>
-        <DashboardModalContent dashboard={dashboard} />
-      </div>
-    </div>
-  );
-}
-```
-
-## 11. 메타데이터 전략
-
-### 11.1 메타데이터 계층 구조
-
-```tsx
-// app/layout.tsx (기본 메타데이터)
+// app/layout.tsx (루트 레이아웃)
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import '@e-torch/ui/styles/globals.css';
 
@@ -607,24 +954,19 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: {
-    template: '%s | E-Torch',
-    default: 'E-Torch - 경제지표 대시보드 서비스',
-  },
-  description: '다양한 출처의 경제지표 데이터를 시각화하는 대시보드 서비스',
-  keywords: ['경제지표', 'KOSIS', 'ECOS', '대시보드', '데이터 시각화'],
-  authors: [{ name: 'E-Torch Team' }],
-  openGraph: {
-    type: 'website',
-    locale: 'ko_KR',
-    url: 'https://e-torch.com',
-    siteName: 'E-Torch',
+  metadataBase: new URL('https://e-torch.com'),
+  alternates: {
+    canonical: '/ko',
+    languages: {
+      'ko': '/ko',
+      'en': '/en',
+    },
   },
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ko" className={`${inter.variable} ${jetBrainsMono.variable}`}>
+    <html className={`${inter.variable} ${jetBrainsMono.variable}`}>
       <body>
         <GlobalErrorBoundary>
           {children}
@@ -634,63 +976,148 @@ export default function RootLayout({ children }) {
   );
 }
 
-// app/(dashboard)/layout.tsx (섹션 메타데이터)
-export const metadata: Metadata = {
-  title: 'Dashboard',
-  description: '대시보드를 관리하고 시각화하세요',
-};
+// app/[locale]/layout.tsx (언어별 레이아웃)
+import { getDictionary } from '@/lib/dictionaries';
+import { DictionaryProvider } from '@/hooks/use-dictionary';
 
-// app/(dashboard)/dashboard/[id]/page.tsx (동적 메타데이터)
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const dashboard = await fetchDashboardById(params.id);
-  const userPlan = await getUserPlan();
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: { locale: 'ko' | 'en' } 
+}): Promise<Metadata> {
+  const dictionary = await getDictionary(params.locale);
+  
+  return {
+    title: {
+      template: `%s | ${dictionary.site.name}`,
+      default: dictionary.site.title,
+    },
+    description: dictionary.site.description,
+    keywords: dictionary.site.keywords,
+    authors: [{ name: 'E-Torch Team' }],
+    openGraph: {
+      type: 'website',
+      locale: params.locale === 'ko' ? 'ko_KR' : 'en_US',
+      url: `/${params.locale}`,
+      siteName: dictionary.site.name,
+      title: dictionary.site.title,
+      description: dictionary.site.description,
+    },
+    alternates: {
+      canonical: `/${params.locale}`,
+      languages: {
+        'ko': '/ko',
+        'en': '/en',
+        'x-default': '/ko',
+      },
+    },
+    other: {
+      'google-site-verification': process.env.GOOGLE_SITE_VERIFICATION || '',
+    },
+  };
+}
+
+export default async function LocaleLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: { locale: 'ko' | 'en' };
+}) {
+  const dictionary = await getDictionary(params.locale);
+  
+  return (
+    <html lang={params.locale} dir="ltr">
+      <body>
+        <DictionaryProvider dictionary={dictionary}>
+          {children}
+        </DictionaryProvider>
+      </body>
+    </html>
+  );
+}
+
+// app/[locale]/(dashboard)/layout.tsx (섹션별 메타데이터)
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: { locale: 'ko' | 'en' } 
+}): Promise<Metadata> {
+  const dictionary = await getDictionary(params.locale);
+  
+  return {
+    title: dictionary.dashboard.title,
+    description: dictionary.dashboard.description,
+  };
+}
+
+// app/[locale]/(dashboard)/dashboard/[id]/page.tsx (동적 메타데이터)
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: { locale: 'ko' | 'en'; id: string } 
+}): Promise<Metadata> {
+  const [dashboard, dictionary] = await Promise.all([
+    fetchDashboardById(params.id),
+    getDictionary(params.locale)
+  ]);
   
   if (!dashboard) {
     return {
-      title: 'Dashboard Not Found',
+      title: dictionary.errors.not_found,
     };
   }
   
+  const userPlan = await getUserPlan();
+  
   return {
     title: dashboard.title,
-    description: dashboard.description || '대시보드 상세 정보',
+    description: dashboard.description || dictionary.dashboard.description_default,
+    alternates: {
+      canonical: `/${params.locale}/dashboard/${params.id}`,
+      languages: {
+        'ko': `/ko/dashboard/${params.id}`,
+        'en': `/en/dashboard/${params.id}`,
+        'x-default': `/ko/dashboard/${params.id}`,
+      },
+    },
     openGraph: {
+      title: dashboard.title,
+      description: dashboard.description || dictionary.dashboard.description_default,
+      locale: params.locale === 'ko' ? 'ko_KR' : 'en_US',
+      alternateLocale: params.locale === 'ko' ? 'en_US' : 'ko_KR',
       // Pro 사용자는 워터마크 없는 이미지
       images: [userPlan === 'pro' ? dashboard.thumbnail : dashboard.thumbnailWithWatermark],
+    },
+    robots: {
+      index: dashboard.isPublic,
+      follow: dashboard.isPublic,
     },
   };
 }
 ```
 
-## 12. 서버 액션 활용 전략
+## 13. 서버 액션 활용 전략 (국제화)
 
-Next.js 서버 액션을 활용하여 클라이언트-서버 통신을 간소화합니다. 이 섹션에서는 서버 액션의 라우팅 관점에서의 활용에 초점을 맞춥니다.
-
-### 12.1 서버 액션 워크플로우
+### 13.1 다국어 서버 액션 워크플로우
 
 ```mermaid
 flowchart LR
-    subgraph "클라이언트"
-        A[폼 컴포넌트] --> B[서버 액션 호출]
-        F[결과 처리] --> G[UI 업데이트]
+    subgraph "클라이언트 (언어별)"
+        A[다국어 폼 컴포넌트] --> B[서버 액션 호출]
+        F[언어별 결과 처리] --> G[UI 업데이트]
     end
     
     subgraph "서버"
-        C[서버 액션] --> D[데이터 처리]
-        D --> E[캐시 무효화/리디렉션]
+        C[언어 감지 서버 액션] --> D[데이터 처리]
+        D --> E[캐시 무효화/언어별 리디렉션]
     end
     
     B --> C
     E --> F
 ```
 
-### 12.2 개선된 서버 액션 패턴
-
-- **폼 제출 처리**: 사용자 입력 검증 및 데이터베이스 저장 (`/dashboard/new`, `/dashboard/edit`)
-- **구독 플랜 검증**: 플랜별 제한 확인 및 업그레이드 유도
-- **캐시 무효화**: 관련 페이지의 캐시 자동 무효화 (`revalidatePath`)
-- **리디렉션**: 액션 완료 후 적절한 페이지로 이동 (`redirect`)
-- **향상된 에러 처리**: 구체적 에러 타입별 처리 및 로깅
+### 13.2 향상된 다국어 서버 액션 패턴
 
 ```tsx
 // app/actions/dashboard.ts
@@ -700,20 +1127,31 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { saveDashboard } from '@/e-torch/server-api/dashboard';
 import { getCurrentUser } from '@/e-torch/server-api/auth';
+import { getDictionary } from '@/lib/dictionaries';
 import { ValidationError, QuotaExceededError } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 
-export async function saveDashboardAction(formData: FormData | Record<string, any>) {
-  const user = await getCurrentUser();
+export async function saveDashboardAction(
+  locale: 'ko' | 'en',
+  formData: FormData | Record<string, any>
+) {
+  const [user, dictionary] = await Promise.all([
+    getCurrentUser(),
+    getDictionary(locale)
+  ]);
+  
   if (!user) {
-    return { success: false, error: '인증되지 않은 사용자' };
+    return { 
+      success: false, 
+      error: dictionary.errors.unauthorized 
+    };
   }
   
-  // 구독 플랜별 제한 검증
+  // 구독 플랜별 제한 검증 (언어별 메시지)
   if (user.plan === 'basic') {
     const dashboardCount = await getUserDashboardCount(user.id);
     if (dashboardCount >= 3) {
-      redirect('/subscription/upgrade?reason=dashboard_limit');
+      redirect(`/${locale}/subscription/upgrade?reason=dashboard_limit`);
     }
   }
   
@@ -727,133 +1165,146 @@ export async function saveDashboardAction(formData: FormData | Record<string, an
     
     const result = await saveDashboard(dashboardData);
     
-    // 캐시 무효화
-    revalidatePath(`/dashboard/${result.id}`);
-    revalidatePath('/dashboard');
+    // 언어별 캐시 무효화
+    revalidatePath(`/${locale}/dashboard/${result.id}`);
+    revalidatePath(`/${locale}/dashboard`);
     
-    return { success: true, data: result };
+    return { 
+      success: true, 
+      data: result,
+      message: dictionary.dashboard.save_success
+    };
   } catch (error) {
-    // 구체적 에러 타입별 처리
+    // 언어별 에러 처리
     if (error instanceof ValidationError) {
       return { 
         success: false, 
-        error: '입력값을 확인해주세요', 
+        error: dictionary.errors.validation_failed,
         field: error.field,
         details: error.details
       };
     }
     
     if (error instanceof QuotaExceededError) {
-      redirect('/subscription/upgrade?reason=quota_exceeded');
+      redirect(`/${locale}/subscription/upgrade?reason=quota_exceeded`);
     }
     
     // 로깅 및 모니터링
     logger.error('Dashboard save failed', { 
       error: error.message, 
       userId: user.id,
-      dashboardData: dashboardData 
+      locale,
+      dashboardData 
     });
     
     return { 
       success: false, 
-      error: '일시적 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+      error: dictionary.errors.generic_error
     };
   }
 }
+
+// 언어별 리디렉션 헬퍼
+export async function redirectToUpgrade(
+  locale: 'ko' | 'en',
+  reason: string
+) {
+  redirect(`/${locale}/subscription/upgrade?reason=${reason}`);
+}
 ```
 
-### 12.3 구독 플랜별 서버 액션 제한
+### 13.3 다국어 구독 플랜별 서버 액션 제한
 
 ```tsx
 // app/actions/subscription.ts
 'use server';
 
-export async function createWidgetAction(widgetData: any) {
-  const user = await getCurrentUser();
+export async function createWidgetAction(
+  locale: 'ko' | 'en',
+  widgetData: any
+) {
+  const [user, dictionary] = await Promise.all([
+    getCurrentUser(),
+    getDictionary(locale)
+  ]);
+  
+  if (!user) {
+    return { 
+      success: false, 
+      error: dictionary.errors.unauthorized 
+    };
+  }
   
   try {
-    // Basic 플랜 위젯 개수 제한
+    // Basic 플랜 위젯 개수 제한 (언어별 메시지)
     if (user.plan === 'basic') {
       const widgetCount = await getUserWidgetCount(user.id, widgetData.dashboardId);
       if (widgetCount >= 6) {
-        redirect('/subscription/upgrade?reason=widget_limit');
+        redirect(`/${locale}/subscription/upgrade?reason=widget_limit`);
       }
     }
     
     // 위젯 생성 로직
     const result = await createWidget(widgetData);
     
-    revalidatePath(`/dashboard/${widgetData.dashboardId}/edit`);
-    return { success: true, data: result };
+    revalidatePath(`/${locale}/dashboard/${widgetData.dashboardId}/edit`);
+    return { 
+      success: true, 
+      data: result,
+      message: dictionary.widget.create_success
+    };
   } catch (error) {
     logger.error('Widget creation failed', { 
       error: error.message, 
       userId: user.id,
+      locale,
       widgetData 
     });
     
     return { 
       success: false, 
-      error: '위젯 생성에 실패했습니다.' 
+      error: dictionary.errors.widget_create_failed
     };
   }
 }
 ```
 
-## 13. 에러 처리 및 로딩 최적화
+## 14. 에러 처리 및 로딩 최적화 (국제화)
 
-### 13.1 표준화된 에러 처리 시스템
+### 14.1 다국어 에러 처리 시스템
 
 ```tsx
-// types/errors.ts
-export interface StructuredError {
+// types/errors.ts (다국어 지원)
+export interface LocalizedError {
   type: ErrorType;
   code: ErrorCode;
   message: string;
-  userMessage: string;
+  userMessage: Record<'ko' | 'en', string>;
   recoverable: boolean;
   retryable: boolean;
   context?: Record<string, any>;
 }
 
-export enum ErrorType {
-  SUBSCRIPTION_REQUIRED = 'SUBSCRIPTION_REQUIRED',
-  NETWORK_ERROR = 'NETWORK_ERROR',
-  VALIDATION_ERROR = 'VALIDATION_ERROR',
-  AUTH_ERROR = 'AUTH_ERROR',
-  QUOTA_EXCEEDED = 'QUOTA_EXCEEDED',
-  UNKNOWN = 'UNKNOWN'
-}
+// utils/error-classifier.ts (다국어 지원)
+import { LocalizedError, ErrorType, ErrorCode } from '@/types/errors';
 
-export enum ErrorCode {
-  // 구독 관련
-  SUB_001 = 'DASHBOARD_LIMIT_EXCEEDED',
-  SUB_002 = 'WIDGET_LIMIT_EXCEEDED',
-  SUB_003 = 'DATA_PERIOD_RESTRICTED',
-  
-  // 네트워크 관련
-  NET_001 = 'API_TIMEOUT',
-  NET_002 = 'CONNECTION_FAILED',
-  
-  // 검증 관련
-  VAL_001 = 'INVALID_DASHBOARD_DATA',
-  VAL_002 = 'INVALID_WIDGET_CONFIG'
-}
-
-// utils/error-classifier.ts
-import { StructuredError, ErrorType, ErrorCode } from '@/types/errors';
-
-export function classifyError(error: Error): StructuredError {
+export function classifyLocalizedError(
+  error: Error,
+  locale: 'ko' | 'en' = 'ko'
+): LocalizedError {
   // 구독 관련 에러
   if (error.message.includes('dashboard_limit')) {
     return {
       type: ErrorType.SUBSCRIPTION_REQUIRED,
       code: ErrorCode.SUB_001,
       message: error.message,
-      userMessage: '대시보드 생성 한도에 도달했습니다. Pro 플랜으로 업그레이드하세요.',
+      userMessage: {
+        ko: '대시보드 생성 한도에 도달했습니다. Pro 플랜으로 업그레이드하세요.',
+        en: 'Dashboard creation limit reached. Please upgrade to Pro plan.'
+      },
       recoverable: true,
       retryable: false,
-      context: { upgradeUrl: '/subscription/upgrade?reason=dashboard_limit' }
+      context: { upgradeUrl: `/${locale}/subscription/upgrade?reason=dashboard_limit` }
     };
   }
   
@@ -862,10 +1313,13 @@ export function classifyError(error: Error): StructuredError {
       type: ErrorType.SUBSCRIPTION_REQUIRED,
       code: ErrorCode.SUB_002,
       message: error.message,
-      userMessage: '위젯 생성 한도에 도달했습니다. Pro 플랜으로 업그레이드하세요.',
+      userMessage: {
+        ko: '위젯 생성 한도에 도달했습니다. Pro 플랜으로 업그레이드하세요.',
+        en: 'Widget creation limit reached. Please upgrade to Pro plan.'
+      },
       recoverable: true,
       retryable: false,
-      context: { upgradeUrl: '/subscription/upgrade?reason=widget_limit' }
+      context: { upgradeUrl: `/${locale}/subscription/upgrade?reason=widget_limit` }
     };
   }
   
@@ -875,21 +1329,12 @@ export function classifyError(error: Error): StructuredError {
       type: ErrorType.NETWORK_ERROR,
       code: ErrorCode.NET_001,
       message: error.message,
-      userMessage: '네트워크 연결을 확인하고 다시 시도해주세요.',
+      userMessage: {
+        ko: '네트워크 연결을 확인하고 다시 시도해주세요.',
+        en: 'Please check your network connection and try again.'
+      },
       recoverable: true,
       retryable: true
-    };
-  }
-  
-  // 검증 에러
-  if (error.name === 'ValidationError') {
-    return {
-      type: ErrorType.VALIDATION_ERROR,
-      code: ErrorCode.VAL_001,
-      message: error.message,
-      userMessage: '입력값을 확인하고 다시 시도해주세요.',
-      recoverable: true,
-      retryable: false
     };
   }
   
@@ -898,40 +1343,49 @@ export function classifyError(error: Error): StructuredError {
     type: ErrorType.UNKNOWN,
     code: 'UNKNOWN' as ErrorCode,
     message: error.message,
-    userMessage: '일시적 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+    userMessage: {
+      ko: '일시적 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+      en: 'A temporary error occurred. Please try again later.'
+    },
     recoverable: true,
     retryable: true
   };
 }
 
-// app/error-boundary.tsx
+// app/[locale]/error.tsx (언어별 에러 페이지)
 'use client';
 
 import { useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { logger } from '@/lib/logger';
-import { classifyError, StructuredError, ErrorType } from '@/utils/error-classifier';
+import { classifyLocalizedError, LocalizedError, ErrorType } from '@/utils/error-classifier';
+import { useDictionary } from '@/hooks/use-dictionary';
 
-export function GlobalErrorBoundary({ 
+export default function ErrorPage({ 
   error, 
   reset 
 }: { 
   error: Error & { digest?: string }; 
   reset: () => void; 
 }) {
-  const structuredError = classifyError(error);
+  const params = useParams();
+  const locale = params.locale as 'ko' | 'en';
+  const dictionary = useDictionary();
+  const structuredError = classifyLocalizedError(error, locale);
   
   useEffect(() => {
     // 구조화된 에러 로깅
-    logger.error('Global error boundary triggered', {
+    logger.error('Localized error boundary triggered', {
       ...structuredError,
       originalError: error.message,
       stack: error.stack,
       digest: error.digest,
+      locale,
       timestamp: new Date().toISOString(),
-      userAgent: window.navigator.userAgent,
-      url: window.location.href
+      userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : '',
+      url: typeof window !== 'undefined' ? window.location.href : '',
     });
-  }, [error, structuredError]);
+  }, [error, structuredError, locale]);
   
   const handleRetry = () => {
     if (structuredError.retryable) {
@@ -943,209 +1397,148 @@ export function GlobalErrorBoundary({
     if (structuredError.context?.upgradeUrl) {
       window.location.href = structuredError.context.upgradeUrl;
     } else if (structuredError.recoverable) {
-      window.location.href = '/dashboard';
+      window.location.href = `/${locale}/dashboard`;
     }
   };
   
   const getErrorTitle = (type: ErrorType): string => {
-    switch (type) {
-      case ErrorType.SUBSCRIPTION_REQUIRED:
-        return '업그레이드가 필요합니다';
-      case ErrorType.NETWORK_ERROR:
-        return '연결 오류';
-      case ErrorType.VALIDATION_ERROR:
-        return '입력 오류';
-      case ErrorType.AUTH_ERROR:
-        return '인증 오류';
-      case ErrorType.QUOTA_EXCEEDED:
-        return '사용량 한도 초과';
-      default:
-        return '오류가 발생했습니다';
-    }
-  };
-  
-  const renderErrorContent = () => {
-    return (
-      <div className="text-center p-6">
-        <h2 className="text-2xl font-bold mb-4">{getErrorTitle(structuredError.type)}</h2>
-        <p className="text-muted-foreground mb-6">
-          {structuredError.userMessage}
-        </p>
-        
-        <div className="space-x-4">
-          {structuredError.retryable && (
-            <button 
-              onClick={handleRetry}
-              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-            >
-              다시 시도
-            </button>
-          )}
-          
-          {structuredError.recoverable && (
-            <button 
-              onClick={handleRecover}
-              className={structuredError.context?.upgradeUrl 
-                ? "inline-flex items-center justify-center rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700"
-                : "inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
-              }
-            >
-              {structuredError.context?.upgradeUrl ? 'Pro 플랜 보기' : '홈으로 이동'}
-            </button>
-          )}
-        </div>
-        
-        {process.env.NODE_ENV === 'development' && (
-          <details className="mt-6 text-left">
-            <summary className="cursor-pointer text-sm text-muted-foreground">
-              개발자 정보 (개발 환경에서만 표시)
-            </summary>
-            <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-auto">
-              {JSON.stringify(structuredError, null, 2)}
-            </pre>
-          </details>
-        )}
-      </div>
-    );
-  };
-```
-
-### 13.2 로딩 및 에러 처리 구조
-
-```
-app/
-├── (dashboard)/
-│   ├── dashboard/
-│   │   ├── loading.tsx    # 대시보드 목록 로딩
-│   │   ├── error.tsx      # 대시보드 목록 에러
-│   │   └── [id]/
-│   │       ├── loading.tsx # 개별 대시보드 로딩
-│   │       └── error.tsx   # 개별 대시보드 에러
-│   └── explore/
-│       ├── loading.tsx     # 탐색 페이지 로딩
-│       └── error.tsx       # 탐색 페이지 에러
-│
-├── (widget)/
-│   └── widget-editor/[id]/
-│       ├── loading.tsx     # 위젯 에디터 로딩
-│       └── error.tsx       # 위젯 에디터 에러
-│
-├── (subscription)/
-│   └── subscription/
-│       ├── loading.tsx      # 구독 페이지 로딩
-│       └── error.tsx        # 구독 페이지 에러
-│
-└── error-boundary.tsx      # 전역 에러 바운더리
-```
-
-#### 13.3 타입 안전 에러 처리
-
-**에러 타입 정의 파일 구조**
-
-```
-app/
-├── types/
-│   └── errors.ts         # 에러 타입 정의
-├── utils/
-│   └── error-classifier.ts # 에러 분류 로직
-└── components/
-    └── error-boundary.tsx  # 에러 바운더리 컴포넌트
-```
-
-**서버 액션에서의 타입 안전 에러 처리**
-
-```tsx
-// app/actions/dashboard.ts
-import { StructuredError, ErrorType, ErrorCode } from '@/types/errors';
-
-export async function saveDashboardAction(formData: FormData) {
-  try {
-    // ... 기존 로직
-  } catch (error) {
-    const structuredError = classifyError(error as Error);
-    
-    return { 
-      success: false, 
-      error: structuredError 
-    };
-  }
-}
-```
-
-**클라이언트에서의 에러 처리**
-
-```tsx
-// components/dashboard-form.tsx
-'use client';
-
-import { StructuredError } from '@/types/errors';
-
-export function DashboardForm() {
-  const [error, setError] = useState<StructuredError | null>(null);
-  
-  const handleSubmit = async (formData: FormData) => {
-    const result = await saveDashboardAction(formData);
-    
-    if (!result.success && result.error) {
-      setError(result.error);
-      
-      // 자동 복구 시도
-      if (result.error.retryable) {
-        setTimeout(() => handleSubmit(formData), 2000);
+    const titles = {
+      [ErrorType.SUBSCRIPTION_REQUIRED]: {
+        ko: '업그레이드가 필요합니다',
+        en: 'Upgrade Required'
+      },
+      [ErrorType.NETWORK_ERROR]: {
+        ko: '연결 오류',
+        en: 'Connection Error'
+      },
+      [ErrorType.VALIDATION_ERROR]: {
+        ko: '입력 오류',
+        en: 'Input Error'
+      },
+      [ErrorType.AUTH_ERROR]: {
+        ko: '인증 오류',
+        en: 'Authentication Error'
+      },
+      [ErrorType.QUOTA_EXCEEDED]: {
+        ko: '사용량 한도 초과',
+        en: 'Quota Exceeded'
+      },
+      [ErrorType.UNKNOWN]: {
+        ko: '오류가 발생했습니다',
+        en: 'An Error Occurred'
       }
-    }
+    };
+    
+    return titles[type]?.[locale] || titles[ErrorType.UNKNOWN][locale];
   };
   
   return (
-    <form onSubmit={handleSubmit}>
-      {error && (
-        <div className="error-display">
-          <p>{error.userMessage}</p>
-          {error.context?.upgradeUrl && (
-            <a href={error.context.upgradeUrl}>업그레이드</a>
-          )}
-        </div>
-      )}
-      {/* 폼 필드들 */}
-    </form>
+    <div className="text-center p-6">
+      <h2 className="text-2xl font-bold mb-4">{getErrorTitle(structuredError.type)}</h2>
+      <p className="text-muted-foreground mb-6">
+        {structuredError.userMessage[locale]}
+      </p>
+      
+      <div className="space-x-4">
+        {structuredError.retryable && (
+          <button 
+            onClick={handleRetry}
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            {dictionary.common.retry}
+          </button>
+        )}
+        
+        {structuredError.recoverable && (
+          <button 
+            onClick={handleRecover}
+            className={structuredError.context?.upgradeUrl 
+              ? "inline-flex items-center justify-center rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700"
+              : "inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+            }
+          >
+            {structuredError.context?.upgradeUrl 
+              ? dictionary.subscription.view_pro_plan 
+              : dictionary.navigation.go_home
+            }
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 ```
 
-## 14. 접근성 라우팅 패턴
+### 14.2 다국어 로딩 및 에러 처리 구조
 
-### 14.1 통합 접근성 지원 구조
+```
+app/[locale]/
+├── (dashboard)/
+│   ├── dashboard/
+│   │   ├── loading.tsx    # 언어별 대시보드 목록 로딩
+│   │   ├── error.tsx      # 언어별 대시보드 목록 에러
+│   │   └── [id]/
+│   │       ├── loading.tsx # 언어별 개별 대시보드 로딩
+│   │       └── error.tsx   # 언어별 개별 대시보드 에러
+│   └── explore/
+│       ├── loading.tsx     # 언어별 탐색 페이지 로딩
+│       └── error.tsx       # 언어별 탐색 페이지 에러
+│
+├── (widget)/
+│   └── widget-editor/[id]/
+│       ├── loading.tsx     # 언어별 위젯 에디터 로딩
+│       └── error.tsx       # 언어별 위젯 에디터 에러
+│
+├── (subscription)/
+│   └── subscription/
+│       ├── loading.tsx      # 언어별 구독 페이지 로딩
+│       └── error.tsx        # 언어별 구독 페이지 에러
+│
+├── loading.tsx             # 언어별 전역 로딩
+└── error.tsx               # 언어별 전역 에러
+```
+
+## 15. 접근성 라우팅 패턴 (국제화)
+
+### 15.1 다국어 통합 접근성 지원 구조
 
 ```tsx
-// app/accessibility/page.tsx
+// app/[locale]/accessibility/page.tsx
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getDictionary } from '@/lib/dictionaries';
 
-export default function AccessibilityPage() {
+interface AccessibilityPageProps {
+  params: { locale: 'ko' | 'en' };
+}
+
+export default async function AccessibilityPage({ params }: AccessibilityPageProps) {
+  const dictionary = await getDictionary(params.locale);
+  
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">접근성 지원</h1>
+      <h1 className="text-3xl font-bold mb-8">{dictionary.accessibility.title}</h1>
       
       <Tabs defaultValue="keyboard" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="keyboard">키보드 네비게이션</TabsTrigger>
-          <TabsTrigger value="screen-reader">스크린 리더</TabsTrigger>
-          <TabsTrigger value="high-contrast">고대비 모드</TabsTrigger>
+          <TabsTrigger value="keyboard">{dictionary.accessibility.keyboard_navigation}</TabsTrigger>
+          <TabsTrigger value="screen-reader">{dictionary.accessibility.screen_reader}</TabsTrigger>
+          <TabsTrigger value="high-contrast">{dictionary.accessibility.high_contrast}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="keyboard" className="mt-6">
           <div className="space-y-4">
-            <h2 className="text-2xl font-semibold">키보드 단축키</h2>
+            <h2 className="text-2xl font-semibold">{dictionary.accessibility.keyboard_shortcuts}</h2>
             <div className="grid gap-4">
               <div className="flex justify-between items-center p-3 border rounded">
-                <span>메인 콘텐츠로 이동</span>
+                <span>{dictionary.accessibility.go_to_main}</span>
                 <kbd className="px-2 py-1 bg-muted rounded text-sm">Alt + 1</kbd>
               </div>
               <div className="flex justify-between items-center p-3 border rounded">
-                <span>네비게이션으로 이동</span>
+                <span>{dictionary.accessibility.go_to_navigation}</span>
                 <kbd className="px-2 py-1 bg-muted rounded text-sm">Alt + 2</kbd>
               </div>
               <div className="flex justify-between items-center p-3 border rounded">
-                <span>대시보드 편집 모드</span>
+                <span>{dictionary.accessibility.dashboard_edit_mode}</span>
                 <kbd className="px-2 py-1 bg-muted rounded text-sm">E</kbd>
               </div>
             </div>
@@ -1154,8 +1547,8 @@ export default function AccessibilityPage() {
         
         <TabsContent value="screen-reader" className="mt-6">
           <div className="space-y-4">
-            <h2 className="text-2xl font-semibold">스크린 리더 지원</h2>
-            <p>E-Torch는 다음 스크린 리더와 호환됩니다:</p>
+            <h2 className="text-2xl font-semibold">{dictionary.accessibility.screen_reader_support}</h2>
+            <p>{dictionary.accessibility.compatible_screen_readers}:</p>
             <ul className="list-disc list-inside space-y-2">
               <li>NVDA (Windows)</li>
               <li>JAWS (Windows)</li>
@@ -1167,10 +1560,10 @@ export default function AccessibilityPage() {
         
         <TabsContent value="high-contrast" className="mt-6">
           <div className="space-y-4">
-            <h2 className="text-2xl font-semibold">고대비 모드</h2>
-            <p>시각적 접근성을 위한 고대비 모드를 지원합니다.</p>
+            <h2 className="text-2xl font-semibold">{dictionary.accessibility.high_contrast_mode}</h2>
+            <p>{dictionary.accessibility.high_contrast_description}</p>
             <button className="px-4 py-2 bg-primary text-primary-foreground rounded">
-              고대비 모드 활성화
+              {dictionary.accessibility.enable_high_contrast}
             </button>
           </div>
         </TabsContent>
@@ -1178,151 +1571,155 @@ export default function AccessibilityPage() {
     </div>
   );
 }
+
+// 언어별 메타데이터
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: { locale: 'ko' | 'en' } 
+}): Promise<Metadata> {
+  const dictionary = await getDictionary(params.locale);
+  
+  return {
+    title: dictionary.accessibility.title,
+    description: dictionary.accessibility.description,
+    alternates: {
+      canonical: `/${params.locale}/accessibility`,
+      languages: {
+        'ko': '/ko/accessibility',
+        'en': '/en/accessibility',
+        'x-default': '/ko/accessibility',
+      },
+    },
+  };
+}
 ```
 
-### 14.2 Skip Navigation 패턴
+### 15.2 다국어 Skip Navigation 패턴
 
 ```tsx
-// app/layout.tsx에 Skip Links 포함
-export default function RootLayout({ children }) {
+// app/[locale]/layout.tsx에 언어별 Skip Links 포함
+export default async function LocaleLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: { locale: 'ko' | 'en' };
+}) {
+  const dictionary = await getDictionary(params.locale);
+  
   return (
-    <html lang="ko">
+    <html lang={params.locale}>
       <body>
         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 z-50 bg-primary text-primary-foreground px-4 py-2">
-          메인 콘텐츠로 건너뛰기
+          {dictionary.accessibility.skip_to_main}
         </a>
         <a href="#navigation" className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-20 z-50 bg-primary text-primary-foreground px-4 py-2">
-          네비게이션으로 건너뛰기
+          {dictionary.accessibility.skip_to_navigation}
         </a>
-        <GlobalErrorBoundary>
-          {children}
-        </GlobalErrorBoundary>
+        <DictionaryProvider dictionary={dictionary}>
+          <GlobalErrorBoundary>
+            {children}
+          </GlobalErrorBoundary>
+        </DictionaryProvider>
       </body>
     </html>
   );
 }
 ```
 
-## 15. 국제화 대응 구조 (향후 확장)
+## 16. 성능 최적화 라우팅 전략 (국제화)
 
-### 15.1 다국어 라우팅 준비
-
-향후 영어 지원을 위한 국제화 라우팅 구조를 확장 계획에 포함합니다:
-
-```
-app/
-├── [locale]/             # 국제화 대응 (향후 확장)
-│   ├── (dashboard)/
-│   │   ├── dashboard/
-│   │   └── layout.tsx
-│   ├── (auth)/
-│   │   ├── login/
-│   │   └── layout.tsx
-│   └── layout.tsx
-│
-└── middleware.ts         # 언어 감지 및 리디렉션
-```
+### 16.1 언어별 캐싱 및 성능 최적화
 
 ```tsx
-// middleware.ts (국제화 대응 부분)
-import { match } from '@formatjs/intl-localematcher';
-import Negotiator from 'negotiator';
-
-function getLocale(request: NextRequest): string {
-  const negotiatorHeaders: Record<string, string> = {};
-  request.headers.forEach((value, key) => (negotiatorHeaders[key] = value));
-
-  const locales = ['ko', 'en'];
-  const languages = new Negotiator({ headers: negotiatorHeaders }).languages();
-
-  return match(languages, locales, 'ko');
-}
-
-export async function middleware(request: NextRequest) {
-  // 국제화 처리 (향후 활성화)
-  /*
-  const pathname = request.nextUrl.pathname;
-  const pathnameIsMissingLocale = locales.every(
-    (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
-  );
-
-  if (pathnameIsMissingLocale) {
-    const locale = getLocale(request);
-    return NextResponse.redirect(
-      new URL(`/${locale}${pathname.startsWith('/') ? '' : '/'}${pathname}`, request.url)
-    );
-  }
-  */
-  
-  // 현재는 인증 및 구독 검증만 수행
-  // ... 기존 미들웨어 로직
-}
-```
-
-## 16. 성능 최적화 라우팅 전략
-
-### 16.1 캐싱 및 성능 최적화
-
-```tsx
-// app/(dashboard)/dashboard/[id]/page.tsx
+// app/[locale]/(dashboard)/dashboard/[id]/page.tsx
 import { unstable_cache } from 'next/cache';
 
-// 대시보드 데이터 캐싱
-const getCachedDashboard = unstable_cache(
-  async (id: string) => {
-    return await fetchDashboardById(id);
+// 언어별 대시보드 데이터 캐싱
+const getCachedLocalizedDashboard = unstable_cache(
+  async (id: string, locale: 'ko' | 'en') => {
+    const [dashboard, dictionary] = await Promise.all([
+      fetchDashboardById(id),
+      getDictionary(locale)
+    ]);
+    return { dashboard, dictionary };
   },
-  ['dashboard'],
+  ['localized-dashboard'],
   {
-    tags: [`dashboard-${id}`],
+    tags: [`dashboard-${id}`, `locale-${locale}`],
     revalidate: 3600, // 1시간 캐시
   }
 );
 
-export default async function DashboardPage({ params }: { params: { id: string } }) {
-  const dashboard = await getCachedDashboard(params.id);
+export default async function DashboardPage({ 
+  params 
+}: { 
+  params: { locale: 'ko' | 'en'; id: string } 
+}) {
+  const { dashboard, dictionary } = await getCachedLocalizedDashboard(
+    params.id, 
+    params.locale
+  );
   
   if (!dashboard) {
     return notFound();
   }
   
-  return <DashboardServerWrapper dashboardId={params.id} initialData={dashboard} />;
-}
-
-// 캐시 무효화
-export async function invalidateDashboardCache(id: string) {
-  revalidateTag(`dashboard-${id}`);
-}
-```
-
-### 16.2 사용자 인식 성능 최적화
-
-```tsx
-// components/DashboardCard.tsx
-import Link from 'next/link';
-import { Suspense } from 'react';
-
-export function DashboardCard({ dashboard }) {
   return (
-    <Link 
-      href={`/dashboard/${dashboard.id}`}
-      prefetch={true} // 호버 시 프리페치
-      className="block"
-    >
-      <div className="rounded-lg border bg-card shadow-sm hover:bg-muted/50 transition-colors">
-        <Suspense fallback={<DashboardCardSkeleton />}>
-          <DashboardCardContent dashboard={dashboard} />
-        </Suspense>
-      </div>
-    </Link>
+    <DashboardServerWrapper 
+      dashboardId={params.id} 
+      initialData={dashboard}
+      dictionary={dictionary}
+      locale={params.locale}
+    />
   );
 }
 
-function DashboardCardSkeleton() {
+// 언어별 캐시 무효화
+export async function invalidateLocalizedDashboardCache(
+  id: string, 
+  locale?: 'ko' | 'en'
+) {
+  revalidateTag(`dashboard-${id}`);
+  if (locale) {
+    revalidateTag(`locale-${locale}`);
+  }
+}
+```
+
+### 16.2 언어별 사용자 인식 성능 최적화
+
+```tsx
+// components/LocalizedDashboardCard.tsx
+import { LocalizedLink } from './LocalizedLink';
+import { Suspense } from 'react';
+import { useDictionary } from '@/hooks/use-dictionary';
+
+export function LocalizedDashboardCard({ dashboard, locale }) {
+  const dictionary = useDictionary();
+  
+  return (
+    <LocalizedLink 
+      href={`/dashboard/${dashboard.id}`}
+      prefetch={true} // 언어별 호버 시 프리페치
+      className="block"
+    >
+      <div className="rounded-lg border bg-card shadow-sm hover:bg-muted/50 transition-colors">
+        <Suspense fallback={<DashboardCardSkeleton dictionary={dictionary} />}>
+          <DashboardCardContent dashboard={dashboard} dictionary={dictionary} />
+        </Suspense>
+      </div>
+    </LocalizedLink>
+  );
+}
+
+function DashboardCardSkeleton({ dictionary }) {
   return (
     <div className="p-4 animate-pulse">
       <div className="h-6 bg-muted rounded mb-2"></div>
-      <div className="h-4 bg-muted rounded w-3/4"></div>
+      <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+      <div className="h-3 bg-muted rounded w-1/2" aria-label={dictionary.common.loading}></div>
     </div>
   );
 }
@@ -1330,20 +1727,43 @@ function DashboardCardSkeleton() {
 
 ## 17. 결론
 
-E-Torch의 라우팅 구조는 Next.js 15 App Router의 최신 기능을 활용하여 사용자 중심의 직관적인 인터페이스를 제공합니다. 주요 특징은 다음과 같습니다:
+E-Torch의 **국제화 [locale] 라우팅 구조**는 Next.js 15 App Router의 최신 기능을 활용하여 다국어 사용자 중심의 직관적인 인터페이스를 제공합니다. 주요 특징은 다음과 같습니다:
 
-- **계층적 레이아웃**: 페이지 간 일관된 사용자 경험 제공
-- **기능별 라우트 그룹화**: 코드 구조의 명확한 조직화
-- **서버/클라이언트 분리**: 성능과 사용자 경험 최적화
-- **동적 라우팅**: 대시보드와 위젯에 대한 유연한 접근
-- **최적화된 구독 플랜별 라우트 보호**: 성능을 고려한 다층적 인증 및 권한 검증
-- **토스페이먼츠 연동**: 완전한 결제 시스템 라우팅
-- **메타데이터 최적화**: SEO 및 소셜 공유 최적화
-- **개선된 서버 액션**: 향상된 에러 처리와 타입 안전성을 갖춘 클라이언트-서버 통신
-- **표준화된 에러 처리**: 일관된 에러 처리 및 사용자 경험
-- **통합 접근성 지원**: WCAG 2.1 AA 수준 접근성을 효율적으로 제공
-- **선별적 모달 라우팅**: 사용 빈도를 고려한 실용적 인터셉트 라우트 적용
-- **경제지표 특화**: KOSIS, ECOS 데이터 소스별 최적화
-- **확장 가능한 구조**: 향후 국제화 및 새로운 기능 추가를 고려한 설계
+### 17.1 국제화 우선 설계
 
-이 구조는 E-Torch의 복잡한 기능을 직관적으로 접근 가능하게 만들며, 향후 기능 추가 시에도 확장 가능한 견고한 기반을 제공합니다. 특히 성능 최적화, 에러 처리 표준화, 접근성 통합을 통해 더욱 안정적이고 사용자 친화적인 서비스를 구현할 수 있습니다.
+- **SEO 최적화**: `/ko/dashboard`, `/en/dashboard` 형태의 검색 엔진 친화적 URL
+- **사용자 경험**: URL만 봐도 언어 인식 가능한 명확한 구조
+- **공유 편의성**: 특정 언어 페이지를 직접 공유 가능
+- **캐싱 효율성**: 언어별 페이지 캐싱 최적화
+
+### 17.2 기술적 우수성
+
+- **계층적 레이아웃**: 언어별 일관된 사용자 경험 제공
+- **기능별 라우트 그룹화**: 언어별 코드 구조의 명확한 조직화
+- **서버/클라이언트 분리**: 다국어 성능과 사용자 경험 최적화
+- **동적 라우팅**: 대시보드와 위젯에 대한 언어별 유연한 접근
+- **최적화된 미들웨어**: 언어 감지, 인증, 구독 플랜 검증의 효율적 통합
+
+### 17.3 비즈니스 요구사항 완벽 반영
+
+- **구독 모델 통합**: 언어별 구독 플랜 제한 및 업그레이드 유도
+- **토스페이먼츠 연동**: 다국어 결제 시스템 라우팅
+- **경제지표 특화**: KOSIS, ECOS 데이터 소스별 언어별 최적화
+- **타겟 사용자 고려**: 전문가와 일반 투자자를 위한 언어별 차별화
+
+### 17.4 확장성 및 유지보수성
+
+- **메타데이터 최적화**: 언어별 SEO 및 소셜 공유 최적화
+- **향상된 서버 액션**: 다국어 에러 처리와 타입 안전성을 갖춘 통신
+- **표준화된 에러 처리**: 언어별 일관된 에러 처리 및 사용자 경험
+- **통합 접근성 지원**: 다국어 WCAG 2.1 AA 수준 접근성
+- **선별적 모달 라우팅**: 언어별 사용 패턴을 고려한 실용적 적용
+
+### 17.5 미래 지향적 설계
+
+- **점진적 언어 확장**: 추가 언어 지원 시 최소한의 구조 변경
+- **경제지표 확장**: 향후 OECD 등 추가 데이터 소스 통합 용이
+- **새로운 위젯 유형**: 언어별 위젯 확장 시 구조적 안정성
+- **글로벌 서비스**: 해외 시장 진출 시 즉시 활용 가능한 구조
+개
+이 **[locale] 기반 라우팅 구조**는 E-Torch의 복잡한 다국어 기능을 직관적으로 접근 가능하게 만들며, 향후 글로벌 서비스 확장 시에도 견고한 기반을 제공합니다. 특히 한국 시장에서의 성공적 검증 후 영어권 시장 진출 시 최소한의 개발 비용으로 최대한의 효과를 달성할 수 있는 전략적 설계입니다.
