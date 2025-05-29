@@ -1,771 +1,550 @@
-# E-Torch 디자인 시스템 가이드
-
-## 1. 개요
-
-E-Torch 디자인 시스템은 경제지표 대시보드 서비스의 일관되고 효율적인 UI 개발을 위한 가이드라인과 컴포넌트 라이브러리입니다. 본 문서는 개발팀이 일관된 코드베이스를 유지하기 위한 규약과 패턴을 제공합니다.
-
-### 1.1 목적
-
-이 디자인 시스템 문서의 주요 목적은 다음과 같습니다:
-
-- **일관된 사용자 경험**: 모든 페이지와 기능에서 일관된 모양과 동작을 보장합니다
-- **개발 효율성**: Shadcn/UI를 사용하여 컴포넌트를 재사용하고, 불필요한 중복 코드를 방지합니다
-- **스타일 가이드**: 색상, 타이포그래피, 간격 등의 디자인 토큰을 표준화합니다
-- **접근성 준수**: WCAG 2.1 AA 기준을 충족하는 접근성 높은 인터페이스를 보장합니다
-- **확장 가능한 디자인**: 새로운 기능과 컴포넌트가 추가되어도 일관성을 유지할 수 있도록 합니다
-- **테마 시스템**: 라이트 모드와 다크 모드를 지원하는 테마 시스템을 제공합니다
-
-### 1.2 기술 스택
-
-- **CSS 프레임워크**: Tailwind CSS 4
-- **UI 컴포넌트 라이브러리**: Shadcn/UI
-- **차트 라이브러리**: Recharts 2.15.3+
-- **아이콘**: Lucide React 1.0.0+
-- **폰트**: Inter (UI), JetBrains Mono (데이터/코드)
-- **테마**: next-themes
-- **유틸리티**: class-variance-authority, clsx, tailwind-merge
-
-## 2. 파일 구조
-
-```
-packages/ui/
-├── src/
-│   ├── components/        # 클라이언트 컴포넌트
-│   │   ├── a11y/          # 접근성 관련 컴포넌트
-│   │   ├── feedback/      # 알림, 토스트 등 피드백 컴포넌트
-│   │   ├── layout/        # 레이아웃 컴포넌트
-│   │   └── ui/            # 기본 UI 컴포넌트 (Shadcn)
-│   ├── server-components/ # 클라이언트 컴포넌트의 서버 래퍼
-│   ├── hooks/             # 패키지 내부 훅
-│   ├── lib/               # 유틸리티 함수
-│   └── styles/            # 전역 스타일 및 테마
-│       └── globals.css    # 전역 스타일 설정
-├── index.ts               # 클라이언트 컴포넌트 엔트리 포인트
-└── server.ts              # 서버 컴포넌트 엔트리 포인트
-```
-
-## 3. Tailwind CSS 4 설정
-
-Tailwind CSS 4에서는 JS 설정 파일(`tailwind.config.js`)을 사용하지 않고, CSS 파일에서 모든 설정을 관리합니다.
-
-### 3.1 globals.css 설정
-
-`packages/ui/src/styles/globals.css` 파일을 다음과 같이 작성합니다:
-
-```css
-@import "tailwindcss";
-@source "../../../apps/**/*.{ts,tsx}";
-@source "../../../packages/**/*.{ts,tsx}";
-@source "../**/*.{ts,tsx}";
-
-@import "tw-animate-css";
-
-@custom-variant dark (&:is(.dark *));
-
-:root {
-  /* E-Torch 브랜드 색상 - 라이트 모드 */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  
-  /* 차트 색상 */
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  
-  /* 반경 */
-  --radius: 0.625rem;
-  
-  /* 사이드바 색상 */
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  /* E-Torch 브랜드 색상 - 다크 모드 */
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.556 0 0);
-  
-  /* 차트 색상 - 다크 모드 */
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  
-  /* 사이드바 색상 - 다크 모드 */
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-```
-
-### 3.2 설정 설명
-
-1. **임포트 및 소스 설정**
-   - `@import "tailwindcss"`: Tailwind CSS의 기본 스타일을 가져옵니다.
-   - `@source` 지시문: 컴포넌트 파일을 스캔하여 사용된 클래스를 추출합니다.
-   - `@import "tw-animate-css"`: 애니메이션 관련 스타일을 가져옵니다.
-
-2. **다크 모드 설정**
-   - `@custom-variant dark (&:is(.dark *))`: `.dark` 클래스가 있는 요소 내부의 모든 요소에 다크 모드 스타일을 적용합니다.
-
-3. **색상 변수 정의**
-   - `:root` 선택자: 라이트 모드 변수를 정의합니다.
-   - `.dark` 선택자: 다크 모드 변수를 정의합니다.
-   - OKLCH 색상 공간을 사용하여 더 넓은 색 영역과 인지적으로 균일한 밝기를 제공합니다.
-
-4. **테마 변수 매핑**
-   - `@theme inline` 블록: CSS 변수를 Tailwind 테마 속성에 매핑합니다.
-
-5. **기본 스타일 설정**
-   - `@layer base` 블록: 모든 요소에 테두리 색상과 아웃라인을 적용하고, body 요소에 배경색과 텍스트 색상을 적용합니다.
-
-## 4. 타이포그래피
-
-E-Torch는 다음 두 가지 폰트 패밀리를 사용합니다:
-
-1. **Inter**: UI 요소, 내비게이션, 헤더용 기본 폰트
-2. **JetBrains Mono**: 데이터, 코드, 수치값을 위한 모노스페이스 폰트
-
-### 4.1 타입 스케일
-
-| 이름 | 크기 / 라인 높이 | 가중치 | CSS 클래스 | 용도 |
-|------|-----------------|--------|-----------|------|
-| Display | 36px / 1.2 | 700 | `text-4xl font-bold leading-tight` | 대시보드 제목 |
-| H1 | 28px / 1.3 | 700 | `text-3xl font-bold leading-tight` | 섹션 제목 |
-| H2 | 24px / 1.35 | 600 | `text-2xl font-semibold leading-tight` | 위젯 그룹 제목 |
-| H3 | 20px / 1.4 | 600 | `text-xl font-semibold leading-snug` | 위젯 제목 |
-| H4 | 18px / 1.45 | 600 | `text-lg font-semibold leading-snug` | 카드 제목 |
-| Body | 16px / 1.5 | 400 | `text-base font-normal leading-normal` | 본문 텍스트 |
-| Small | 14px / 1.5 | 400 | `text-sm font-normal leading-normal` | 보조 텍스트 |
-| XSmall | 12px / 1.5 | 400 | `text-xs font-normal leading-normal` | 캡션, 도움말 |
-| Data Value | 16px / 1.4 | 600 | `text-base font-semibold font-mono leading-tight` | 주요 지표값 |
-
-### 4.2 폰트 적용 방법
-
-```tsx
-// apps/web/app/layout.tsx
-import { Inter, JetBrains_Mono } from 'next/font/google';
-import '@e-torch/ui/styles/globals.css';
-
-const inter = Inter({ 
-  subsets: ['latin'],
-  variable: '--font-inter'
-});
-
-const jetBrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-jetbrains-mono'
-});
-
-export default function RootLayout({ children }) {
-  return (
-    <html lang="ko" className={`${inter.variable} ${jetBrainsMono.variable}`}>
-      <body>
-        {children}
-      </body>
-    </html>
-  );
-}
-```
-
-## 5. 색상 체계
-
-### 5.1 브랜드 색상
-
-| 이름 | 라이트 모드 | 다크 모드 | 용도 |
-|------|-----------|----------|------|
-| Primary | `oklch(0.205 0 0)` | `oklch(0.985 0 0)` | 주요 강조, 헤더, 주 버튼 |
-| Secondary | `oklch(0.97 0 0)` | `oklch(0.269 0 0)` | 보조 강조, 호버 상태, 부 버튼 |
-| Accent | `oklch(0.97 0 0)` | `oklch(0.269 0 0)` | 추가 강조, 특수 요소 |
-
-### 5.2 중립 색상
-
-| 이름 | 라이트 모드 | 다크 모드 | 용도 |
-|------|-----------|----------|------|
-| Background | `oklch(1 0 0)` | `oklch(0.145 0 0)` | 페이지 배경 |
-| Foreground | `oklch(0.145 0 0)` | `oklch(0.985 0 0)` | 주요 텍스트 |
-| Card | `oklch(1 0 0)` | `oklch(0.145 0 0)` | 카드, 모달 배경 |
-| Muted | `oklch(0.97 0 0)` | `oklch(0.269 0 0)` | 음소거된 배경 |
-| Border | `oklch(0.922 0 0)` | `oklch(0.269 0 0)` | 경계선, 구분선 |
-
-### 5.3 차트 색상
-
-E-Torch는 차트에 일관된 색상 팔레트를 사용합니다:
-
-| 이름 | 라이트 모드 | 다크 모드 |
-|------|-----------|----------|
-| Chart 1 | `oklch(0.646 0.222 41.116)` | `oklch(0.488 0.243 264.376)` |
-| Chart 2 | `oklch(0.6 0.118 184.704)` | `oklch(0.696 0.17 162.48)` |
-| Chart 3 | `oklch(0.398 0.07 227.392)` | `oklch(0.769 0.188 70.08)` |
-| Chart 4 | `oklch(0.828 0.189 84.429)` | `oklch(0.627 0.265 303.9)` |
-| Chart 5 | `oklch(0.769 0.188 70.08)` | `oklch(0.645 0.246 16.439)` |
-
-## 6. 컴포넌트 패턴
-
-### 6.1 기본 컴포넌트 패턴
-
-모든 클라이언트 컴포넌트는 다음 구조를 따라야 합니다:
-
-```tsx
-"use client" // 클라이언트 컴포넌트 지시어
-
-import * as React from "react"
-
-// 타입은 core 패키지에서 임포트
-import type { ComponentNameProps } from "@e-torch/core"
-
-export function ComponentName({
-  children,
-  className,
-  ...props
-}: ComponentNameProps) {
-  // 구현
-  return (
-    <div className={`기본-클래스 ${className}`} {...props}>
-      {children}
-    </div>
-  );
-}
-```
-
-### 6.2 서버 컴포넌트 래퍼 패턴
-
-서버 컴포넌트 래퍼는 다음 구조를 따라야 합니다:
-
-```tsx
-// "use client" 지시어 없음
-
-import { ComponentName } from "../components/component-name";
-
-// 타입은 core 패키지에서 임포트
-import type { ComponentNameProps } from "@e-torch/core";
-
-export function ComponentNameServer({
-  children,
-  className,
-  ...props
-}: ComponentNameProps) {
-  return (
-    <ComponentName className={className} {...props}>
-      {children}
-    </ComponentName>
-  );
-}
-```
-
-### 6.3 버튼 컴포넌트 예시
-
-```tsx
-// packages/ui/src/components/ui/button.tsx
-"use client"
-
-import * as React from "react"
-
-// 타입은 core 패키지에서 임포트
-import type { ButtonProps } from "@e-torch/core"
-
-const buttonVariants = {
-  variants: {
-    variant: {
-      default: "bg-primary text-primary-foreground hover:bg-primary/90",
-      destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-      outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-      secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90",
-      ghost: "hover:bg-accent hover:text-accent-foreground",
-      link: "text-primary underline-offset-4 hover:underline",
-    },
-    size: {
-      default: "h-10 px-4 py-2",
-      sm: "h-9 rounded-md px-3",
-      lg: "h-11 rounded-md px-8",
-      icon: "h-10 w-10",
-    },
-  },
-  defaultVariants: {
-    variant: "default",
-    size: "default",
-  }
-};
-
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "default", size = "default", asChild = false, ...props }, ref) => {
-    return (
-      <button
-        className={`inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${buttonVariants.variants.variant[variant]} ${buttonVariants.variants.size[size]} ${className || ""}`}
-        ref={ref}
-        {...props}
-      />
-    )
-  }
-)
-Button.displayName = "Button"
-
-export { Button, buttonVariants }
-```
-
-## 7. 접근성 가이드라인
-
-### 7.1 기본 요구사항
-
-- 모든 컴포넌트는 WCAG 2.1 AA 수준을 준수해야 함
-- 키보드 네비게이션 지원
-- 스크린 리더 호환성
-- 충분한 색상 대비
-
-### 7.2 접근성 컴포넌트
-
-#### 7.2.1 스킵 링크
-
-```tsx
-// packages/ui/src/components/a11y/skip-link.tsx
-"use client"
-
-import * as React from "react"
-
-export function SkipLink({ targetId }: { targetId: string }) {
-  return (
-    <a 
-      href={`#${targetId}`} 
-      className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-white focus:text-primary"
-    >
-      콘텐츠로 건너뛰기
-    </a>
-  );
-}
-```
-
-#### 7.2.2 시각적으로 숨겨진 텍스트
-
-```tsx
-// packages/ui/src/components/a11y/visually-hidden.tsx
-"use client"
-
-import * as React from "react"
-
-export function VisuallyHidden({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="sr-only">
-      {children}
-    </span>
-  );
-}
-```
-
-#### 7.2.3 포커스 트랩
-
-```tsx
-// packages/ui/src/components/a11y/focus-trap.tsx
-"use client"
-
-import * as React from "react"
-import { useRef, useEffect } from "react"
-
-export function FocusTrap({ 
-  children,
-  active = true
-}: { 
-  children: React.ReactNode; 
-  active?: boolean 
-}) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  
-  useEffect(() => {
-    if (!active) return
-    
-    const container = containerRef.current
-    if (!container) return
-    
-    const focusableElements = container.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    )
-    
-    const firstElement = focusableElements[0] as HTMLElement
-    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
-    
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return
-      
-      if (e.shiftKey) {
-        if (document.activeElement === firstElement) {
-          lastElement.focus()
-          e.preventDefault()
-        }
-      } else {
-        if (document.activeElement === lastElement) {
-          firstElement.focus()
-          e.preventDefault()
-        }
-      }
-    }
-    
-    container.addEventListener('keydown', handleKeyDown)
-    return () => container.removeEventListener('keydown', handleKeyDown)
-  }, [active])
-  
-  return <div ref={containerRef}>{children}</div>
-}
-```
-
-#### 7.2.4 키보드 내비게이션 메뉴
-
-```tsx
-// packages/ui/src/components/a11y/keyboard-nav-menu.tsx
-"use client"
-
-import * as React from "react"
-import { useRef, useState, useEffect } from "react"
-
-interface KeyboardNavMenuProps {
-  children: React.ReactNode
-  vertical?: boolean
-}
-
-export function KeyboardNavMenu({ 
-  children, 
-  vertical = true 
-}: KeyboardNavMenuProps) {
-  const menuRef = useRef<HTMLDivElement>(null)
-  const [focusIndex, setFocusIndex] = useState<number>(-1)
-  
-  useEffect(() => {
-    const menu = menuRef.current
-    if (!menu) return
-    
-    const menuItems = Array.from(
-      menu.querySelectorAll('[role="menuitem"]')
-    ) as HTMLElement[]
-    
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key
-      
-      if (
-        (vertical && (key === 'ArrowUp' || key === 'ArrowDown')) ||
-        (!vertical && (key === 'ArrowLeft' || key === 'ArrowRight'))
-      ) {
-        e.preventDefault()
-        
-        const direction = 
-          key === 'ArrowDown' || key === 'ArrowRight' ? 1 : -1
-        
-        let newIndex = focusIndex + direction
-        
-        if (newIndex < 0) {
-          newIndex = menuItems.length - 1
-        } else if (newIndex >= menuItems.length) {
-          newIndex = 0
-        }
-        
-        setFocusIndex(newIndex)
-        menuItems[newIndex]?.focus()
-      }
-    }
-    
-    menu.addEventListener('keydown', handleKeyDown)
-    return () => menu.removeEventListener('keydown', handleKeyDown)
-  }, [vertical, focusIndex])
-  
-  return (
-    <div 
-      ref={menuRef} 
-      role="menu" 
-      className={`outline-none ${vertical ? 'flex-col' : 'flex-row'}`}
-    >
-      {children}
-    </div>
-  )
-}
-```
-
-## 8. 사용 예시
-
-### 8.1 간단한 카드 컴포넌트
-
-```tsx
-// packages/ui/src/components/ui/card.tsx
-"use client"
-
-import * as React from "react"
-
-const Card = React.forwardRef
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={`rounded-lg border bg-card p-4 shadow-sm ${className || ""}`}
-    {...props}
-  />
-))
-Card.displayName = "Card"
-
-const CardHeader = React.forwardRef
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={`flex flex-col space-y-1.5 p-4 ${className || ""}`}
-    {...props}
-  />
-))
-CardHeader.displayName = "CardHeader"
-
-const CardTitle = React.forwardRef
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h3
-    ref={ref}
-    className={`text-xl font-semibold leading-snug tracking-tight ${className || ""}`}
-    {...props}
-  />
-))
-CardTitle.displayName = "CardTitle"
-
-const CardContent = React.forwardRef
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={`p-4 pt-0 ${className || ""}`} {...props} />
-))
-CardContent.displayName = "CardContent"
-
-const CardFooter = React.forwardRef
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={`flex items-center p-4 pt-0 ${className || ""}`}
-    {...props}
-  />
-))
-CardFooter.displayName = "CardFooter"
-
-export { Card, CardHeader, CardFooter, CardTitle, CardContent }
-```
-
-### 8.2 대시보드 카드 사용 예시
-
-```tsx
-// apps/web/app/(dashboard)/dashboard/page.tsx
-import { Card, CardHeader, CardTitle, CardContent } from "@e-torch/ui"
-import { Button } from "@e-torch/ui"
-
-export default function DashboardPage() {
-  return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <Card>
-        <CardHeader>
-          <CardTitle>GDP 성장률</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-2xl font-semibold text-chart-1">2.6%</p>
-          <p className="text-xs text-muted-foreground">전년 대비</p>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>소비자물가 등락률</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-2xl font-semibold text-chart-2">3.2%</p>
-          <p className="text-xs text-muted-foreground">전년 동월 대비</p>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>기준금리</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-2xl font-semibold text-chart-3">3.5%</p>
-          <p className="text-xs text-muted-foreground">한국은행</p>
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
-```
-
-### 8.3 접근성 차트 테이블 적용 예시
-
-```tsx
-// packages/charts/src/components/AccessibleChartTable.tsx
-"use client"
-
-import * as React from "react"
-
-export interface AccessibleChartTableProps {
-  data: Array<Record<string, any>>;
-  columns: Array<{
-    key: string;
-    label: string;
-  }>;
-  summary: string;
-}
-
-export function AccessibleChartTable({ 
-  data, 
-  columns, 
-  summary 
-}: AccessibleChartTableProps) {
-  return (
-    <div className="sr-only">
-      <table>
-        <caption>{summary}</caption>
-        <thead>
-          <tr>
-            {columns.map(column => (
-              <th key={column.key} scope="col">{column.label}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row, i) => (
-            <tr key={i}>
-              {columns.map(column => (
-                <td key={column.key}>{row[column.key]}</td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-```
-
-## 9. 코드 스타일 가이드
-
-E-Torch 프로젝트는 ESLint 9 버전의 Standard 규칙을 사용하여 코드 스타일을 관리합니다:
-
-### 9.1 ESLint 설정
-
-프로젝트 루트의 설정을 따르며, 다음과 같은 규칙을 적용합니다:
-
-- StandardJS 및 StandardJSX 규칙 준수
-- TypeScript ESLint 권장 규칙 준수
-- React Hooks 규칙 준수
-
-### 9.2 코드 포맷팅 가이드
-
-- 들여쓰기: 2칸 공백
-- 세미콜론: 사용하지 않음
-- 따옴표: 작은따옴표 사용
-- 중괄호 스타일: 같은 줄에 열고 닫기
-- 최대 줄 길이: 100자
-- 컴포넌트 이름: PascalCase
-- 함수 이름: camelCase
-- 상수 이름: UPPER_SNAKE_CASE
-
-ESLint 9 버전에서는 코드 포맷 관련 설정도 포함되므로 별도의 Prettier 설정은 필요하지 않습니다.
-
-## 10. 결론
-
-E-Torch 디자인 시스템은 Tailwind CSS 4를 기반으로 경제지표 대시보드 서비스에 필요한 모든 UI 컴포넌트를 일관되고 접근성이 높은 방식으로 제공합니다. 이 가이드를 따라 개발하면 일관된 사용자 경험과 효율적인 개발 프로세스를 달성할 수 있습니다.
-
-주요 특징:
-
-- Tailwind CSS 4의 CSS 기반 설정을 활용한 테마 관리
-- 서버/클라이언트 컴포넌트 분리 패턴
-- 접근성을 고려한 컴포넌트 설계
-- OKLCH 색상 공간을 활용한 향상된 색상 시스템
-- 일관된 컴포넌트 패턴
+# E-Torch 디자인 시스템
+
+## 1. 서비스 정체성과 브랜드 원칙
+
+### 1.1 브랜드 정의
+
+**E-Torch (eTorch)**는 "경제에 횃불을 더해 길을 밝혀준다"는 의미로, 복잡한 경제 데이터를 누구나 쉽게 이해하고 활용할 수 있도록 시각화하는 서비스입니다.
+
+### 1.2 핵심 가치
+
+- **신뢰성**: 공식 경제지표 기반의 정확한 데이터 제공
+- **전문성**: 경제 전문가 수준의 고급 분석 도구
+- **접근성**: 복잡한 경제 데이터의 직관적 시각화
+- **효율성**: 수작업 프로세스의 완전 자동화
+
+### 1.3 브랜드 성격
+
+- **Professional & Approachable**: 전문적이면서도 친근한
+- **Reliable & Innovative**: 신뢰할 수 있으면서도 혁신적인
+- **Clean & Sophisticated**: 깔끔하고 세련된
+- **Inclusive & Global**: 포용적이고 글로벌한
+
+## 2. 디자인 원칙
+
+### 2.1 핵심 디자인 철학
+
+#### 명확성 우선 (Clarity First)
+
+- 복잡한 경제 데이터를 명확하게 전달
+- 불필요한 시각적 요소 제거
+- 정보 계층 구조의 명확한 표현
+
+#### 일관성 유지 (Consistency)
+
+- 모든 인터페이스에서 동일한 디자인 언어 사용
+- 예측 가능한 상호작용 패턴 제공
+- 브랜드 요소의 일관된 적용
+
+#### 접근성 보장 (Accessibility)
+
+- WCAG 2.1 AA 수준 준수
+- 다양한 사용자 환경 고려
+- 키보드 네비게이션 완전 지원
+
+#### 반응형 적응 (Responsive Adaptation)
+
+- 모든 디바이스에서 최적화된 경험
+- 컨텍스트에 맞는 인터페이스 조정
+- 터치와 마우스 상호작용 모두 지원
+
+### 2.2 사용자 경험 원칙
+
+#### 전문가 워크플로우 최적화
+
+- 복잡한 데이터 분석 작업 지원
+- 키보드 단축키와 고급 편집 도구 제공
+- 세밀한 커스터마이징 옵션 제공
+
+#### 일반 사용자 진입 장벽 최소화
+
+- 직관적인 첫 사용 경험
+- 가이드와 템플릿 활용
+- 점진적 기능 노출
+
+## 3. 색상 시스템
+
+### 3.1 브랜드 색상 체계
+
+#### Primary 색상
+
+- **Deep Navy (#0c1e3e)**: 주요 액션 버튼, 로고, 네비게이션
+- 신뢰감과 전문성을 표현하는 깊은 네이비 톤
+- 금융 서비스의 안정감과 권위를 나타냄
+
+#### Secondary 색상
+
+- **Royal Blue (#1a56db)**: 보조 액션, 링크, 강조 요소
+- 혁신과 기술을 표현하는 선명한 파란색
+- Primary와 조화를 이루는 보조 강조색
+
+#### Tertiary 색상
+
+- **Sky Blue (#0284c7)**: 차트 기본 색상, 데이터 시각화
+- 명확성과 투명성을 표현하는 밝은 파란색
+- 데이터 시각화에서 첫 번째 색상으로 활용
+
+### 3.2 차트 전용 색상 팔레트
+
+경제지표 차트에 특화된 색상 팔레트로, 색맹 친화적이며 다크/라이트 모드에서 모두 최적화됨:
+
+#### 라이트 모드 차트 색상
+
+1. **차트 블루** (oklch(0.646 0.222 41.116)): 주요 시계열 데이터
+2. **차트 그린** (oklch(0.6 0.118 184.704)): 성장/증가 지표
+3. **차트 퍼플** (oklch(0.398 0.07 227.392)): 비교 데이터
+4. **차트 옐로우** (oklch(0.828 0.189 84.429)): 경고/주의 지표
+5. **차트 오렌지** (oklch(0.769 0.188 70.08)): 보조 지표
+
+#### 다크 모드 차트 색상
+
+라이트 모드와 시각적 일관성을 유지하면서 대비를 높인 색상 조합
+
+### 3.3 시스템 색상
+
+#### 성공 (Success)
+
+- **Green (#10b981)**: 성공 상태, 긍정적 변화, 성장 지표
+
+#### 경고 (Warning)
+
+- **Amber (#f59e0b)**: 주의 사항, 중요 알림, 변동성 지표
+
+#### 오류 (Error)
+
+- **Red (#ef4444)**: 오류 상태, 부정적 변화, 하락 지표
+
+#### 중립 (Neutral)
+
+- **Gray Scale (50-950)**: 텍스트, 배경, 테두리
+- 9단계 그레이 스케일로 미묘한 계층 표현
+
+### 3.4 색상 사용 원칙
+
+#### 의미 전달
+
+- 녹색: 긍정적 변화, 성장, 상승
+- 빨간색: 부정적 변화, 하락, 위험
+- 파란색: 중립적 데이터, 기준선, 정보
+
+#### 접근성 고려
+
+- 모든 텍스트는 배경 대비 최소 4.5:1 유지
+- 색상만으로 정보 구분하지 않음
+- 색맹 사용자를 위한 패턴/아이콘 병행 사용
+
+## 4. 타이포그래피 시스템
+
+### 4.1 폰트 패밀리
+
+#### 주 폰트: Inter
+
+- **용도**: UI 요소, 내비게이션, 헤더, 본문
+- **특징**: 높은 가독성, 다국어 지원, 웹 최적화
+- **지원**: 한국어, 영어, 특수문자
+
+#### 보조 폰트: JetBrains Mono
+
+- **용도**: 데이터 값, 수치, 코드 표시
+- **특징**: 등폭 글꼴, 숫자 정렬 최적화
+- **적용**: 차트 레이블, 통계 수치, 임베드 코드
+
+### 4.2 타입 스케일 및 용도
+
+#### Display (48px/36px/28px)
+
+- **데스크톱/태블릿/모바일**: 반응형 크기 조정
+- **용도**: 랜딩페이지 주제목, 마케팅 헤드라인
+- **스타일**: 굵은 글꼴 (700), 짧은 줄간격
+
+#### Heading 1-4 (36px-18px)
+
+- **H1**: 페이지 제목, 대시보드 이름
+- **H2**: 섹션 제목, 위젯 그룹명
+- **H3**: 위젯 제목, 카드 헤더
+- **H4**: 서브 카테고리, 폼 레이블
+
+#### Body & Support (16px-12px)
+
+- **Body**: 일반 텍스트, 설명문, 버튼 텍스트
+- **Small**: 보조 정보, 메타데이터, 캡션
+- **XSmall**: 저작권, 세부 주석, 툴팁
+
+### 4.3 데이터 타이포그래피
+
+#### 수치 표시 원칙
+
+- **JetBrains Mono** 사용으로 숫자 정렬 최적화
+- **세미볼드 (600)** 로 가독성 향상
+- **적절한 간격**으로 큰 숫자 구분 (1,234,567)
+
+#### 다국어 수치 형식
+
+- **한국어**: 1,234,567원, 12.34%
+- **영어**: $1,234,567, 12.34%
+- **날짜**: 2024년 12월 vs Dec 2024
+
+## 5. 컴포넌트 디자인 원칙
+
+### 5.1 기본 컴포넌트 철학
+
+#### 예측 가능성 (Predictability)
+
+- 유사한 기능의 컴포넌트는 동일한 동작 패턴
+- 일관된 상태 표시 (기본, 호버, 활성, 비활성)
+- 표준적인 상호작용 방식 준수
+
+#### 재사용성 (Reusability)
+
+- 다양한 컨텍스트에서 활용 가능
+- 크기, 색상, 상태의 유연한 변형 지원
+- 컴포지션 패턴으로 복합 기능 구현
+
+#### 확장성 (Scalability)
+
+- 새로운 변형 추가가 용이
+- 기존 디자인 언어와 자연스럽게 조화
+- 미래 요구사항에 대한 적응력
+
+### 5.2 주요 컴포넌트 카테고리
+
+#### 기본 입력 (Basic Inputs)
+
+- **Button**: Primary, Secondary, Ghost, Outline 변형
+- **Input**: 텍스트, 이메일, 비밀번호, 검색
+- **Select**: 단일/다중 선택, 검색 가능
+- **Checkbox/Radio**: 단일/그룹 선택
+
+#### 데이터 표시 (Data Display)
+
+- **Card**: 정보 그룹화, 그림자와 경계선 변형
+- **Table**: 정렬, 필터링, 페이지네이션 지원
+- **Badge**: 상태, 카테고리, 개수 표시
+- **Progress**: 진행률, 사용량 표시
+
+#### 피드백 (Feedback)
+
+- **Toast**: 성공, 오류, 정보, 경고 메시지
+- **Modal**: 확인, 폼, 상세 정보 표시
+- **Tooltip**: 간단한 설명, 도움말
+- **Loading**: 스켈레톤, 스피너, 프로그레스
+
+#### 내비게이션 (Navigation)
+
+- **Tabs**: 컨텐츠 전환, 설정 카테고리
+- **Breadcrumb**: 현재 위치 표시
+- **Pagination**: 페이지 이동
+- **Menu**: 드롭다운, 컨텍스트 메뉴
+
+### 5.3 E-Torch 특화 컴포넌트
+
+#### 차트 컨테이너 (Chart Container)
+
+- 일관된 차트 래핑과 제어 요소
+- 범례, 툴팁, 확대/축소 통합
+- 로딩과 오류 상태 내장
+
+#### 위젯 카드 (Widget Card)
+
+- 드래그 핸들과 리사이즈 컨트롤
+- 편집/뷰 모드 자동 전환
+- 컨텍스트 메뉴 통합
+
+#### 데이터 소스 선택기 (Data Source Picker)
+
+- KOSIS, ECOS 소스 구분 UI
+- 지표 검색과 필터링 기능
+- 구독 플랜별 제한 표시
+
+#### 구독 상태 표시 (Subscription Badge)
+
+- Basic/Pro 플랜 시각적 구분
+- 사용량과 제한 정보 표시
+- 업그레이드 유도 요소 통합
+
+## 6. 레이아웃 및 그리드 시스템
+
+### 6.1 그리드 철학
+
+#### 12컬럼 시스템
+
+- 데스크톱 기준 12컬럼 그리드
+- 유연한 콘텐츠 배치와 정렬
+- react-grid-layout과의 자연스러운 연동
+
+#### 반응형 브레이크포인트
+
+- **모바일**: ~767px (4컬럼 스택)
+- **태블릿**: 768px-1199px (8컬럼)
+- **데스크톱**: 1200px+ (12컬럼)
+
+### 6.2 간격 시스템
+
+#### 기본 단위: 4px
+
+일관된 간격 체계로 시각적 리듬 생성:
+
+- **4px, 8px**: 작은 요소 간격
+- **12px, 16px**: 컴포넌트 내부 간격
+- **24px, 32px**: 섹션 간격
+- **48px, 64px**: 페이지 레벨 간격
+
+#### 컨테이너 시스템
+
+- **최대 너비**: 1440px
+- **좌우 여백**: 반응형 조정
+- **중앙 정렬**: 모든 브레이크포인트
+
+### 6.3 레이아웃 패턴
+
+#### 대시보드 레이아웃
+
+- **헤더**: 고정 위치, 브랜딩과 내비게이션
+- **사이드바**: 접을 수 있는 내비게이션
+- **메인**: 그리드 기반 위젯 영역
+- **속성 패널**: 리사이즈 가능한 우측 패널
+
+#### 편집 레이아웃
+
+- **툴바**: 편집 도구와 액션
+- **캔버스**: 드래그 앤 드롭 영역
+- **속성**: 선택된 요소 설정
+- **미리보기**: 실시간 결과 확인
+
+## 7. 아이콘 및 일러스트레이션
+
+### 7.1 아이콘 시스템
+
+#### Lucide React 아이콘
+
+- 일관된 스타일과 최적화된 성능
+- 24px 기본 크기, 16px-48px 범위
+- 2px 선 두께로 깔끔한 외관
+
+#### 커스텀 아이콘
+
+- E-Torch 로고와 브랜드 마크
+- 경제지표 전용 아이콘 (차트 유형, 데이터 소스)
+- SVG 형식으로 확장성 보장
+
+### 7.2 일러스트레이션 원칙
+
+#### 스타일 가이드
+
+- **단순함**: 불필요한 세부사항 제거
+- **일관성**: 색상과 스타일 통일
+- **목적성**: 기능 설명과 감정 전달
+
+#### 적용 영역
+
+- **Empty State**: 데이터 없음, 첫 사용 안내
+- **Error State**: 오류 상황 친근한 설명
+- **Onboarding**: 기능 소개와 튜토리얼
+- **Marketing**: 랜딩페이지, 프로모션
+
+## 8. 접근성 가이드라인
+
+### 8.1 시각적 접근성
+
+#### 색상 대비
+
+- **일반 텍스트**: 배경 대비 4.5:1 이상
+- **큰 텍스트**: 배경 대비 3:1 이상
+- **인터랙티브 요소**: 배경 대비 3:1 이상
+
+#### 색상 의존성 금지
+
+- 색상만으로 정보 구분 금지
+- 아이콘, 패턴, 텍스트 레이블 병행
+- 색맹 친화적 차트 색상 사용
+
+### 8.2 키보드 접근성
+
+#### 포커스 관리
+
+- 모든 인터랙티브 요소 키보드 접근
+- 명확한 포커스 링 표시 (2px 파란색)
+- 논리적 탭 순서 유지
+
+#### 키보드 단축키
+
+- **전역**: Alt+1 (메인), Alt+2 (사이드바)
+- **편집**: 화살표키, Ctrl+Z/Y, Delete
+- **차트**: 방향키 네비게이션, Enter 선택
+
+### 8.3 스크린 리더 지원
+
+#### 의미적 마크업
+
+- 헤더, 네비게이션, 메인, 사이드바 구분
+- 논리적 헤딩 계층 (H1-H6)
+- 폼 레이블과 필드 명확한 연결
+
+#### 차트 접근성
+
+- 모든 차트에 대체 텍스트 제공
+- 데이터 요약과 트렌드 설명
+- 토글 가능한 데이터 테이블 제공
+
+## 9. 구독 플랜별 차별화 디자인
+
+### 9.1 Basic 플랜 시각적 특징
+
+#### 제한 표시 방식
+
+- **사용량 표시**: 진행바와 카운터로 명확한 현황
+- **워터마크**: 우하단 반투명 "E-Torch로 제작됨"
+- **비활성화 표시**: 회색 처리 + 자물쇠 아이콘
+
+#### 업그레이드 유도
+
+- **자연스러운 배너**: 상단 노란색 배경, 닫기 가능
+- **제한 도달 페이지**: 현재 vs Pro 혜택 비교표
+- **단계적 안내**: 제한별 맞춤 설명과 해결책
+
+### 9.2 Pro 플랜 프리미엄 경험
+
+#### 프리미엄 표시
+
+- **Pro 배지**: 헤더에 금색 배지
+- **무제한 표시**: ∞ 기호 또는 "무제한" 텍스트
+- **고급 기능 강조**: 파란색 테두리 + "Pro" 라벨
+
+#### 차별화된 기능
+
+- **워터마크 제거**: 깔끔한 대시보드 뷰
+- **고급 내보내기**: 추가 해상도/형식 옵션
+- **우선 지원**: 별도 지원 채널 표시
+
+## 10. 다국어 대응 디자인
+
+### 10.1 텍스트 확장 대응
+
+#### 언어별 확장률
+
+- **한국어**: 기준 (100%)
+- **영어**: 80-120% 범위
+
+#### 레이아웃 유연성
+
+- **가변 너비**: 텍스트 길이에 따른 동적 조정
+- **멀티라인**: 긴 텍스트 자동 줄바꿈
+- **말줄임**: 제한된 공간에서 생략 처리
+
+### 10.2 문화적 고려사항
+
+#### 읽기 방향
+
+- 좌-우 읽기 기준 레이아웃
+- RTL 언어 확장 가능한 구조
+
+#### 숫자 형식
+
+- **한국어**: 1,234,567원, 12.34%
+- **영어**: $1,234,567, 12.34%
+- **날짜**: 문화별 선호 형식
+
+## 11. 반응형 디자인 전략
+
+### 11.1 디바이스별 최적화
+
+#### 데스크톱 (1200px+)
+
+- **다중 패널**: 사이드바 + 메인 + 속성 패널
+- **키보드 중심**: 단축키와 정밀한 편집
+- **고밀도 정보**: 많은 정보를 효율적으로 배치
+
+#### 태블릿 (768px-1199px)
+
+- **하이브리드**: 터치와 마우스 병행 지원
+- **접이식 패널**: 공간 효율성 극대화
+- **터치 최적화**: 44px 최소 터치 타겟
+
+#### 모바일 (~767px)
+
+- **단순화**: 핵심 기능 위주 노출
+- **전체 화면**: 풀스크린 모달 활용
+- **제스처**: 스와이프, 핀치 등 터치 제스처
+
+### 11.2 컨텐츠 우선순위
+
+#### 정보 계층
+
+1. **핵심 데이터**: 차트와 주요 수치
+2. **내비게이션**: 필수 이동 경로
+3. **보조 정보**: 메타데이터, 설명
+4. **고급 기능**: 편집 도구, 설정
+
+#### 점진적 노출
+
+- 화면 크기에 따른 기능 단계적 표시
+- 중요도 기반 컨텐츠 우선순위
+- 접기/펼치기로 선택적 정보 표시
+
+## 12. 성능과 사용자 경험
+
+### 12.1 로딩 및 피드백
+
+#### 스켈레톤 UI
+
+- 콘텐츠 구조 미리 표시
+- 부드러운 펄스 애니메이션
+- 실제 콘텐츠와 유사한 형태
+
+#### 프로그레시브 로딩
+
+- 중요 정보 우선 표시
+- 점진적 콘텐츠 로딩
+- 사용자 대기 시간 최소화
+
+### 12.2 상호작용 피드백
+
+#### 즉시 반응
+
+- 클릭/터치 시 즉각적 시각적 피드백
+- 버튼 상태 변화 (normal → pressed → released)
+- 마이크로 애니메이션으로 생동감 부여
+
+#### 상태 커뮤니케이션
+
+- 성공: 녹색 + 체크 아이콘 + 확인 메시지
+- 오류: 빨간색 + X 아이콘 + 구체적 해결책
+- 진행: 파란색 + 스피너 + 예상 시간
+
+## 13. 브랜드 일관성 유지
+
+### 13.1 브랜드 터치포인트
+
+#### 시각적 요소
+
+- 로고 배치와 크기 규정
+- 색상 사용 비율과 조합
+- 타이포그래피 위계 준수
+
+#### 커뮤니케이션 톤
+
+- **전문적**: 정확한 용어와 명확한 설명
+- **친근한**: 따뜻하고 접근하기 쉬운 언어
+- **신뢰할 수 있는**: 일관된 품질과 안정성
+
+### 13.2 브랜드 확장성
+
+#### 새로운 기능 추가
+
+- 기존 디자인 언어와 조화
+- 브랜드 개성 유지
+- 사용자 기대치 충족
+
+#### 플랫폼 확장
+
+- 웹, 모바일 앱, 임베드 위젯
+- 일관된 브랜드 경험
+- 플랫폼별 최적화와 브랜드 일관성 균형
+
+---
+
+## 결론
+
+E-Torch 디자인 시스템은 경제지표 시각화라는 특수한 도메인에서 전문성과 접근성을 동시에 추구합니다. 이 시스템을 통해 복잡한 경제 데이터를 누구나 쉽게 이해하고 활용할 수 있는 직관적이면서도 강력한 도구를 제공합니다.
+
+디자인 시스템의 모든 요소는 사용자의 실제 업무 흐름과 요구사항을 기반으로 설계되었으며, 지속적인 피드백을 통해 진화할 것입니다. 이를 통해 E-Torch는 경제 데이터 시각화 영역에서 차별화된 사용자 경험을 제공하는 선도적 서비스로 자리잡을 것입니다.
